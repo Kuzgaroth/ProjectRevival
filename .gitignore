@@ -1,0 +1,13 @@
+.vs
+*.sln
+DerivedDataCache/
+Intermediate/
+Saved/
+Binaries/
+Build/
+Content/
+.idea/
+.clang-format.txt
+Config/
+*.sln.*
+*.uproject
