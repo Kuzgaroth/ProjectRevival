@@ -6,6 +6,8 @@
 #include "UObject/Object.h"
 #include "PermanentState.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnStateEndedSignature)
+
 UCLASS()
 class PROJECTREVIVAL_API UPermanentState : public UObject
 {
@@ -13,4 +15,16 @@ class PROJECTREVIVAL_API UPermanentState : public UObject
 public:
 	UPermanentState();
 	~UPermanentState();
+
+	virtual void StartState();
+	virtual void EndState();
+private:
+	TArray<UPermanentState*> FriendlyStates;
+public:
+	FOnStateEndedSignature StateEndedDelegate;
+
+	void SetFriendlyStates(TArray<UPermanentState*>& Friends);
+	bool IsStateFriendly(UPermanentState* CheckedState);
 };
+
+
