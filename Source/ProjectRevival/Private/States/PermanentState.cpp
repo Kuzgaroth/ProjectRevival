@@ -10,10 +10,13 @@ UPermanentState::UPermanentState()
 
 UPermanentState::~UPermanentState()
 {
+	StateEndedDelegate.Clear();
+	StateStartDelegate.Clear();
 }
 
 void UPermanentState::StartState()
 {
+	StateStartDelegate.Broadcast();
 }
 
 void UPermanentState::EndState()
@@ -21,7 +24,7 @@ void UPermanentState::EndState()
 	StateEndedDelegate.Broadcast();
 }
 
-bool UPermanentState::IsStateFriendly(UPermanentState* CheckedState)
+bool UPermanentState::IsStateFriendly(UPermanentState* CheckedState) const
 {
 	return FriendlyStates.Contains(CheckedState);
 }

@@ -19,7 +19,7 @@ public:
 
 	virtual void EndState() override;
 	virtual void StartState() override;
-protected:
+
 	virtual void OnStateTimeEnded();
 private:
 	bool IsInProgress;

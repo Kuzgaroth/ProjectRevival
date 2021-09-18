@@ -9,17 +9,19 @@ UTemporaryState::UTemporaryState()
 
 UTemporaryState::~UTemporaryState()
 {
-	
+	StateTimeFinishedDelegate.Clear();
+	StateInterraptedDelegate.Clear();
 }
 
 void UTemporaryState::OnStateTimeEnded()
 {
+	IsInProgress = false;
 	StateTimeFinishedDelegate.Broadcast();
 }
 
 void UTemporaryState::EndState()
 {
-	StateTimeFinishedDelegate.Clear();
+	//StateTimeFinishedDelegate.Clear();
 	if (IsInProgress)
 	{
 		StateInterraptedDelegate.Broadcast();

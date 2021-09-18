@@ -40,6 +40,9 @@ void UStateManager::EnterState(UPermanentState* NewState)
 	{
 		CurrentState->EndState();
 		CurrentState = NewState;
+		if (NewState->IsA<UTemporaryState>())
+			Cast<UTemporaryState>(NewState)->StateTimeFinishedDelegate.AddUObject(this,
+				&UStateManager::OnStateTimeFinished);
 		NewState->StartState();
 	}
 }
