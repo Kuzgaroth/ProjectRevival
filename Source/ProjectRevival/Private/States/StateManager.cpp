@@ -21,13 +21,15 @@ void UStateManager::OnStateTimeFinished()
 
 bool UStateManager::TryEnterState(UPermanentState* NewState)
 {
-	if (CurrentState->IsStateFriendly(NewState))
+	if (CurrentState->IsStateFriendly(NewState) && NewState->CheckInternalDelegate.Execute())
 	{
 		CurrentState->EndState();
-		CurrentState = NewState;
 		if (NewState->IsA<UTemporaryState>())
+		{
 			Cast<UTemporaryState>(NewState)->StateTimeFinishedDelegate.AddUObject(this,
 				&UStateManager::OnStateTimeFinished);
+		}
+		CurrentState = NewState;
 		NewState->StartState();
 		return true;
 	}
@@ -36,13 +38,15 @@ bool UStateManager::TryEnterState(UPermanentState* NewState)
 
 void UStateManager::EnterState(UPermanentState* NewState)
 {
-	if (CurrentState->IsStateFriendly(NewState))
+	if (CurrentState->IsStateFriendly(NewState) &&  NewState->CheckInternalDelegate.Execute())
 	{
 		CurrentState->EndState();
-		CurrentState = NewState;
 		if (NewState->IsA<UTemporaryState>())
+		{
 			Cast<UTemporaryState>(NewState)->StateTimeFinishedDelegate.AddUObject(this,
 				&UStateManager::OnStateTimeFinished);
+		}
+		CurrentState = NewState;
 		NewState->StartState();
 	}
 }

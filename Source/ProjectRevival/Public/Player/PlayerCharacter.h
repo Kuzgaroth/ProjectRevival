@@ -9,6 +9,7 @@
 class UCameraComponent;
 class USpringArmComponent;
 class USphereComponent;
+class UStateManager;
 
 UCLASS()
 class PROJECTREVIVAL_API APlayerCharacter : public ABaseCharacter
@@ -25,9 +26,13 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	USphereComponent* CameraCollisionComponent;
+
+	UPROPERTY()
+	UStateManager* StateManager;
 	
 	virtual void OnDeath() override;
 	virtual void BeginPlay() override;
+	virtual void SetupStates();
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	

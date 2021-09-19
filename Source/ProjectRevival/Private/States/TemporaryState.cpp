@@ -21,7 +21,7 @@ void UTemporaryState::OnStateTimeEnded()
 
 void UTemporaryState::EndState()
 {
-	//StateTimeFinishedDelegate.Clear();
+	StateTimeFinishedDelegate.Clear();
 	if (IsInProgress)
 	{
 		StateInterraptedDelegate.Broadcast();
@@ -29,7 +29,7 @@ void UTemporaryState::EndState()
 	}
 	else
 	{
-		StateEndedDelegate.Broadcast();
+		StateEndDelegate.Broadcast();
 	}
 }
 

@@ -8,6 +8,12 @@
 #include "Components/WeaponComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "States/StateManager.h"
+#include "States/Character/CharacterFireState.h"
+#include "States/Character/CharacterDefaultState.h"
+#include "States/Character/CharacterJumpState.h"
+#include "States/Character/CharacterRunState.h"
+#include "States/Character/CharacterReloadState.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -113,4 +119,21 @@ void APlayerCharacter::BeginPlay()
 
 	CameraCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionBeginOverlap);
 	CameraCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionEndOverlap);
+
+	//SetupStates();
+}
+
+void APlayerCharacter::SetupStates()
+{
+	StateManager = NewObject<UStateManager>();
+	const auto DefaultState = NewObject<UCharacterDefaultState>();
+
+	StateManager->SetDefaultState(DefaultState);
+
+	const auto FireState = NewObject<UCharacterFireState>();
+	const auto JumpState = NewObject<UCharacterJumpState>();
+	const auto RunState = NewObject<UCharacterRunState>();
+	const auto ReloadState = NewObject<UCharacterReloadState>();
+
+	TArray<UPermanentState> FireFriends = {};
 }

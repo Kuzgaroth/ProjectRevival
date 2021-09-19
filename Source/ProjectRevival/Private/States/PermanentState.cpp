@@ -10,7 +10,7 @@ UPermanentState::UPermanentState()
 
 UPermanentState::~UPermanentState()
 {
-	StateEndedDelegate.Clear();
+	StateEndDelegate.Clear();
 	StateStartDelegate.Clear();
 }
 
@@ -21,7 +21,7 @@ void UPermanentState::StartState()
 
 void UPermanentState::EndState()
 {
-	StateEndedDelegate.Broadcast();
+	StateEndDelegate.Broadcast();
 }
 
 bool UPermanentState::IsStateFriendly(UPermanentState* CheckedState) const
