@@ -5,9 +5,10 @@ Intermediate/
 Saved/
 Binaries/
 Build/
-Content/
+Content/Collections
+Content/Developers
+Content/ExternalContent
 .idea/
 .clang-format.txt
-Config/
 *.sln.*
 *.uproject
