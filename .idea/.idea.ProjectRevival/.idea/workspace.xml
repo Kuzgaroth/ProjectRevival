@@ -17,25 +17,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c83dc8b3-3515-4b6b-a082-cf3a993185c6" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.ProjectRevival/.idea/indexLayout.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ProjectRevival/.idea/indexLayout.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ProjectRevival/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ProjectRevival/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Binaries/Win64/ProjectRevivalEditor.target" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/ProjectRevivalEditor.target" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0001.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0001.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0001.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0001.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0002.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0002.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0004.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0004.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0006.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0006.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0063.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0063.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor.modules" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor.modules" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ProjectRevival/Core/Menu/MenuLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/ProjectRevival/Core/Menu/MenuLevel.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ProjectRevival/Core/Menu/UI/WBP_LevelItem.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/ProjectRevival/Core/Menu/UI/WBP_LevelItem.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/ProjectRevival/Core/Menu/UI/WBP_Menu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/ProjectRevival/Core/Menu/UI/WBP_Menu.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectRevival.sln" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectRevival.sln" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/LevelItemWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/LevelItemWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/MenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/MenuWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/MenuWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/MenuWidget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/CreditsWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/CreditsWidget.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,6 +41,15 @@
       <filtered-out-file-type name="TAG" />
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="mock://E:/Documents/Unreal Projects/ProjectRevival/Source/ProjectRevival/Private/Menu/MenuWidget.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../EGS/UE_4.27/Engine/Source/Editor/MaterialEditor/Private/SMaterialPalette.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../EGS/UE_4.27/Engine/Source/Editor/Sequencer/Private/SSequencerStretchBox.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://E:/Documents/Unreal Projects/ProjectRevival/Source/ProjectRevival/Public/Menu/CreditsWidget.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../EGS/UE_4.27/Engine/Source/Developer/SessionFrontend/Public/ISessionFrontendModule.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../EGS/UE_4.27/Engine/Source/Runtime/UMG/Public/Components/Button.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../EGS/UE_4.27/Engine/Source/Editor/UnrealEd/Private/GlobalEditorNotification.h" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="IdeDocumentHistory">
     <changedPaths>
@@ -107,10 +100,10 @@
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/OptionsWidget.h" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/OptionsWidget.cpp" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/LevelItemWidget.cpp" />
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/CreditsWidget.h" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/CreditsWidget.cpp" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/MenuWidget.h" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/MenuWidget.cpp" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/CreditsWidget.h" />
     </changedPaths>
   </component>
   <component name="ProjectId" id="1vZneIwqZmwHzetvVzxSmiIEdT3" />
@@ -127,7 +120,7 @@
     <property name="TODO_SCOPE" value="Selected Files And Folders" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.CommitDialog" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RunManager" selected="C++ Project.ProjectRevival">
@@ -1781,7 +1774,7 @@
       <workItem from="1633109973373" duration="1455000" />
       <workItem from="1633808631493" duration="327000" />
       <workItem from="1635416936521" duration="7873000" />
-      <workItem from="1635511340263" duration="4505000" />
+      <workItem from="1635511340263" duration="6151000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed problems in base state logic.">
       <created>1631994520739</created>
@@ -1804,7 +1797,14 @@
       <option name="project" value="LOCAL" />
       <updated>1632045761029</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Added menu buttons, created OptionsWidget and CreditsWidget, added transitions, redesigned the whole layout">
+      <created>1635525871930</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1635525871930</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1837,11 +1837,13 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="Fixed problems in base state logic." />
     <MESSAGE value="Fixed bugs in base classes. Created State classes for player character. Add some control logic without full completion" />
     <MESSAGE value="Created additional character states" />
-    <option name="LAST_COMMIT_MESSAGE" value="Created additional character states" />
+    <MESSAGE value="Added menu buttons, created OptionsWidget and CreditsWidget, added transitions, redesigned the whole layout" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added menu buttons, created OptionsWidget and CreditsWidget, added transitions, redesigned the whole layout" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

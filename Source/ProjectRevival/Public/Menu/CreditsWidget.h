@@ -15,7 +15,7 @@ class PROJECTREVIVAL_API UCreditsWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-	protected:
+protected:
 	UPROPERTY(meta=(BindWidget))
 	UButton* BackButton;
 
@@ -24,7 +24,7 @@ class PROJECTREVIVAL_API UCreditsWidget : public UUserWidget
 
 	virtual void NativeOnInitialized() override;
 
-	private:
+private:
 	UFUNCTION()
 	void OnBack();
 };
