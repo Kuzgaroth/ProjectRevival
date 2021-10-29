@@ -16,7 +16,27 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c83dc8b3-3515-4b6b-a082-cf3a993185c6" name="Default Changelist" comment="" />
+    <list default="true" id="c83dc8b3-3515-4b6b-a082-cf3a993185c6" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.ProjectRevival/.idea/indexLayout.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ProjectRevival/.idea/indexLayout.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.ProjectRevival/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ProjectRevival/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Binaries/Win64/ProjectRevivalEditor.target" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/ProjectRevivalEditor.target" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0001.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0001.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0001.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0001.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0002.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0002.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0004.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0004.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0006.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0006.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0063.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival-0063.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor-ProjectRevival.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor.modules" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor.modules" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/ProjectRevival/Core/Menu/MenuLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/ProjectRevival/Core/Menu/MenuLevel.umap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/ProjectRevival/Core/Menu/UI/WBP_LevelItem.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/ProjectRevival/Core/Menu/UI/WBP_LevelItem.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/ProjectRevival/Core/Menu/UI/WBP_Menu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/ProjectRevival/Core/Menu/UI/WBP_Menu.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectRevival.sln" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectRevival.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/LevelItemWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/LevelItemWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/MenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/MenuWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/MenuWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/MenuWidget.h" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -25,7 +45,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="state-system" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -38,15 +58,8 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
-  <component name="HighlightingSettingsPerFile">
-    <setting file="file://C:/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/um/winnt.h" root0="SKIP_HIGHLIGHTING" />
-  </component>
   <component name="IdeDocumentHistory">
     <changedPaths>
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/UI/GameOverWidget.h" />
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/UI/PlayerHUDWidget.h" />
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/UI/PlayerHUDWidget.cpp" />
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/UI/PauseWidget.h" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/UI/PauseWidget.cpp" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/UI/GameOverWidget.cpp" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/MenuGameModeBase.h" />
@@ -63,9 +76,6 @@
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/AI/AICharacter.h" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/AI/AICharacter.cpp" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/LevelItemWidget.h" />
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/LevelItemWidget.cpp" />
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/MenuWidget.h" />
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/MenuWidget.cpp" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Player/BaseCharacter.h" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Player/BaseCharacter.cpp" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Weapon/BaseWeapon.cpp" />
@@ -94,6 +104,13 @@
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/States/Character/CharacterJumpState.h" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Player/PlayerCharacter.cpp" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/States/PermanentState.h" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/OptionsWidget.h" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/OptionsWidget.cpp" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/LevelItemWidget.cpp" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/CreditsWidget.h" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/CreditsWidget.cpp" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/MenuWidget.h" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/MenuWidget.cpp" />
     </changedPaths>
   </component>
   <component name="ProjectId" id="1vZneIwqZmwHzetvVzxSmiIEdT3" />
@@ -108,7 +125,10 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="TODO_SCOPE" value="Selected Files And Folders" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.folding" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.CommitDialog" />
+    <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RunManager" selected="C++ Project.ProjectRevival">
     <configuration name="ProjectRevival" type="CppProject" factoryName="C++ Project">
@@ -1759,6 +1779,9 @@
       <workItem from="1632038241625" duration="7581000" />
       <workItem from="1633109582836" duration="234000" />
       <workItem from="1633109973373" duration="1455000" />
+      <workItem from="1633808631493" duration="327000" />
+      <workItem from="1635416936521" duration="7873000" />
+      <workItem from="1635511340263" duration="4505000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed problems in base state logic.">
       <created>1631994520739</created>
@@ -1784,6 +1807,11 @@
     <option name="localTasksCounter" value="4" />
     <servers />
   </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="UnityUnitTestConfiguration" currentTestLauncher="NUnit" />
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
