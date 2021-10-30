@@ -23,6 +23,7 @@ ABaseProjectile::ABaseProjectile()
 	MovementComponent->InitialSpeed = 2000.0f;
 	
 	WeaponFXComponent = CreateDefaultSubobject<UWeaponFXComponent>("WeaponFXComponent");
+	RootComponent = CollisionComponent;
 }
 
 void ABaseProjectile::OnProjectileHit(UPrimitiveComponent* HitComponent,

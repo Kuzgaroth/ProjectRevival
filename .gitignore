@@ -3,12 +3,14 @@
 DerivedDataCache/
 Intermediate/
 Saved/
-Binaries/
+Binaries/Win64
 Build/
 Content/Collections
 Content/Developers
 Content/ExternalContent
-.idea/
+.idea/.idea.ProjectRevival/.idea
+.idea/.idea.ProjectRevival/.idea/codeStyles
+
 .clang-format.txt
 *.sln.*
 *.uproject
