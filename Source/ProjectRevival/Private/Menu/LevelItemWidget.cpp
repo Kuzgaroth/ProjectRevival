@@ -23,7 +23,7 @@ void ULevelItemWidget::SetSelected(bool IsSelected)
 {
 	if (LevelImage)
 	{
-		LevelImage->SetColorAndOpacity(IsSelected ? FLinearColor::Red : FLinearColor::White); 
+		LevelImage->SetColorAndOpacity(IsSelected ? FLinearColor::White : FLinearColor(0.25, 0.35, 0.7, 1)); 
 	}
 }
 

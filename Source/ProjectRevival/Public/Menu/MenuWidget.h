@@ -22,15 +22,36 @@ class PROJECTREVIVAL_API UMenuWidget : public UUserWidget
 protected:
 	UPROPERTY(meta=(BindWidget))
 	UButton* StartGameButton;
+
+	UPROPERTY(meta=(BindWidget))
+	UButton* ContinueGameButton;
+
+	UPROPERTY(meta=(BindWidget))
+	UButton* NewGameButton;
+
+	UPROPERTY(meta=(BindWidget))
+	UButton* LoadGameButton;
+	
+	UPROPERTY(meta=(BindWidget))
+	UButton* OptionsButton;
 	
 	UPROPERTY(meta=(BindWidget))
 	UButton* QuitGameButton;
+
+	UPROPERTY(meta=(BindWidget))
+	UButton* CreditsButton;
 
 	UPROPERTY(meta=(BindWidget))
 	UHorizontalBox* LevelsBox;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> LevelItemWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
+	TSubclassOf<UUserWidget> OptionsWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
+	TSubclassOf<UUserWidget> CreditsWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Sound")
 	USoundCue* StartGameSound;
@@ -44,7 +65,23 @@ private:
 	void OnStartGame();
 
 	UFUNCTION()
+	void OnContinueGame();
+
+	UFUNCTION()
+	void OnNewGame();
+
+	UFUNCTION()
+	void OnOptions();
+
+	UFUNCTION()
+	void OnLoadGame();
+	
+	UFUNCTION()
 	void OnQuitGame();
+
+	UFUNCTION()
+	void OnCredits();
+	
 
 	void InitLevelItems();
 	void OnLevelSelected(const FLevelData& NewLevelData);

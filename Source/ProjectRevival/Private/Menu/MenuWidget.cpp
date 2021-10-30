@@ -7,6 +7,8 @@
 #include "ProjectRevival/Public/PRGameInstance.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/HorizontalBox.h"
+#include "Menu/CreditsWidget.h"
+#include "Menu/OptionsWidget.h"
 #include "ProjectRevival/Public/Menu/LevelItemWidget.h"
 #include "Sound/SoundCue.h"
 
@@ -17,12 +19,36 @@ void UMenuWidget::NativeOnInitialized()
 	if (StartGameButton)
 	{
 		StartGameButton->OnClicked.AddDynamic(this, &UMenuWidget::OnStartGame);
-		
+	}
+	
+	if (ContinueGameButton)
+	{
+		ContinueGameButton->OnClicked.AddDynamic(this, &UMenuWidget::OnContinueGame);
+	}
+
+	if (NewGameButton)
+	{
+		NewGameButton->OnClicked.AddDynamic(this, &UMenuWidget::OnNewGame);
+	}
+
+	if (LoadGameButton)
+	{
+		LoadGameButton->OnClicked.AddDynamic(this, &UMenuWidget::OnLoadGame);
+	}
+
+	if (OptionsButton)
+	{
+		OptionsButton->OnClicked.AddDynamic(this, &UMenuWidget::OnOptions);
 	}
 	
 	if (QuitGameButton)
 	{
 		QuitGameButton->OnClicked.AddDynamic(this, &UMenuWidget::OnQuitGame);
+	}
+
+	if (CreditsButton)
+	{
+		CreditsButton->OnClicked.AddDynamic(this, &UMenuWidget::OnCredits);
 	}
 
 	InitLevelItems();
@@ -36,9 +62,41 @@ void UMenuWidget::OnStartGame()
 	
 }
 
+void UMenuWidget::OnContinueGame()
+{
+}
+
+void UMenuWidget::OnNewGame()
+{
+}
+
+void UMenuWidget::OnOptions()
+{
+	if (OptionsWidgetClass)
+	{
+		RemoveFromParent();
+		UOptionsWidget* OptionsWidget = CreateWidget<UOptionsWidget>(GetWorld(), OptionsWidgetClass);
+		OptionsWidget->AddToViewport();
+	}
+}
+
+void UMenuWidget::OnLoadGame()
+{
+}
+
 void UMenuWidget::OnQuitGame()
 {
 	UKismetSystemLibrary::QuitGame(this, GetOwningPlayer(), EQuitPreference::Quit, true);
+}
+
+void UMenuWidget::OnCredits()
+{
+	if (CreditsWidgetClass)
+	{
+		RemoveFromParent();
+		UCreditsWidget* CreditsWidget = CreateWidget<UCreditsWidget>(GetWorld(), CreditsWidgetClass);
+		CreditsWidget->AddToViewport();
+	}
 }
 
 void UMenuWidget::InitLevelItems()

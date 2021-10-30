@@ -16,7 +16,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c83dc8b3-3515-4b6b-a082-cf3a993185c6" name="Default Changelist" comment="" />
+    <list default="true" id="c83dc8b3-3515-4b6b-a082-cf3a993185c6" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.ProjectRevival/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ProjectRevival/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/ProjectRevival/Core/Menu/UI/WBP_Menu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/ProjectRevival/Core/Menu/UI/WBP_Menu.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/CreditsWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/CreditsWidget.h" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -25,7 +29,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="state-system" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -39,14 +43,16 @@
     </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://C:/Program Files (x86)/Windows Kits/10/Include/10.0.19041.0/um/winnt.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://E:/Documents/Unreal Projects/ProjectRevival/Source/ProjectRevival/Private/Menu/MenuWidget.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../EGS/UE_4.27/Engine/Source/Editor/MaterialEditor/Private/SMaterialPalette.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../EGS/UE_4.27/Engine/Source/Editor/Sequencer/Private/SSequencerStretchBox.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://E:/Documents/Unreal Projects/ProjectRevival/Source/ProjectRevival/Public/Menu/CreditsWidget.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../EGS/UE_4.27/Engine/Source/Developer/SessionFrontend/Public/ISessionFrontendModule.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../EGS/UE_4.27/Engine/Source/Runtime/UMG/Public/Components/Button.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../EGS/UE_4.27/Engine/Source/Editor/UnrealEd/Private/GlobalEditorNotification.h" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="IdeDocumentHistory">
     <changedPaths>
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/UI/GameOverWidget.h" />
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/UI/PlayerHUDWidget.h" />
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/UI/PlayerHUDWidget.cpp" />
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/UI/PauseWidget.h" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/UI/PauseWidget.cpp" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/UI/GameOverWidget.cpp" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/MenuGameModeBase.h" />
@@ -63,9 +69,6 @@
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/AI/AICharacter.h" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/AI/AICharacter.cpp" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/LevelItemWidget.h" />
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/LevelItemWidget.cpp" />
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/MenuWidget.h" />
-      <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/MenuWidget.cpp" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Player/BaseCharacter.h" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Player/BaseCharacter.cpp" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Weapon/BaseWeapon.cpp" />
@@ -94,6 +97,13 @@
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/States/Character/CharacterJumpState.h" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Player/PlayerCharacter.cpp" />
       <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/States/PermanentState.h" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/OptionsWidget.h" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/OptionsWidget.cpp" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/LevelItemWidget.cpp" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/CreditsWidget.cpp" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/MenuWidget.h" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Private/Menu/MenuWidget.cpp" />
+      <option value="$PROJECT_DIR$/Source/ProjectRevival/Public/Menu/CreditsWidget.h" />
     </changedPaths>
   </component>
   <component name="ProjectId" id="1vZneIwqZmwHzetvVzxSmiIEdT3" />
@@ -108,7 +118,10 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="TODO_SCOPE" value="Selected Files And Folders" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.folding" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode" />
+    <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RunManager" selected="C++ Project.ProjectRevival">
     <configuration name="ProjectRevival" type="CppProject" factoryName="C++ Project">
@@ -1759,6 +1772,9 @@
       <workItem from="1632038241625" duration="7581000" />
       <workItem from="1633109582836" duration="234000" />
       <workItem from="1633109973373" duration="1455000" />
+      <workItem from="1633808631493" duration="327000" />
+      <workItem from="1635416936521" duration="7873000" />
+      <workItem from="1635511340263" duration="6151000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed problems in base state logic.">
       <created>1631994520739</created>
@@ -1781,9 +1797,21 @@
       <option name="project" value="LOCAL" />
       <updated>1632045761029</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Added menu buttons, created OptionsWidget and CreditsWidget, added transitions, redesigned the whole layout">
+      <created>1635525871930</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1635525871930</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="UnityUnitTestConfiguration" currentTestLauncher="NUnit" />
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
@@ -1809,11 +1837,13 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="LOCAL_CHANGES_DETAILS_PREVIEW_SHOWN" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="Fixed problems in base state logic." />
     <MESSAGE value="Fixed bugs in base classes. Created State classes for player character. Add some control logic without full completion" />
     <MESSAGE value="Created additional character states" />
-    <option name="LAST_COMMIT_MESSAGE" value="Created additional character states" />
+    <MESSAGE value="Added menu buttons, created OptionsWidget and CreditsWidget, added transitions, redesigned the whole layout" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added menu buttons, created OptionsWidget and CreditsWidget, added transitions, redesigned the whole layout" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
