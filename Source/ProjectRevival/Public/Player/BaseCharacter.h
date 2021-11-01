@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "AbilitySystemInterface.h"
+#include "AbilitySystem/PRAbilitySystemComponent.h"
+#include "AbilitySystem/PRAttributeSet.h"
 #include "BaseCharacter.generated.h"
 
 class UHealthComponent;
@@ -11,14 +14,19 @@ class UWeaponComponent;
 class USoundCue;
 
 UCLASS()
-class PROJECTREVIVAL_API ABaseCharacter : public ACharacter
+class PROJECTREVIVAL_API ABaseCharacter : public ACharacter,  public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	ABaseCharacter(const FObjectInitializer& ObjectInitializer);
+	
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void UnPossessed() override;
 
+	UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UHealthComponent* HealthComponent;
@@ -40,6 +48,19 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Sound")
 	USoundCue* DeathSound;
+
+	/** Компонент для управления способностями */
+	UPROPERTY()
+	UPRAbilitySystemComponent* AbilitySystemComponent;
+
+	/** Класс атрибутов персонажа */
+	UPROPERTY()
+	UPRAttributeSet* AttributeSet;
+
+	/*UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Abilities)
+	TArray<TSubclassOf<UPRGameplayAbility>> GameplayAbilities;*/
+	
+	void AddStartupGameplayAbilities();
 	
 	virtual void OnDeath();
 	virtual void BeginPlay() override;
@@ -58,6 +79,8 @@ private:
 	
 	UFUNCTION()
 	void OnGroundLanded(const FHitResult& HitResult);
+
+	friend UPRAttributeSet;
 };
 
 

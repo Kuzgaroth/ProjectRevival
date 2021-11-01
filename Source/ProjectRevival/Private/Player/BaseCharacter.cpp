@@ -23,6 +23,30 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) :Sup
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>("HealthComponent");
 
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>("WeaponComponent");
+	
+	AbilitySystemComponent = CreateDefaultSubobject<UPRAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AttributeSet = CreateDefaultSubobject<UPRAttributeSet>(TEXT("AttributeSet"));
+}
+
+void ABaseCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+		AddStartupGameplayAbilities();
+	}
+}
+
+void ABaseCharacter::UnPossessed()
+{
+	Super::UnPossessed();
+}
+
+UAbilitySystemComponent* ABaseCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
 }
 
 // Called when the game starts or when spawned
@@ -72,6 +96,10 @@ void ABaseCharacter::SetPlayerColor(const FLinearColor& Color)
 }
 
 
+void ABaseCharacter::AddStartupGameplayAbilities()
+{
+	//giving abilities to component
+}
 
 void ABaseCharacter::OnDeath()
 {
