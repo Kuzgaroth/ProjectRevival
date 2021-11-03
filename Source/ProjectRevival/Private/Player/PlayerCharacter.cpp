@@ -39,6 +39,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Released,WeaponComponent, &UWeaponComponent::StopFire);
 	PlayerInputComponent->BindAction("NextWeapon",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::NextWeapon);
 	PlayerInputComponent->BindAction("Reload",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::Reload);
+	PlayerInputComponent->BindAction("Left_Camera_View", EInputEvent::IE_Pressed,this, &APlayerCharacter::On_Camera_Move);
 }
 
 void APlayerCharacter::MoveForward(float Amount)
@@ -113,4 +114,51 @@ void APlayerCharacter::BeginPlay()
 
 	CameraCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionBeginOverlap);
 	CameraCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionEndOverlap);
+}
+
+void APlayerCharacter::On_Camera_Move()
+{
+	FTimerHandle TimerCameraMove;
+	FTimerHandle TimerCameraStop;
+	FTimerHandle TimerCameraBlock;
+	if (Block == false)
+	{
+		InterpSpeed = (SpringArmComponent->SocketOffset.Y + tan(CameraComponent->GetRelativeRotation().Yaw * PI / 180) * SpringArmComponent->TargetArmLength) * 2.f / 50.f;
+		if (IsMoving == false)
+		{
+			IsMoving = true;
+			Block = true;
+			GetWorld()->GetTimerManager().SetTimer(TimerCameraMove, this, &APlayerCharacter::Camera_Moving, 0.01f, true);
+			GetWorld()->GetTimerManager().SetTimer(TimerCameraStop, this, &APlayerCharacter::Camera_Stop, 0.5f, false);
+		}
+		else
+		{
+			IsMoving = false;
+			Block = true;
+			GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+			GetWorld()->GetTimerManager().SetTimer(TimerCameraBlock, this, &APlayerCharacter::Camera_Block, 1.f, false);
+			if (CamPos == true)
+			{
+				SpringArmComponent->SocketOffset.Y = CameraComponent->GetRelativeLocation().Y + 150.f;
+				CamPos = false;
+			}
+			else {CamPos = true;}
+		}
+	}
+}
+
+void APlayerCharacter::Camera_Moving()
+{
+	SpringArmComponent->SocketOffset.Y = FMath::FInterpTo(SpringArmComponent->SocketOffset.Y, SpringArmComponent->SocketOffset.Y - InterpSpeed, 1.f, InterpSpeed);
+}
+
+void APlayerCharacter::Camera_Stop()
+{
+	Block = false;
+	On_Camera_Move();
+}
+
+void APlayerCharacter::Camera_Block()
+{
+	Block = false;
 }
