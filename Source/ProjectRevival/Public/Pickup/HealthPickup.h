@@ -7,15 +7,13 @@
 #include "Interfaces/BotPickupInterface.h"
 #include "HealthPickup.generated.h"
 
-
-
 UCLASS()
 class PROJECTREVIVAL_API AHealthPickup : public ABasePickup, public IBotPickupInterface
 {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Interaction")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Interaction")
 	void OnInteraction(AActor* Actor);
 	virtual void OnInteraction_Implementation(AActor* Actor);
 protected:

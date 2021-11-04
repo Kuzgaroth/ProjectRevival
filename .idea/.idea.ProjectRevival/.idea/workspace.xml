@@ -18,10 +18,9 @@
   <component name="ChangeListManager">
     <list default="true" id="c83dc8b3-3515-4b6b-a082-cf3a993185c6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ProjectRevival/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ProjectRevival/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Binaries/Win64/ProjectRevivalEditor.target" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/ProjectRevivalEditor.target" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Binaries/Win64/UE4Editor.modules" beforeDir="false" afterPath="$PROJECT_DIR$/Binaries/Win64/UE4Editor.modules" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectRevival.sln" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectRevival.sln" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/ProjectRevival/Private/AI/AICharacter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ProjectRevival/Private/AI/AICharacter.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/ProjectRevival/Core/AI/BB_Character.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/ProjectRevival/Core/AI/BB_Character.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/ProjectRevival/Private/AI/BaseAIController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ProjectRevival/Private/AI/BaseAIController.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/ProjectRevival/Private/Pickup/HealthPickup.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ProjectRevival/Private/Pickup/HealthPickup.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/ProjectRevival/Public/Pickup/HealthPickup.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ProjectRevival/Public/Pickup/HealthPickup.h" afterDir="false" />
     </list>
@@ -1769,7 +1768,7 @@
       <workItem from="1633109582836" duration="234000" />
       <workItem from="1633109973373" duration="1455000" />
       <workItem from="1635863846145" duration="668000" />
-      <workItem from="1635956212197" duration="6191000" />
+      <workItem from="1635956212197" duration="11893000" />
     </task>
     <task id="LOCAL-00001" summary="Fixed problems in base state logic.">
       <created>1631994520739</created>
