@@ -33,7 +33,7 @@ void AAICharacter::OnDeath()
 {
 	Super::OnDeath();
 
-	const auto PRController = Cast<AAIController>(GetController());
+	const auto PRController = Cast<ABaseAIController>(GetController());
 	if (PRController && PRController->BrainComponent)
 	{
 		PRController->BrainComponent->Cleanup();
