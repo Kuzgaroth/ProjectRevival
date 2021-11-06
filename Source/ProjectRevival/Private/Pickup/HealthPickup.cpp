@@ -5,6 +5,11 @@
 #include "Components/HealthComponent.h"
 #include "ProjectRevival/Public/Miscellaneous/PRUtils.h"
 
+void AHealthPickup::OnInteraction_Implementation(AActor* Actor)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Black, "First aid kit picked up");
+}
+
 bool AHealthPickup::GivePickUpTo(APawn* PlayerPawn)
 {
 	const auto HealthComponent = PRUtils::GetCharacterComponent<UHealthComponent>(PlayerPawn);

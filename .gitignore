@@ -10,7 +10,10 @@ Content/Developers
 Content/ExternalContent
 .idea/.idea.ProjectRevival/.idea
 .idea/.idea.ProjectRevival/.idea/codeStyles
-
+*.pdb
+*.dll
+*.target
+*.xml
 .clang-format.txt
 *.sln.*
 *.uproject
