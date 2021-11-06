@@ -7,11 +7,21 @@
 #include "AbilitySystemInterface.h"
 #include "AbilitySystem/PRAbilitySystemComponent.h"
 #include "AbilitySystem/PRAttributeSet.h"
+#include "AbilitySystem/Abilities/PRGameplayAbility.h"
 #include "BaseCharacter.generated.h"
 
 class UHealthComponent;
 class UWeaponComponent;
 class USoundCue;
+
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAbilitySystemBase, Log, All);
+
+UENUM(BlueprintType)
+enum class EGASInputActions : uint8
+{
+	None,
+	Base
+};
 
 UCLASS()
 class PROJECTREVIVAL_API ABaseCharacter : public ACharacter,  public IAbilitySystemInterface
@@ -57,11 +67,13 @@ protected:
 	UPROPERTY()
 	UPRAttributeSet* AttributeSet;
 
-	/*UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Abilities)
-	TArray<TSubclassOf<UPRGameplayAbility>> GameplayAbilities;*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Abilities)
+	TMap<EGASInputActions, TSubclassOf<UPRGameplayAbility>> GameplayAbilities;
 	
-	void AddStartupGameplayAbilities();
-	
+	virtual void AddStartupGameplayAbilities();
+	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data);
+	virtual void OnCooldownExpired(const FActiveGameplayEffect& ExpiredEffect); 
+	virtual void PostInitializeComponents() override;
 	virtual void OnDeath();
 	virtual void BeginPlay() override;
 	virtual void OnHealthChanged(float CurrentHealth, float HealthDelta);

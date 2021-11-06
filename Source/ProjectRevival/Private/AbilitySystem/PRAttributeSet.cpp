@@ -4,9 +4,8 @@
 #include "AbilitySystem/PRAttributeSet.h"
 
 UPRAttributeSet::UPRAttributeSet()
-	: Energy(0.f)
-	, MaxEnergy(0.f)
 {
+	Energy = MaxEnergy;
 }
 
 void UPRAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)

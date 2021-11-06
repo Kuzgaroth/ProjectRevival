@@ -11,6 +11,8 @@
 #include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
 
+DEFINE_LOG_CATEGORY(LogPRAbilitySystemBase);
+
 // Sets default values
 ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) :Super(
 	ObjectInitializer.SetDefaultSubobjectClass<UBaseCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -41,6 +43,7 @@ void ABaseCharacter::PossessedBy(AController* NewController)
 
 void ABaseCharacter::UnPossessed()
 {
+	
 	Super::UnPossessed();
 }
 
@@ -66,7 +69,6 @@ void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	//TakeDamage(0.1f,FDamageEvent{},Controller, this);
 }
 
 bool ABaseCharacter::IsRunning() const
@@ -98,7 +100,29 @@ void ABaseCharacter::SetPlayerColor(const FLinearColor& Color)
 
 void ABaseCharacter::AddStartupGameplayAbilities()
 {
-	//giving abilities to component
+	for (const auto& Ability : GameplayAbilities)
+	{
+		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(Ability.Value, 1, static_cast<int32>(Ability.Key), this));
+		UE_LOG(LogPRAbilitySystemBase, Display, TEXT("%s has granted"), *Ability.Value.GetDefaultObject()->GetName());
+	}
+}
+
+void ABaseCharacter::OnEnergyAttributeChanged(const FOnAttributeChangeData& Data)
+{
+	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("New value of %s is %f"), *Data.Attribute.GetName(), Data.NewValue);
+}
+
+void ABaseCharacter::OnCooldownExpired(const FActiveGameplayEffect& ExpiredEffect)
+{
+	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Cooldown effect %s is expired"), *ExpiredEffect.Handle.ToString());
+}
+
+void ABaseCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetEnergyAttribute())
+		.AddUObject(this, &ABaseCharacter::OnEnergyAttributeChanged);
+	AbilitySystemComponent->OnAnyGameplayEffectRemovedDelegate().AddUObject(this, &ABaseCharacter::OnCooldownExpired);
 }
 
 void ABaseCharacter::OnDeath()

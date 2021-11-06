@@ -22,15 +22,15 @@ public:
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Mana")
+	UPROPERTY(BlueprintReadOnly, Category = "Energy", EditAnywhere)
 	FGameplayAttributeData Energy;
 	ATTRIBUTE_ACCESSORS(UPRAttributeSet, Energy)
 	
-	UPROPERTY(BlueprintReadOnly, Category = "Mana")
-	FGameplayAttributeData MaxEnergy;
+	UPROPERTY(BlueprintReadOnly, Category = "Energy", EditAnywhere)
+	FGameplayAttributeData MaxEnergy = 100.f;
 	ATTRIBUTE_ACCESSORS(UPRAttributeSet, MaxEnergy)
 
-	UPROPERTY(BlueprintReadOnly, Category = "MoveSpeed")
+	UPROPERTY(BlueprintReadOnly, Category = "MoveSpeed", EditAnywhere)
 	FGameplayAttributeData MoveSpeed;
 	ATTRIBUTE_ACCESSORS(UPRAttributeSet, MoveSpeed)
 protected:
