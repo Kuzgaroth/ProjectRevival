@@ -19,7 +19,8 @@ public class ProjectRevival : ModuleRules
 			"GameplayTasks",
 			"NavigationSystem",
 			"GameplayAbilities", 
-			"GameplayTags"
+			"GameplayTags",
+			"RHI"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
