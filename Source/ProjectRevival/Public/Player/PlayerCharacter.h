@@ -40,6 +40,7 @@ private:
 	void MoveRight(float Amount);
 	void StartRun();
 	void StopRun();
+	void Flip();
 
 	UFUNCTION()
 	void OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

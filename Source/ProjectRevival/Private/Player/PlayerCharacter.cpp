@@ -8,6 +8,8 @@
 #include "Components/WeaponComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/BaseCharacterMovementComponent.h"
+#include "ProjectRevival/ProjectRevival.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -35,6 +37,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Jump",EInputEvent::IE_Pressed,this, &ABaseCharacter::Jump);
 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Pressed,this, &APlayerCharacter::StartRun);
 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Released,this, &APlayerCharacter::StopRun);
+	PlayerInputComponent->BindAction("Flip",EInputEvent::IE_Pressed,this, &APlayerCharacter::Flip);
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::StartFire);
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Released,WeaponComponent, &UWeaponComponent::StopFire);
 	PlayerInputComponent->BindAction("NextWeapon",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::NextWeapon);
@@ -113,4 +116,25 @@ void APlayerCharacter::BeginPlay()
 
 	CameraCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionBeginOverlap);
 	CameraCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionEndOverlap);
+}
+
+void APlayerCharacter::Flip()
+{
+	UE_LOG(LogFlip, Warning, TEXT("Кувырок невозможен"));
+	//if(GetCharacterMovement()->IsFlying()||GetCharacterMovement()->IsFalling()||!WeaponComponent->CanReload()||WeaponComponent->IsShoot())
+	if(GetCharacterMovement()->IsFlying()||GetCharacterMovement()->IsFalling())
+	{
+		UE_LOG(LogFlip, Warning, TEXT("Кувырок невозможен"));
+	}
+	else
+	{
+		bUseControllerRotationYaw = false; 
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+		constexpr float ImpulseForce = 500000;
+		const FVector Forward = GetActorForwardVector();
+		GetCharacterMovement()->AddImpulse(Forward * ImpulseForce);
+		UE_LOG(LogFlip, Verbose, TEXT("Кувырок прошёл успешно"));
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		bUseControllerRotationYaw = true;
+	}
 }
