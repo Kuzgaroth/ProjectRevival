@@ -29,6 +29,9 @@ protected:
 
 	UPROPERTY(meta=(BindWidget))
 	UButton* GraphicsButton;
+
+	UPROPERTY(meta=(BindWidget))
+	UButton* SoundButton;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> MenuWidgetClass;
@@ -53,4 +56,7 @@ private:
 
 	UFUNCTION()
 	void OnGraphics();
+
+	UFUNCTION()
+	void OnSound();
 };
