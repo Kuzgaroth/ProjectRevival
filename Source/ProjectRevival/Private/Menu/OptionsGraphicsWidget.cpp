@@ -8,10 +8,16 @@
 #include "Components/ComboBoxString.h"
 #include "GameFramework/GameUserSettings.h"
 #include "RHI.h"
+#include "Components/Button.h"
 
 void UOptionsGraphicsWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
+
+	if (ApplyButton)
+	{
+		ApplyButton->OnClicked.AddDynamic(this, &UOptionsGraphicsWidget::ApplyChanges);	
+	}
 
 	TArray<FText> ResolutionList;
 	FScreenResolutionArray Resolutions;
@@ -30,6 +36,27 @@ void UOptionsGraphicsWidget::NativeOnInitialized()
 			}
 		}
 	}
+	if (ShadowsBoxString)
+	{
+		ShadowsBoxString->AddOption("Low");
+		ShadowsBoxString->AddOption("Medium");
+		ShadowsBoxString->AddOption("High");
+		ShadowsBoxString->AddOption("Epic");
+		ShadowsBoxString->AddOption("Cinematic");
+
+		ShadowsBoxString->SetSelectedIndex(GameSettings->GetShadingQuality());
+	}
+
+	if (AntiAliasingBoxString)
+	{
+		AntiAliasingBoxString->AddOption("Low");
+		AntiAliasingBoxString->AddOption("Medium");
+		AntiAliasingBoxString->AddOption("High");
+		AntiAliasingBoxString->AddOption("Epic");
+		AntiAliasingBoxString->AddOption("Cinematic");
+
+		AntiAliasingBoxString->SetSelectedIndex(GameSettings->GetAntiAliasingQuality());
+	}
 }
 
 void UOptionsGraphicsWidget::ApplyChanges()
@@ -38,7 +65,7 @@ void UOptionsGraphicsWidget::ApplyChanges()
 
 	if (FullScreenCheckBox)
 	{
-		if(FullScreenCheckBox->IsChecked())
+		if (FullScreenCheckBox->IsChecked())
 		{
 			GameSettings->SetFullscreenMode(EWindowMode::Fullscreen);
 		}
@@ -47,9 +74,29 @@ void UOptionsGraphicsWidget::ApplyChanges()
 			GameSettings->SetFullscreenMode(EWindowMode::Windowed);
 		}
 	}
+	if (VSyncCheckBox)
+	{
+		if (VSyncCheckBox->IsChecked())
+		{
+			GameSettings->SetVSyncEnabled(true);
+		}
+		else
+		{
+			GameSettings->SetVSyncEnabled(false);
+		}
+	}
 	if (ResolutionBoxString)
 	{
 		GameSettings->SetScreenResolution(PossibleResolutions[ResolutionBoxString->GetSelectedIndex()]);	
 	}
+	if (ShadowsBoxString)
+	{
+		GameSettings->SetShadowQuality(ShadowsBoxString->GetSelectedIndex());
+	}
+	if (AntiAliasingBoxString)
+	{
+		GameSettings->SetAntiAliasingQuality(AntiAliasingBoxString->GetSelectedIndex());
+	}
+	
 	GameSettings->ApplySettings(false);
 }

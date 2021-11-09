@@ -24,6 +24,15 @@ protected:
 	UCheckBox* FullScreenCheckBox;
 
 	UPROPERTY(meta = (BindWidget))
+	UCheckBox* VSyncCheckBox;
+
+	UPROPERTY(meta = (BindWidget))
+	UComboBoxString* ShadowsBoxString;
+
+	UPROPERTY(meta = (BindWidget))
+	UComboBoxString* AntiAliasingBoxString;
+
+	UPROPERTY(meta = (BindWidget))
 	class UButton* ApplyButton;
 
 	virtual void NativeOnInitialized() override;
