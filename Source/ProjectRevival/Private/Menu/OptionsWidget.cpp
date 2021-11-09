@@ -5,6 +5,7 @@
 #include "Components/Button.h"
 #include "Menu/OptionsControlsWidget.h"
 #include "Menu/OptionsGraphicsWidget.h"
+#include "Menu/OptionsSoundWidget.h"
 #include "ProjectRevival/Public/Menu/MenuWidget.h"
 
 void UOptionsWidget::NativeOnInitialized()
@@ -23,15 +24,26 @@ void UOptionsWidget::NativeOnInitialized()
 	{
 		GraphicsButton->OnClicked.AddDynamic(this, &UOptionsWidget::OnGraphics);
 	}
+	if (SoundButton)
+	{
+		SoundButton->OnClicked.AddDynamic(this, &UOptionsWidget::OnSound);
+	}
 	if (OptionsControlsWidgetClass)
 	{
-		UOptionsControlsWidget* OptionsControlsWidget = CreateWidget<UOptionsControlsWidget>(GetWorld(), OptionsControlsWidgetClass);
+		UOptionsControlsWidget* OptionsControlsWidget = CreateWidget<UOptionsControlsWidget>(GetWorld(),
+																							OptionsControlsWidgetClass);
 		OptionsWidgetSwitcher->AddChild(OptionsControlsWidget);
 	}
 	if (OptionsGraphicsWidgetClass)
 	{
-		UOptionsGraphicsWidget* OptionsGraphicsWidget = CreateWidget<UOptionsGraphicsWidget>(GetWorld(), OptionsGraphicsWidgetClass);
+		UOptionsGraphicsWidget* OptionsGraphicsWidget = CreateWidget<UOptionsGraphicsWidget>(GetWorld(),
+																							OptionsGraphicsWidgetClass);
 		OptionsWidgetSwitcher->AddChild(OptionsGraphicsWidget);
+	}
+	if (OptionsSoundWidgetClass)
+	{
+		UOptionsSoundWidget* OptionsSoundWidget = CreateWidget<UOptionsSoundWidget>(GetWorld(), OptionsSoundWidgetClass);
+		OptionsWidgetSwitcher->AddChild(OptionsSoundWidget);
 	}
 }
 
@@ -47,7 +59,7 @@ void UOptionsWidget::OnBack()
 
 void UOptionsWidget::OnControls()
 {
-	if (OptionsControlsWidgetClass)
+	if (OptionsWidgetSwitcher)
 	{
 		OptionsWidgetSwitcher->SetActiveWidgetIndex(0);
 	}
@@ -55,9 +67,17 @@ void UOptionsWidget::OnControls()
 
 void UOptionsWidget::OnGraphics()
 {
-	if (OptionsGraphicsWidgetClass)
+	if (OptionsWidgetSwitcher)
 	{
 		OptionsWidgetSwitcher->SetActiveWidgetIndex(1);
+	}
+}
+
+void UOptionsWidget::OnSound()
+{
+	if (OptionsWidgetSwitcher)
+	{
+		OptionsWidgetSwitcher->SetActiveWidgetIndex(2);
 	}
 }
 
