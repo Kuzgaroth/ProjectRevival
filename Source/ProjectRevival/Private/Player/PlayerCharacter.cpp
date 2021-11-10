@@ -10,6 +10,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/BaseCharacterMovementComponent.h"
 #include "ProjectRevival/ProjectRevival.h"
+#include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -24,6 +25,8 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	CameraCollisionComponent->SetupAttachment(CameraComponent);
 	CameraCollisionComponent->SetSphereRadius(10.0f);
 	CameraCollisionComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+
+	//AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -38,6 +41,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Pressed,this, &APlayerCharacter::StartRun);
 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Released,this, &APlayerCharacter::StopRun);
 	PlayerInputComponent->BindAction("Flip",EInputEvent::IE_Pressed,this, &APlayerCharacter::Flip);
+	PlayerInputComponent->BindAction("ToggleCrouch",EInputEvent::IE_Pressed,this, &APlayerCharacter::ToggleCrouch);
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::StartFire);
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Released,WeaponComponent, &UWeaponComponent::StopFire);
 	PlayerInputComponent->BindAction("NextWeapon",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::NextWeapon);
@@ -120,21 +124,55 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::Flip()
 {
-	UE_LOG(LogFlip, Warning, TEXT("Кувырок невозможен"));
-	//if(GetCharacterMovement()->IsFlying()||GetCharacterMovement()->IsFalling()||!WeaponComponent->CanReload()||WeaponComponent->IsShoot())
-	if(GetCharacterMovement()->IsFlying()||GetCharacterMovement()->IsFalling())
+	if(GetCharacterMovement()->IsFlying()||GetCharacterMovement()->IsFalling()||WeaponComponent->IsShooting()||!WeaponComponent->CanFire())
 	{
-		UE_LOG(LogFlip, Warning, TEXT("Кувырок невозможен"));
+		UE_LOG(LogPlayerCharacter, Warning, TEXT("Flip failed"));
 	}
 	else
 	{
 		bUseControllerRotationYaw = false; 
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
-		constexpr float ImpulseForce = 500000;
+		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+		constexpr float Force = 50000000;
 		const FVector Forward = GetActorForwardVector();
-		GetCharacterMovement()->AddImpulse(Forward * ImpulseForce);
-		UE_LOG(LogFlip, Verbose, TEXT("Кувырок прошёл успешно"));
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		/* curve for changing speed/strength (speed x2 in the middle of the timeline) */
+		auto velocityCurve = new FRichCurve();   
+		auto key = velocityCurve->AddKey(0.f, 1.f);  
+		velocityCurve->AddKey(0.5f, 2.f);  
+		velocityCurve->AddKey(1.0f, 1.f);  
+		velocityCurve->SetKeyTime(key, 1.0f);  
+		velocityCurve->SetKeyInterpMode(key, RCIM_Linear);
+
+		/* ApplyRootMotionConstantForce(UGameplayAbility * OwningAbility,
+			FName TaskInstanceName,
+			FVector WorldDirection = Forward,
+			float Strength = Force,
+			float Duration = 1.0,
+			bool bIsAdditive = false,
+			UCurveFloat * StrengthOverTime = velocityCurve,
+			ERootMotionFinishVelocityMode VelocityOnFinishMode,
+			FVector SetVelocityOnFinish = GetCharacterMovement()->GetVelocity(),
+			float ClampVelocityOnFinish = 1.0 // wtf it is
+		)
+		*/
+		
+		GetCharacterMovement()->AddForce(Forward * Force);
+		UE_LOG(LogPlayerCharacter, Verbose, TEXT("Flip was successful"));
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		bUseControllerRotationYaw = true;
 	}
+}
+
+void APlayerCharacter::ToggleCrouch()
+{
+	if (CanCrouch()&&!IsRunning())
+	{
+		Crouch();
+		bIsCrouching = true;
+	}
+	else
+	{
+		UnCrouch();
+		bIsCrouching = false;
+	}
+	UE_LOG(LogPlayerCharacter, Verbose, TEXT("bIsCrouching = %s"), bIsCrouching ? TEXT("true") : TEXT("false"));
 }

@@ -17,7 +17,8 @@ public class ProjectRevival : ModuleRules
 			"Niagara",
 			"PhysicsCore",
 			"GameplayTasks",
-			"NavigationSystem"
+			"NavigationSystem",
+			"GameplayAbilities", "GameplayTags", "GameplayTasks"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

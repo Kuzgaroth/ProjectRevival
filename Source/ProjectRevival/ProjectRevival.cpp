@@ -4,4 +4,4 @@
 #include "Modules/ModuleManager.h"
 
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, ProjectRevival, "ProjectRevival" );
-DEFINE_LOG_CATEGORY(LogFlip);
+DEFINE_LOG_CATEGORY(LogPlayerCharacter);

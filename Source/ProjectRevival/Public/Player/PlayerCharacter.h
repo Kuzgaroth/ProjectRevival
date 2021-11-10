@@ -16,6 +16,10 @@ class PROJECTREVIVAL_API APlayerCharacter : public ABaseCharacter
 	GENERATED_BODY()
 public:
 	APlayerCharacter(const FObjectInitializer& ObjectInitializer);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	bool bIsCrouching;
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UCameraComponent* CameraComponent;
@@ -25,6 +29,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	USphereComponent* CameraCollisionComponent;
+
+	/** Gameplay Ability Component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Abilities, meta = (AllowPrivateAccess = "true"))
+	class UAbilitySystemComponent* AbilitySystemComponent;
 	
 	virtual void OnDeath() override;
 	virtual void BeginPlay() override;
@@ -36,11 +44,13 @@ public:
 private:
 	bool bWantsToRun = false;
 	bool IsMovingForward = false;
+	//bool IsCrouching = false;
 	void MoveForward(float Amount);
 	void MoveRight(float Amount);
 	void StartRun();
 	void StopRun();
 	void Flip();
+	void ToggleCrouch();
 
 	UFUNCTION()
 	void OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
