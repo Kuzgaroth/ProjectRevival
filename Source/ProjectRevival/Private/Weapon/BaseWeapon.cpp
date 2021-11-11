@@ -4,12 +4,11 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
-#include "EditorViewportClient.h"
+//#include "EditorViewportClient.h"
 #include "GameFramework/Character.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "Sound/SoundCue.h"
 
 // Sets default values
 ABaseWeapon::ABaseWeapon()

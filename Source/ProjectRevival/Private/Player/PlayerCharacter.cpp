@@ -120,6 +120,7 @@ void APlayerCharacter::BeginPlay()
 
 	CameraCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionBeginOverlap);
 	CameraCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionEndOverlap);
+	
 }
 
 void APlayerCharacter::Flip()
@@ -132,30 +133,25 @@ void APlayerCharacter::Flip()
 	{
 		bUseControllerRotationYaw = false; 
 		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-		constexpr float Force = 50000000;
-		const FVector Forward = GetActorForwardVector();
-		/* curve for changing speed/strength (speed x2 in the middle of the timeline) */
-		auto velocityCurve = new FRichCurve();   
-		auto key = velocityCurve->AddKey(0.f, 1.f);  
-		velocityCurve->AddKey(0.5f, 2.f);  
-		velocityCurve->AddKey(1.0f, 1.f);  
-		velocityCurve->SetKeyTime(key, 1.0f);  
-		velocityCurve->SetKeyInterpMode(key, RCIM_Linear);
-
-		/* ApplyRootMotionConstantForce(UGameplayAbility * OwningAbility,
-			FName TaskInstanceName,
-			FVector WorldDirection = Forward,
-			float Strength = Force,
-			float Duration = 1.0,
-			bool bIsAdditive = false,
-			UCurveFloat * StrengthOverTime = velocityCurve,
-			ERootMotionFinishVelocityMode VelocityOnFinishMode,
-			FVector SetVelocityOnFinish = GetCharacterMovement()->GetVelocity(),
-			float ClampVelocityOnFinish = 1.0 // wtf it is
-		)
-		*/
+		constexpr float DodgeStrength = 500000;
+		FVector Forward = GetActorForwardVector();
+		Forward.Z = 0;
+		/*
+		curve for changing speed/strength (speed x2 in the middle of the timeline)
 		
-		GetCharacterMovement()->AddForce(Forward * Force);
+		UGameplayAbility* OwningAbility; 
+        FName TaskInstanceName = TEXT("Flip"); 
+		auto Curve = new FRichCurve();   
+		auto key = Curve->AddKey(0.f, 1.f);  
+		Curve->AddKey(0.5f, 2.f);  
+		Curve->AddKey(1.0f, 1.f);  
+		Curve->SetKeyTime(key, 1.0f);  
+		Curve->SetKeyInterpMode(key, RCIM_Linear);
+		UCurveFloat* velocityCurve = Curve;
+		
+		UAbilityTask_ApplyRootMotionConstantForce::ApplyRootMotionConstantForce(OwningAbility, TaskInstanceName, Forward, DodgeStrength, 1.0, false, velocityCurve, ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity, GetVelocity(), 1.0, true);
+		*/
+		GetCharacterMovement()->AddImpulse(Forward * DodgeStrength);
 		UE_LOG(LogPlayerCharacter, Verbose, TEXT("Flip was successful"));
 		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		bUseControllerRotationYaw = true;

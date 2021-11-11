@@ -19,7 +19,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	bool bIsCrouching;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Abilities)
+	TSubclassOf<class UGameplayAbility> DoFlip;
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UCameraComponent* CameraComponent;
@@ -31,8 +33,8 @@ protected:
 	USphereComponent* CameraCollisionComponent;
 
 	/** Gameplay Ability Component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Abilities, meta = (AllowPrivateAccess = "true"))
-	class UAbilitySystemComponent* AbilitySystemComponent;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Abilities, meta = (AllowPrivateAccess = "true"))
+	//class UAbilitySystemComponent* AbilitySystemComponent;
 	
 	virtual void OnDeath() override;
 	virtual void BeginPlay() override;
