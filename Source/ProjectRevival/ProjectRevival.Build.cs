@@ -18,7 +18,8 @@ public class ProjectRevival : ModuleRules
 			"PhysicsCore",
 			"GameplayTasks",
 			"NavigationSystem",
-			"GameplayAbilities", "GameplayTags", "GameplayTasks"
+			"GameplayAbilities", 
+			"GameplayTags"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
