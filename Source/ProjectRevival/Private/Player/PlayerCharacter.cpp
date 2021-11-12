@@ -14,6 +14,9 @@
 #include "Components/WeaponComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/BaseCharacterMovementComponent.h"
+#include "ProjectRevival/ProjectRevival.h"
+#include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -55,12 +58,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Jump",EInputEvent::IE_Pressed,this, &ABaseCharacter::Jump);
 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Pressed,this, &APlayerCharacter::StartRun);
 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Released,this, &APlayerCharacter::StopRun);
+	PlayerInputComponent->BindAction("Flip",EInputEvent::IE_Pressed,this, &APlayerCharacter::Flip);
 	PlayerInputComponent->BindAction("Highlight",EInputEvent::IE_Pressed,this, &APlayerCharacter::HighlightAbility);
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::StartFire);
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Released,WeaponComponent, &UWeaponComponent::StopFire);
 	PlayerInputComponent->BindAction("NextWeapon",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::NextWeapon);
 	PlayerInputComponent->BindAction("Reload",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::Reload);
-  PlayerInputComponent->BindAction("Left_Camera_View", EInputEvent::IE_Pressed,this, &APlayerCharacter::On_Camera_Move);
+	PlayerInputComponent->BindAction("Left_Camera_View", EInputEvent::IE_Pressed,this, &APlayerCharacter::On_Camera_Move);
 	AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent,
 		FGameplayAbilityInputBinds(FString("ConfirmTarget"),
 			FString("CancelTarget"), FString("EGASInputActions")));
@@ -70,9 +74,10 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	// if (IsHighlighting == true)
 	// {
-	// 	Super::Tick(DeltaTime);
+	// 
 	// 	
 	// }
+	//Super::Tick(DeltaTime);
 }
 
 void APlayerCharacter::MoveForward(float Amount)
@@ -225,49 +230,92 @@ void APlayerCharacter::BeginPlay()
 	CameraCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionEndOverlap);
 }
 
-void APlayerCharacter::On_Camera_Move()
+void APlayerCharacter::Flip()
 {
-	FTimerHandle TimerCameraMove;
-	FTimerHandle TimerCameraStop;
-	FTimerHandle TimerCameraBlock;
-	if (Block == false)
+	//добавить в CanFire IfFlipping
+	if(GetCharacterMovement()->IsFlying()||GetCharacterMovement()->IsFalling()||WeaponComponent->IsShooting()
+		||!WeaponComponent->CanFire()||IsFlipping)
 	{
-		InterpSpeed = (SpringArmComponent->SocketOffset.Y + tan(CameraComponent->GetRelativeRotation().Yaw * PI / 180) * SpringArmComponent->TargetArmLength) * 2.f / 50.f;
-		if (IsMoving == false)
-		{
-			IsMoving = true;
-			Block = true;
-			GetWorld()->GetTimerManager().SetTimer(TimerCameraMove, this, &APlayerCharacter::Camera_Moving, 0.01f, true);
-			GetWorld()->GetTimerManager().SetTimer(TimerCameraStop, this, &APlayerCharacter::Camera_Stop, 0.5f, false);
-		}
-		else
-		{
-			IsMoving = false;
-			Block = true;
-			GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
-			GetWorld()->GetTimerManager().SetTimer(TimerCameraBlock, this, &APlayerCharacter::Camera_Block, 1.f, false);
-			if (CamPos == true)
-			{
-				SpringArmComponent->SocketOffset.Y = CameraComponent->GetRelativeLocation().Y + 150.f;
-				CamPos = false;
-			}
-			else {CamPos = true;}
-		}
+		UE_LOG(LogPlayerCharacter, Warning, TEXT("Flip failed"));
+	}
+	else
+	{	
+     	FVector Forward = GetActorForwardVector();
+     	Forward.Z = 0;
+		const FVector TempVelocity = GetCharacterMovement()->Velocity;
+     	FRootMotionSource_ConstantForce* ConstantForce = new FRootMotionSource_ConstantForce();
+     	ConstantForce->InstanceName = "Flip";
+     	ConstantForce->AccumulateMode = ERootMotionAccumulateMode::Override;
+     	ConstantForce->Priority = 5;
+     	ConstantForce->Force = Forward * FlipStrength;
+     	ConstantForce->Duration = FlipTime;
+     	// ConstantForce->StrengthOverTime = nullptr;
+		// change strength value during movement:
+		ConstantForce->StrengthOverTime = FlipCurve;
+     	ConstantForce->FinishVelocityParams.Mode = ERootMotionFinishVelocityMode::SetVelocity;
+		ConstantForce->FinishVelocityParams.SetVelocity = TempVelocity;
+		//SpringArmComponent->bUsePawnControlRotation = false;
+     	bUseControllerRotationYaw = false; 
+		IsFlipping = true;
+		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+		GetCharacterMovement()->ApplyRootMotionSource(ConstantForce);
+		GetWorld()->GetTimerManager().SetTimer(THandle, this, &APlayerCharacter::StopFlip, FlipTime, false);
 	}
 }
 
-void APlayerCharacter::Camera_Moving()
+void APlayerCharacter::StopFlip()
 {
-	SpringArmComponent->SocketOffset.Y = FMath::FInterpTo(SpringArmComponent->SocketOffset.Y, SpringArmComponent->SocketOffset.Y - InterpSpeed, 1.f, InterpSpeed);
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	SpringArmComponent->bUsePawnControlRotation = true;
+	bUseControllerRotationYaw = true;
+	IsFlipping = false;
+	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	UE_LOG(LogPlayerCharacter, Verbose, TEXT("Flip was successful"));
 }
 
-void APlayerCharacter::Camera_Stop()
-{
-	Block = false;
-	On_Camera_Move();
-}
-
-void APlayerCharacter::Camera_Block()
-{
-	Block = false;
-}
+void APlayerCharacter::On_Camera_Move()
+ {
+ 	FTimerHandle TimerCameraMove;
+ 	FTimerHandle TimerCameraStop;
+ 	FTimerHandle TimerCameraBlock;
+ 	if (Block == false)
+ 	{
+ 		InterpSpeed = (SpringArmComponent->SocketOffset.Y + tan(CameraComponent->GetRelativeRotation().Yaw * PI / 180) * SpringArmComponent->TargetArmLength) * 2.f / 50.f;
+ 		if (IsMoving == false)
+ 		{
+ 			IsMoving = true;
+ 			Block = true;
+ 			GetWorld()->GetTimerManager().SetTimer(TimerCameraMove, this, &APlayerCharacter::Camera_Moving, 0.01f, true);
+ 			GetWorld()->GetTimerManager().SetTimer(TimerCameraStop, this, &APlayerCharacter::Camera_Stop, 0.5f, false);
+ 		}
+ 		else
+ 		{
+ 			IsMoving = false;
+ 			Block = true;
+ 			GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+ 			GetWorld()->GetTimerManager().SetTimer(TimerCameraBlock, this, &APlayerCharacter::Camera_Block, 1.f, false);
+ 			if (CamPos == true)
+ 			{
+ 				SpringArmComponent->SocketOffset.Y = CameraComponent->GetRelativeLocation().Y + 150.f;
+ 				CamPos = false;
+ 			}
+ 			else {CamPos = true;}
+ 		}
+ 	}
+ }
+ 
+ void APlayerCharacter::Camera_Moving()
+ {
+ 	SpringArmComponent->SocketOffset.Y = FMath::FInterpTo(SpringArmComponent->SocketOffset.Y, SpringArmComponent->SocketOffset.Y - InterpSpeed, 1.f, InterpSpeed);
+ }
+ 
+ void APlayerCharacter::Camera_Stop()
+ {
+ 	Block = false;
+ 	On_Camera_Move();
+ }
+ 
+ void APlayerCharacter::Camera_Block()
+ {
+ 	Block = false;
+ }
