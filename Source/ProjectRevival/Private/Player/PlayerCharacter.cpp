@@ -59,13 +59,12 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Pressed,this, &APlayerCharacter::StartRun);
 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Released,this, &APlayerCharacter::StopRun);
 	PlayerInputComponent->BindAction("Flip",EInputEvent::IE_Pressed,this, &APlayerCharacter::Flip);
-	PlayerInputComponent->BindAction("ToggleCrouch",EInputEvent::IE_Pressed,this, &APlayerCharacter::ToggleCrouch);
 	PlayerInputComponent->BindAction("Highlight",EInputEvent::IE_Pressed,this, &APlayerCharacter::HighlightAbility);
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::StartFire);
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Released,WeaponComponent, &UWeaponComponent::StopFire);
 	PlayerInputComponent->BindAction("NextWeapon",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::NextWeapon);
 	PlayerInputComponent->BindAction("Reload",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::Reload);
-  PlayerInputComponent->BindAction("Left_Camera_View", EInputEvent::IE_Pressed,this, &APlayerCharacter::On_Camera_Move);
+	PlayerInputComponent->BindAction("Left_Camera_View", EInputEvent::IE_Pressed,this, &APlayerCharacter::On_Camera_Move);
 	AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent,
 		FGameplayAbilityInputBinds(FString("ConfirmTarget"),
 			FString("CancelTarget"), FString("EGASInputActions")));
@@ -75,9 +74,10 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	// if (IsHighlighting == true)
 	// {
-	// 	Super::Tick(DeltaTime);
+	// 
 	// 	
 	// }
+	//Super::Tick(DeltaTime);
 }
 
 void APlayerCharacter::MoveForward(float Amount)
@@ -228,57 +228,49 @@ void APlayerCharacter::BeginPlay()
 
 	CameraCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionBeginOverlap);
 	CameraCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionEndOverlap);
-	
 }
 
 void APlayerCharacter::Flip()
 {
-	if(GetCharacterMovement()->IsFlying()||GetCharacterMovement()->IsFalling()||WeaponComponent->IsShooting()||!WeaponComponent->CanFire())
+	//добавить в CanFire IfFlipping
+	if(GetCharacterMovement()->IsFlying()||GetCharacterMovement()->IsFalling()||WeaponComponent->IsShooting()
+		||!WeaponComponent->CanFire()||IsFlipping)
 	{
 		UE_LOG(LogPlayerCharacter, Warning, TEXT("Flip failed"));
 	}
 	else
-	{
-		bUseControllerRotationYaw = false; 
+	{	
+     	FVector Forward = GetActorForwardVector();
+     	Forward.Z = 0;
+		const FVector TempVelocity = GetCharacterMovement()->Velocity;
+     	FRootMotionSource_ConstantForce* ConstantForce = new FRootMotionSource_ConstantForce();
+     	ConstantForce->InstanceName = "Flip";
+     	ConstantForce->AccumulateMode = ERootMotionAccumulateMode::Override;
+     	ConstantForce->Priority = 5;
+     	ConstantForce->Force = Forward * FlipStrength;
+     	ConstantForce->Duration = FlipTime;
+     	// ConstantForce->StrengthOverTime = nullptr;
+		// change strength value during movement:
+		ConstantForce->StrengthOverTime = FlipCurve;
+     	ConstantForce->FinishVelocityParams.Mode = ERootMotionFinishVelocityMode::SetVelocity;
+		ConstantForce->FinishVelocityParams.SetVelocity = TempVelocity;
+		//SpringArmComponent->bUsePawnControlRotation = false;
+     	bUseControllerRotationYaw = false; 
+		IsFlipping = true;
 		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-		constexpr float DodgeStrength = 500000;
-		FVector Forward = GetActorForwardVector();
-		Forward.Z = 0;
-		/*
-		curve for changing speed/strength (speed x2 in the middle of the timeline)
-		
-		UGameplayAbility* OwningAbility; 
-        FName TaskInstanceName = TEXT("Flip"); 
-		auto Curve = new FRichCurve();   
-		auto key = Curve->AddKey(0.f, 1.f);  
-		Curve->AddKey(0.5f, 2.f);  
-		Curve->AddKey(1.0f, 1.f);  
-		Curve->SetKeyTime(key, 1.0f);  
-		Curve->SetKeyInterpMode(key, RCIM_Linear);
-		UCurveFloat* velocityCurve = Curve;
-		
-		UAbilityTask_ApplyRootMotionConstantForce::ApplyRootMotionConstantForce(OwningAbility, TaskInstanceName, Forward, DodgeStrength, 1.0, false, velocityCurve, ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity, GetVelocity(), 1.0, true);
-		*/
-		GetCharacterMovement()->AddImpulse(Forward * DodgeStrength);
-		UE_LOG(LogPlayerCharacter, Verbose, TEXT("Flip was successful"));
-		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->ApplyRootMotionSource(ConstantForce);
+		GetWorld()->GetTimerManager().SetTimer(THandle, this, &APlayerCharacter::StopFlip, FlipTime, false);
 	}
 }
 
-void APlayerCharacter::ToggleCrouch()
+void APlayerCharacter::StopFlip()
 {
-	if (CanCrouch()&&!IsRunning())
-	{
-		Crouch();
-		bIsCrouching = true;
-	}
-	else
-	{
-		UnCrouch();
-		bIsCrouching = false;
-	}
-	UE_LOG(LogPlayerCharacter, Verbose, TEXT("bIsCrouching = %s"), bIsCrouching ? TEXT("true") : TEXT("false"));
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	SpringArmComponent->bUsePawnControlRotation = true;
+	bUseControllerRotationYaw = true;
+	IsFlipping = false;
+	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	UE_LOG(LogPlayerCharacter, Verbose, TEXT("Flip was successful"));
 }
 
 void APlayerCharacter::On_Camera_Move()
