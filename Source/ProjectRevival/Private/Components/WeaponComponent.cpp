@@ -19,13 +19,22 @@ void UWeaponComponent::StartFire()
 {
 	if (!CanFire()) return;
 	CurrentWeapon->StartFire();
+	ShootingInProgress = true;
 }
 
 void UWeaponComponent::StopFire()
 {
 	if (!CurrentWeapon) return;
 	CurrentWeapon->StopFire();
+	ShootingInProgress = false;
 }
+
+bool UWeaponComponent::IsShooting()
+{
+	return ShootingInProgress;
+}
+
+
 
 void UWeaponComponent::NextWeapon()
 {

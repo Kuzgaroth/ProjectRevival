@@ -16,6 +16,7 @@ class PROJECTREVIVAL_API APlayerCharacter : public ABaseCharacter
 	GENERATED_BODY()
 public:
 	APlayerCharacter(const FObjectInitializer& ObjectInitializer);
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UCameraComponent* CameraComponent;
@@ -41,6 +42,7 @@ protected:
 	virtual void OnDeath() override;
 	virtual void BeginPlay() override;
 	void HighlightAbility();
+	
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
@@ -56,6 +58,7 @@ public:
 	// declare overlap end function used specially for detecting objects when using highlight function
 	UFUNCTION()
 	void OnOverlapEndForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+    
 
 private:
 	bool bWantsToRun = false;
@@ -65,7 +68,17 @@ private:
 	void MoveRight(float Amount);
 	void StartRun();
 	void StopRun();
-
+	
+	FTimerHandle THandle;
+	void Flip();
+	void StopFlip();
+	const float FlipTime = 0.5f;
+	const float FlipStrength = 2000.f;
+	// curve from content manager
+	UPROPERTY(EditAnywhere)
+	UCurveFloat* FlipCurve = LoadObject<UCurveFloat>(nullptr, TEXT("/Game/ProjectRevival/Core/Player/FlipCurve.FlipCurve"));
+	bool IsFlipping = false;
+	
 	//Array of objects/enemies to highlight
 	UPROPERTY()
 	TArray<AActor*> ToHighlight;

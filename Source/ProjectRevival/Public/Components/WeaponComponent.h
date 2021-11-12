@@ -24,6 +24,10 @@ public:
 	bool GetCurrentWeaponUIData(FWeaponUIData& UIData) const;
 	bool GetCurrentWeaponAmmoData(FAmmoData& AmmoData) const;
 	bool TryToAddAmmo(TSubclassOf<ABaseWeapon> WeaponType, int32 ClipsAmount);
+	bool CanFire();
+	bool CanEquip();
+	bool CanReload();
+	bool IsShooting();
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TArray<FWeaponData> WeaponDatas;
@@ -43,8 +47,7 @@ protected:
 	UPROPERTY()
 	TArray<ABaseWeapon*> Weapons;
 
-	bool CanFire();
-	bool CanEquip();
+	
 	void EquipWeapon(int32 WeaponIndex);
 	int32 CurrentWeaponIndex = 0;
 	virtual void BeginPlay() override;
@@ -56,7 +59,7 @@ private:
 
 	bool EquipAnimInProgress;
 	bool ReloadAnimInProgress;
-	
+	bool ShootingInProgress;
 	void SpawnWeapons();
 	void AttachWeaponToSocket(ABaseWeapon* Weapon, USceneComponent* CharacterMesh, const FName& SocketName);
 	
@@ -64,7 +67,7 @@ private:
 	void InitAnimations();
 	void OnEquipFinished(USkeletalMeshComponent* MeshComponent);
 	void OnReloadFinished(USkeletalMeshComponent* MeshComponent);
-	bool CanReload();
+
 
 	void OnEmptyClip(ABaseWeapon* AmmoEmptyWeapon);
 	void ChangeClip();
