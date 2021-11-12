@@ -240,10 +240,12 @@ void APlayerCharacter::Flip()
 	}
 	else
 	{	
-     	FVector Forward = GetActorForwardVector();
+     	FVector Forward;
+		float Length;
+		GetVelocity().ToDirectionAndLength(Forward, Length);
      	Forward.Z = 0;
 		const FVector TempVelocity = GetCharacterMovement()->Velocity;
-     	FRootMotionSource_ConstantForce* ConstantForce = new FRootMotionSource_ConstantForce();
+     	const TSharedPtr<FRootMotionSource_ConstantForce> ConstantForce = MakeShared<FRootMotionSource_ConstantForce>();
      	ConstantForce->InstanceName = "Flip";
      	ConstantForce->AccumulateMode = ERootMotionAccumulateMode::Override;
      	ConstantForce->Priority = 5;
