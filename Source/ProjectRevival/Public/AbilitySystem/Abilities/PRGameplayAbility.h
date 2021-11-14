@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
+#include "AbilitySystem/PRAbilityTypes.h"
 #include "PRGameplayAbility.generated.h"
 
 

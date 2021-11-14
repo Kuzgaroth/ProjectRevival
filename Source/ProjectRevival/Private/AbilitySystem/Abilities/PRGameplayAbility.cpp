@@ -2,8 +2,6 @@
 
 
 #include "AbilitySystem/Abilities/PRGameplayAbility.h"
-#include "BaseCharacter.h"
-
 
 UPRGameplayAbility::UPRGameplayAbility()
 {
@@ -15,7 +13,12 @@ void UPRGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, 
 	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
 	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("%s has started"), *GetName());
 	float CooldownMagnitude;
-	GetCooldownGameplayEffect()->DurationMagnitude.GetStaticMagnitudeIfPossible(1.f, CooldownMagnitude);
+	UGameplayEffect* CooldownEffect = GetCooldownGameplayEffect(); 
+	if (CooldownEffect)
+	{
+		CooldownEffect->DurationMagnitude.GetStaticMagnitudeIfPossible(1.f, CooldownMagnitude);
+	}
+	
 	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Cooldown is %f seconds"), CooldownMagnitude);
 	//K2_EndAbility();
 }
