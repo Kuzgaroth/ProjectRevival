@@ -17,7 +17,7 @@ void UPRGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, 
 	float CooldownMagnitude;
 	GetCooldownGameplayEffect()->DurationMagnitude.GetStaticMagnitudeIfPossible(1.f, CooldownMagnitude);
 	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Cooldown is %f seconds"), CooldownMagnitude);
-	K2_EndAbility();
+	//K2_EndAbility();
 }
 
 void UPRGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
