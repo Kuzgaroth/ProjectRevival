@@ -8,20 +8,14 @@
 #include "AbilitySystem/PRAbilitySystemComponent.h"
 #include "AbilitySystem/PRAttributeSet.h"
 #include "AbilitySystem/Abilities/PRGameplayAbility.h"
+#include "ProjectRevival/Public/AbilitySystem/PRAbilityTypes.h"
 #include "BaseCharacter.generated.h"
 
 class UHealthComponent;
 class UWeaponComponent;
 class USoundCue;
 
-DECLARE_LOG_CATEGORY_EXTERN(LogPRAbilitySystemBase, Log, All);
 
-UENUM(BlueprintType)
-enum class EGASInputActions : uint8
-{
-	None,
-	Base
-};
 
 UCLASS()
 class PROJECTREVIVAL_API ABaseCharacter : public ACharacter,  public IAbilitySystemInterface
