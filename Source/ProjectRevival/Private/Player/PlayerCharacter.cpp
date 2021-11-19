@@ -20,7 +20,7 @@
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("SpringArmComponent");
 	SpringArmComponent->SetupAttachment(RootComponent);
@@ -71,16 +71,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	FString("CancelTarget"), FString("EGASInputActions")));
 	InputComponent->BindAction("Zoom", IE_Pressed, this, &APlayerCharacter::CameraZoomIn);
 	InputComponent->BindAction("Zoom", IE_Released, this, &APlayerCharacter::CameraZoomOut);
-}
-
-void APlayerCharacter::Tick(float DeltaTime)
-{
-	// if (IsHighlighting == true)
-	// {
-	// 
-	// 	
-	// }
-	//Super::Tick(DeltaTime);
 }
 
 void APlayerCharacter::MoveForward(float Amount)
@@ -279,7 +269,8 @@ void APlayerCharacter::On_Camera_Move()
 			else {CamPos = true;}
 			Start_StartPos = SpringArmComponent->SocketOffset;
 		}
-
+	}
+}
 void APlayerCharacter::Flip()
 {
 	//добавить в CanFire IfFlipping
@@ -337,9 +328,9 @@ void APlayerCharacter::CameraZoomIn()
 		if (Start_StartPos == FVector(0.0, 0.0, 0.0)) Start_StartPos = SpringArmComponent->SocketOffset;
 		SpringArmComponent->SocketOffset = Start_StartPos;
 		FOnTimelineVector TimelineProgress;
+		
 		TimelineProgress.BindUFunction(this, FName("TimelineProgress"));
 		CurveTimeline.AddInterpVector(CurveVector, TimelineProgress);
-
 		StartLoc = SpringArmComponent->SocketOffset;
 		EndLoc = FVector(SpringArmComponent->SocketOffset.X + Offset.X, SpringArmComponent->SocketOffset.Y, SpringArmComponent->SocketOffset.Z + Offset.Z);
 		if (CamPos == false) EndLoc.Y -= Offset.Y; else EndLoc.Y += Offset.Y / 2.0;
@@ -364,36 +355,6 @@ void APlayerCharacter::CameraZoomOut()
 		CurveTimeline.PlayFromStart();
 	}
 }
-void APlayerCharacter::On_Camera_Move()
- {
- 	FTimerHandle TimerCameraMove;
- 	FTimerHandle TimerCameraStop;
- 	FTimerHandle TimerCameraBlock;
- 	if (Block == false)
- 	{
- 		InterpSpeed = (SpringArmComponent->SocketOffset.Y + tan(CameraComponent->GetRelativeRotation().Yaw * PI / 180) * SpringArmComponent->TargetArmLength) * 2.f / 50.f;
- 		if (IsMoving == false)
- 		{
- 			IsMoving = true;
- 			Block = true;
- 			GetWorld()->GetTimerManager().SetTimer(TimerCameraMove, this, &APlayerCharacter::Camera_Moving, 0.01f, true);
- 			GetWorld()->GetTimerManager().SetTimer(TimerCameraStop, this, &APlayerCharacter::Camera_Stop, 0.5f, false);
- 		}
- 		else
- 		{
- 			IsMoving = false;
- 			Block = true;
- 			GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
- 			GetWorld()->GetTimerManager().SetTimer(TimerCameraBlock, this, &APlayerCharacter::Camera_Block, 1.f, false);
- 			if (CamPos == true)
- 			{
- 				SpringArmComponent->SocketOffset.Y = CameraComponent->GetRelativeLocation().Y + 150.f;
- 				CamPos = false;
- 			}
- 			else {CamPos = true;}
- 		}
- 	}
- }
  
  void APlayerCharacter::Camera_Moving()
  {
@@ -404,9 +365,4 @@ void APlayerCharacter::On_Camera_Move()
  {
  	Block = false;
  	On_Camera_Move();
- }
- 
- void APlayerCharacter::Camera_Block()
- {
- 	Block = false;
  }
