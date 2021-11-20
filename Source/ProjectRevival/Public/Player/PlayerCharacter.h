@@ -19,6 +19,10 @@ class PROJECTREVIVAL_API APlayerCharacter : public ABaseCharacter
 	GENERATED_BODY()
 public:
 	APlayerCharacter(const FObjectInitializer& ObjectInitializer);
+	UFUNCTION()
+	void TimelineProgress(float Value);
+
+	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
 	void TimelineProgress(float Value);
@@ -46,6 +50,23 @@ protected:
 
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+
+	//The range in which enemies and objects are highlighted 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
+	float HighlightRadius = 2000.f;
+
+	//Trace Channel we use to detect all the stuff
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
+	TEnumAsByte<ECollisionChannel> TraceChannelProvided;
+
+	//Types of collisions by which objects are going to be highlighted
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesToHighlight;
+	
+	void HighlightAbility();
+
+	virtual bool IsRunning() const override;
 
 
 	virtual bool IsRunning() const override;

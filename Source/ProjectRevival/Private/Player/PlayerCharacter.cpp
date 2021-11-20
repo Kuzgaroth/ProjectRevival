@@ -20,7 +20,7 @@
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("SpringArmComponent");
 	SpringArmComponent->SetupAttachment(RootComponent);
@@ -71,16 +71,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	FString("CancelTarget"), FString("EGASInputActions")));
 	InputComponent->BindAction("Zoom", IE_Pressed, this, &APlayerCharacter::CameraZoomIn);
 	InputComponent->BindAction("Zoom", IE_Released, this, &APlayerCharacter::CameraZoomOut);
-}
-
-void APlayerCharacter::Tick(float DeltaTime)
-{
-	// if (IsHighlighting == true)
-	// {
-	// 
-	// 	
-	// }
-	//Super::Tick(DeltaTime);
 }
 
 void APlayerCharacter::MoveForward(float Amount)
@@ -186,9 +176,10 @@ void APlayerCharacter::OnCameraCollisionBeginOverlap(UPrimitiveComponent* Overla
 	CheckCameraOverlap();
 }
 
-void APlayerCharacter::OnCameraCollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void APlayerCharacter::OnCameraCollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	CheckCameraOverlap();
+CheckCameraOverlap();
 }
 
 void APlayerCharacter::CheckCameraOverlap()
@@ -236,7 +227,6 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
 	CurveTimeline.TickTimeline(DeltaTime);
 }
 
@@ -253,7 +243,6 @@ void APlayerCharacter::TimelineFieldOfView(float Value)
 	float NewFieldOfView = FMath::Lerp(CameraComponent->FieldOfView, PlayerAimZoom.CurrentFieldOfView, Value);
 	CameraComponent->FieldOfView = NewFieldOfView;
 }
-
 
 void APlayerCharacter::On_Camera_Move()
 {
@@ -285,7 +274,8 @@ void APlayerCharacter::On_Camera_Move()
 			else {CamPos = true;}
 			PlayerAimZoom.StartStartPos = SpringArmComponent->SocketOffset;
 		}
-
+	}
+}
 void APlayerCharacter::Flip()
 {
 	//добавить в CanFire IfFlipping
@@ -378,6 +368,7 @@ void APlayerCharacter::CameraZoomOut()
 		CurveTimeline.PlayFromStart();
 	}
 }
+
 void APlayerCharacter::On_Camera_Move()
  {
  	FTimerHandle TimerCameraMove;
@@ -408,6 +399,7 @@ void APlayerCharacter::On_Camera_Move()
  		}
  	}
  }
+
  
  void APlayerCharacter::Camera_Moving()
  {
@@ -418,9 +410,4 @@ void APlayerCharacter::On_Camera_Move()
  {
  	Block = false;
  	On_Camera_Move();
- }
- 
- void APlayerCharacter::Camera_Block()
- {
- 	Block = false;
  }
