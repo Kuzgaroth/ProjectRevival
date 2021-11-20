@@ -23,11 +23,7 @@ public:
 	UFUNCTION()
 	void TimelineProgress(float Value);
 
-	UFUNCTION()
-	void TimelineFieldOfView(float Value);
-
 	virtual void Tick(float DeltaTime) override;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoom PlayerAimZoom;
 	
@@ -47,6 +43,7 @@ protected:
 
 	void CameraZoomIn();
 	void CameraZoomOut();
+
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -77,4 +74,7 @@ private:
 	void Camera_Moving();
 	void Camera_Stop();
 	void Camera_Block();
+
+	UPROPERTY(EditAnywhere, Category = "Interp")
+	FVector DeltaPosition;
 };
