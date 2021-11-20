@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Player/BaseCharacter.h"
 #include "Components/TimelineComponent.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "PlayerCharacter.generated.h"
 
 class UCameraComponent;
@@ -22,7 +23,15 @@ public:
 	UFUNCTION()
 	void TimelineProgress(float Value);
 
+	UFUNCTION()
+	void TimelineFieldOfView(float Value);
+
 	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
+	FPlayerAimZoom PlayerAimZoom;
+	
+	FTimeline CurveTimeline;
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UCameraComponent* CameraComponent;
@@ -38,18 +47,6 @@ protected:
 
 	void CameraZoomIn();
 	void CameraZoomOut();
-
-	FTimeline CurveTimeline;
-	UPROPERTY(EditAnywhere, Category = "Timeline")
-	UCurveVector* CurveVector;
-	UPROPERTY()
-	FVector StartLoc;
-	UPROPERTY()
-	FVector EndLoc;
-	UPROPERTY(EditAnywhere, Category = "Timeline")
-	FVector Offset;
-	FVector Start_StartPos = FVector(0.0, 0.0, 0.0);
-	bool IsZooming = false;
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -80,7 +77,4 @@ private:
 	void Camera_Moving();
 	void Camera_Stop();
 	void Camera_Block();
-
-	UPROPERTY(EditAnywhere, Category = "Interp")
-	FVector DeltaPosition;
 };
