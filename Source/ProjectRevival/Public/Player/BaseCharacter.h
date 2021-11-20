@@ -8,6 +8,7 @@
 #include "AbilitySystem/PRAbilitySystemComponent.h"
 #include "AbilitySystem/PRAttributeSet.h"
 #include "AbilitySystem/Abilities/PRGameplayAbility.h"
+#include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
 #include "ProjectRevival/Public/AbilitySystem/PRAbilityTypes.h"
 #include "BaseCharacter.generated.h"
 
@@ -18,7 +19,7 @@ class USoundCue;
 
 
 UCLASS()
-class PROJECTREVIVAL_API ABaseCharacter : public ACharacter,  public IAbilitySystemInterface
+class PROJECTREVIVAL_API ABaseCharacter : public ACharacter,  public IAbilitySystemInterface, public IIDynMaterialsFromMesh
 {
 	GENERATED_BODY()
 
@@ -29,7 +30,7 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void UnPossessed() override;
 
-	UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
@@ -81,7 +82,10 @@ public:
 	float GetMovementDirection() const;
 	
 	void SetPlayerColor(const FLinearColor& Color);
+	virtual TArray<UMaterialInstanceDynamic*> GetDynMaterials() override;
 private:
+	UPROPERTY()
+	TArray<UMaterialInstanceDynamic*> DynamicMaterials;
 	
 	UFUNCTION()
 	void OnGroundLanded(const FHitResult& HitResult);

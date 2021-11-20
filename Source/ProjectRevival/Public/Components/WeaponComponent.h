@@ -28,6 +28,7 @@ public:
 	bool CanEquip();
 	bool CanReload();
 	bool IsShooting();
+	TArray<UMaterialInstanceDynamic*> GetCurrentWeaponMaterials();
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TArray<FWeaponData> WeaponDatas;
