@@ -34,6 +34,10 @@ bool UWeaponComponent::IsShooting()
 	return ShootingInProgress;
 }
 
+TArray<UMaterialInstanceDynamic*>& UWeaponComponent::GetCurrentWeaponMaterials()
+{
+	return CurrentWeapon->GetDynMaterials();
+}
 
 
 void UWeaponComponent::NextWeapon()

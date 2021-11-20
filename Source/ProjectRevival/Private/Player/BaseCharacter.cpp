@@ -63,6 +63,7 @@ void ABaseCharacter::BeginPlay()
 	HealthComponent->OnHealthChanged.AddUObject(this, &ABaseCharacter::OnHealthChanged);
 	OnHealthChanged(HealthComponent->GetHealth(), 1.0f);
 	LandedDelegate.AddDynamic(this,&ABaseCharacter::OnGroundLanded);
+	
 }
 
 // Called every frame
@@ -98,6 +99,13 @@ void ABaseCharacter::SetPlayerColor(const FLinearColor& Color)
 	MateralInst->SetVectorParameterValue(MaterialColorName, Color);
 }
 
+TArray<UMaterialInstanceDynamic*>& ABaseCharacter::GetDynMaterials()
+{
+	TArray<UMaterialInstanceDynamic*> FullMaterialArray;
+	FullMaterialArray.Append(WeaponComponent->GetCurrentWeaponMaterials());
+	FullMaterialArray.Append(DynamicMaterials);
+	return FullMaterialArray;
+}
 
 void ABaseCharacter::AddStartupGameplayAbilities()
 {
@@ -121,6 +129,9 @@ void ABaseCharacter::OnCooldownExpired(const FActiveGameplayEffect& ExpiredEffec
 void ABaseCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+
+	SetupDynMaterialsFromMesh(this, DynamicMaterials);
+	
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetEnergyAttribute())
 		.AddUObject(this, &ABaseCharacter::OnEnergyAttributeChanged);
 	AbilitySystemComponent->OnAnyGameplayEffectRemovedDelegate().AddUObject(this, &ABaseCharacter::OnCooldownExpired);

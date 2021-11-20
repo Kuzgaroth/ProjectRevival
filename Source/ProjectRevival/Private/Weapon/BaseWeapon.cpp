@@ -26,6 +26,13 @@ void ABaseWeapon::BeginPlay()
 	CurrentAmmo = DefaultAmmo;
 }
 
+void ABaseWeapon::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	SetupDynMaterialsFromMesh(this, DynamicMaterials);
+}
+
 void ABaseWeapon::MakeShot(){}
 
 void ABaseWeapon::StartFire(){}
@@ -58,6 +65,11 @@ bool ABaseWeapon::TryToAddAmmo(int32 ClipsAmount)
 		CurrentAmmo.Bullets = DefaultAmmo.Bullets;
 	}
 	return true;
+}
+
+TArray<UMaterialInstanceDynamic*>& ABaseWeapon::GetDynMaterials()
+{
+	return DynamicMaterials;
 }
 
 APlayerController* ABaseWeapon::GetPlayerController() const

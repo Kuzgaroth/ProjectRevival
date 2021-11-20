@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
 #include "Components/WeaponComponent.h"
 #include "GameFramework/Actor.h"
 #include "ProjectRevival/Public/CoreTypes.h"
@@ -13,7 +14,7 @@ class UNiagaraComponent;
 class USoundCue;
 
 UCLASS()
-class PROJECTREVIVAL_API ABaseWeapon : public AActor
+class PROJECTREVIVAL_API ABaseWeapon : public AActor, public IIDynMaterialsFromMesh
 {
 	GENERATED_BODY()
 	
@@ -51,6 +52,7 @@ protected:
 	USoundCue* FireSound;
 	
 	virtual void BeginPlay() override;
+	virtual void PostInitializeComponents() override;
 	virtual void MakeShot();
 
 	APlayerController* GetPlayerController() const;
@@ -67,6 +69,9 @@ public:
 	virtual void StartFire();
 	virtual void StopFire();
 	bool TryToAddAmmo(int32 ClipsAmount);
+	virtual TArray<UMaterialInstanceDynamic*>& GetDynMaterials() override;
 private:
 	FAmmoData CurrentAmmo;
+	UPROPERTY()
+	TArray<UMaterialInstanceDynamic*> DynamicMaterials;
 };
