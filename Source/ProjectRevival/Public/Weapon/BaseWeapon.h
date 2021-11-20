@@ -69,7 +69,7 @@ public:
 	virtual void StartFire();
 	virtual void StopFire();
 	bool TryToAddAmmo(int32 ClipsAmount);
-	virtual TArray<UMaterialInstanceDynamic*>& GetDynMaterials() override;
+	virtual TArray<UMaterialInstanceDynamic*> GetDynMaterials() override;
 private:
 	FAmmoData CurrentAmmo;
 	UPROPERTY()

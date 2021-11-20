@@ -14,10 +14,8 @@ void IIDynMaterialsFromMesh::SetupDynMaterialsFromMesh(AActor* Actor, TArray<UMa
 			const int32 MatNum = Mesh->GetNumMaterials();
 			for (int32 i=0;i<MatNum;i++)
 			{
-				const auto Material = Mesh->GetMaterial(i);
-				auto DynMaterial = UMaterialInstanceDynamic::Create(Material, Actor);
-				Mesh->SetMaterial(i,DynMaterial);
-				DynamicMaterials.Add(DynMaterial);
+				const auto Material = Mesh->CreateDynamicMaterialInstance(i);
+				DynamicMaterials.Add(Material);
 			}
 		}
 	}

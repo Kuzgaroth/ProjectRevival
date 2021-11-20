@@ -30,7 +30,7 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void UnPossessed() override;
 
-	UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
@@ -82,7 +82,7 @@ public:
 	float GetMovementDirection() const;
 	
 	void SetPlayerColor(const FLinearColor& Color);
-	virtual TArray<UMaterialInstanceDynamic*>& GetDynMaterials() override;
+	virtual TArray<UMaterialInstanceDynamic*> GetDynMaterials() override;
 private:
 	UPROPERTY()
 	TArray<UMaterialInstanceDynamic*> DynamicMaterials;

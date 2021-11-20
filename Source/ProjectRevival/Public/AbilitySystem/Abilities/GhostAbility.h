@@ -25,8 +25,9 @@ protected:
 	
 	virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
-
+	UFUNCTION()
 	void OnAppearEnded();
+	UFUNCTION()
 	void OnDisappearEnded();
 private:
 	UPROPERTY()
@@ -34,5 +35,6 @@ private:
 	UPROPERTY()
 	UAbilityTask_WaitDelay* DelayTask;
 
+	UFUNCTION()
 	void BeginAppear();
 };

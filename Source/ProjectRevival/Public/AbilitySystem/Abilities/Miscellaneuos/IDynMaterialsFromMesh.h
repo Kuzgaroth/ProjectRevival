@@ -22,5 +22,5 @@ class PROJECTREVIVAL_API IIDynMaterialsFromMesh
 	
 public:
 	virtual void SetupDynMaterialsFromMesh(AActor* Actor, TArray<UMaterialInstanceDynamic*>& DynamicMaterials);
-	virtual TArray<UMaterialInstanceDynamic*>& GetDynMaterials()=0;
+	virtual TArray<UMaterialInstanceDynamic*> GetDynMaterials()=0;
 };

@@ -24,13 +24,15 @@ void ABaseWeapon::BeginPlay()
 	Super::BeginPlay();
 	check(WeaponMesh);
 	CurrentAmmo = DefaultAmmo;
+
+	SetupDynMaterialsFromMesh(this, DynamicMaterials);
 }
 
 void ABaseWeapon::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	SetupDynMaterialsFromMesh(this, DynamicMaterials);
+	
 }
 
 void ABaseWeapon::MakeShot(){}
@@ -67,7 +69,7 @@ bool ABaseWeapon::TryToAddAmmo(int32 ClipsAmount)
 	return true;
 }
 
-TArray<UMaterialInstanceDynamic*>& ABaseWeapon::GetDynMaterials()
+TArray<UMaterialInstanceDynamic*> ABaseWeapon::GetDynMaterials()
 {
 	return DynamicMaterials;
 }

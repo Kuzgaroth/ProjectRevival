@@ -22,7 +22,7 @@ void UGhostAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const
 	}
 	GhostTask = UGhostTask_InvisibilityToggle::InvisibilityToggle(this, VisualCurve, Cast<IIDynMaterialsFromMesh>(Owner)->GetDynMaterials());
 	GhostTask->OnDisappearFinished.BindUFunction(this, "OnDisappearEnded");
-	GhostTask->OnDisappearFinished.BindUFunction(this, "OnAppearEnded");
+	GhostTask->OnAppearFinished.BindUFunction(this, "OnAppearEnded");
 	DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, Duration);
 	DelayTask->OnFinish.AddDynamic(this, &UGhostAbility::BeginAppear);
 	
@@ -42,6 +42,7 @@ void UGhostAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 void UGhostAbility::OnAppearEnded()
 {
 	GhostTask->OnAppearFinished.Unbind();
+	GhostTask->EndTask();
 	K2_EndAbility();
 }
 
