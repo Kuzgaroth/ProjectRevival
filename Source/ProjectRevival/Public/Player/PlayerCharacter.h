@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Player/BaseCharacter.h"
 #include "Components/TimelineComponent.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "PlayerCharacter.generated.h"
 
 class UCameraComponent;
@@ -23,6 +24,14 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION()
+	void TimelineProgress(float Value);
+
+	virtual void Tick(float DeltaTime) override;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
+	FPlayerAimZoom PlayerAimZoom;
+	
+	FTimeline CurveTimeline;
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UCameraComponent* CameraComponent;
@@ -39,17 +48,6 @@ protected:
 	void CameraZoomIn();
 	void CameraZoomOut();
 
-	FTimeline CurveTimeline;
-	UPROPERTY(EditAnywhere, Category = "Timeline")
-	UCurveVector* CurveVector;
-	UPROPERTY()
-	FVector StartLoc;
-	UPROPERTY()
-	FVector EndLoc;
-	UPROPERTY(EditAnywhere, Category = "Timeline")
-	FVector Offset;
-	FVector Start_StartPos = FVector(0.0, 0.0, 0.0);
-	bool IsZooming = false;
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -70,43 +68,15 @@ public:
 
 	virtual bool IsRunning() const override;
 
-	// declare overlap begin function used specially for detecting objects when using highlight function
-	UFUNCTION()
-	void OnOverlapBeginForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	// declare overlap end function used specially for detecting objects when using highlight function
-	UFUNCTION()
-	void OnOverlapEndForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-    
-
+	virtual bool IsRunning() const override;
 private:
 	bool bWantsToRun = false;
 	bool IsMovingForward = false;
-	bool IsHighlighting = false;
 	void MoveForward(float Amount);
 	void MoveRight(float Amount);
 	void StartRun();
 	void StopRun();
-	
-	FTimerHandle THandle;
-	void Flip();
-	void StopFlip();
-	const float FlipTime = 0.5f;
-	const float FlipStrength = 2000.f;
-	// curve from content manager
-	UPROPERTY(EditAnywhere)
-	UCurveFloat* FlipCurve = LoadObject<UCurveFloat>(nullptr, TEXT("/Game/ProjectRevival/Core/Player/FlipCurve.FlipCurve"));
-	bool IsFlipping = false;
-	
-	//Array of objects/enemies to highlight
-	UPROPERTY()
-	TArray<AActor*> ToHighlight;
-	//Array of objects/enemies to ignore at highlighting
-	UPROPERTY()
-	TArray<AActor*> ToIgnore;
-	// sphere trigger which is active when we are using highlight
-	UPROPERTY()
-	class USphereComponent* SphereDetectingHighlightables;
 
 	UFUNCTION()
 	void OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
