@@ -20,7 +20,8 @@ public class ProjectRevival : ModuleRules
 			"NavigationSystem",
 			"GameplayAbilities", 
 			"GameplayTags",
-			"RHI"
+			"RHI",
+			"SlateCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
