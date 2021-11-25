@@ -1,12 +1,13 @@
+
 // Project Revival. All Rights Reserved
 
 
-#include "Menu/OptionsKeyRemapWidget.h"
+#include "Menu/OptionsAxisRemapWidget.h"
+
 #include "Components/Button.h"
 #include "GameFramework/InputSettings.h"
 
-
-void UOptionsKeyRemapWidget::NativeOnInitialized()
+void UOptionsAxisRemapWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
@@ -14,23 +15,20 @@ void UOptionsKeyRemapWidget::NativeOnInitialized()
 
 	if (ChangeInputButton)
 	{
-		// ChangeInputButton->OnClicked.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInput);
-		ChangeInputButton->OnPressed.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInputPressed);
-		ChangeInputButton->OnReleased.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInputReleased);
+		ChangeInputButton->OnPressed.AddDynamic(this, &UOptionsAxisRemapWidget::OnChangeInputPressed);
+		ChangeInputButton->OnReleased.AddDynamic(this, &UOptionsAxisRemapWidget::OnChangeInputReleased);
 	}
 }
 
-void UOptionsKeyRemapWidget::SetContent(const FInputActionKeyMapping KeyMapping)
+void UOptionsAxisRemapWidget::SetContent(const FInputAxisKeyMapping KeyMapping)
 {
 	KeyMap = KeyMapping;
-	ActionText->SetText(FText::FromString(KeyMapping.ActionName.ToString()));
+	ActionText->SetText(FText::FromString(KeyMapping.AxisName.ToString()));
 	KeyText->SetText(FText::FromString(KeyMapping.Key.ToString()));
 }
 
-FReply UOptionsKeyRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+FReply UOptionsAxisRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 {
-	// Super::NativeOnKeyDown(InGeometry, InKeyEvent);
-
 	bool bCanUse = true;
 
 	FReply Reply = FReply::Unhandled();
@@ -58,33 +56,27 @@ FReply UOptionsKeyRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, cons
 
 	if (bCanInput && bCanUse)
 	{
-		Settings->RemoveActionMapping(KeyMap);
+		Settings->RemoveAxisMapping(KeyMap);
 		KeyMap.Key = InKeyEvent.GetKey();
 		SetContent(KeyMap);
 		bCanInput = false;
-		Settings->AddActionMapping(KeyMap);
+		Settings->AddAxisMapping(KeyMap);
 
 		Reply = FReply::Handled();
 	}
 
 	return Reply;
-
 }
 
-void UOptionsKeyRemapWidget::OnChangeInput()
-{
-	bCanInput = true;
-	SetKeyboardFocus();
-}
-
-void UOptionsKeyRemapWidget::OnChangeInputPressed()
+void UOptionsAxisRemapWidget::OnChangeInputPressed()
 {
 	KeyText->SetText(FText::FromString("?"));
 	bCanInput = true;
-	// SetKeyboardFocus();
 }
 
-void UOptionsKeyRemapWidget::OnChangeInputReleased()
+void UOptionsAxisRemapWidget::OnChangeInputReleased()
 {
 	KeyText->SetText(FText::FromString(KeyMap.Key.ToString()));
 }
+
+
