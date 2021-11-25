@@ -7,17 +7,18 @@
 #include "Components/TextBlock.h"
 #include "GameFramework/PlayerInput.h"
 
-#include "OptionsKeyRemapWidget.generated.h"
+
+#include "OptionsAxisRemapWidget.generated.h"
 
 class UButton;
 /**
  * 
  */
 UCLASS()
-class PROJECTREVIVAL_API UOptionsKeyRemapWidget : public UUserWidget
+class PROJECTREVIVAL_API UOptionsAxisRemapWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
+	
 public:
 	UPROPERTY(meta=(BindWidget))
 	UButton* ChangeInputButton;
@@ -31,22 +32,19 @@ public:
 	virtual void NativeOnInitialized() override;
 
 	UFUNCTION()
-	void SetContent(const FInputActionKeyMapping KeyMapping);
+    void SetContent(const FInputAxisKeyMapping KeyMapping);
 	
 	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 	
-private:
+	private:
 	bool bCanInput;
 
-	FInputActionKeyMapping KeyMap;
-	
-	UFUNCTION()
-    void OnChangeInput();
+	FInputAxisKeyMapping KeyMap;
 
 	UFUNCTION()
-	void OnChangeInputPressed();
+    void OnChangeInputPressed();
 
 	UFUNCTION()
-	void OnChangeInputReleased();
+    void OnChangeInputReleased();
 	
 };
