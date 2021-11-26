@@ -38,9 +38,12 @@ void UOptionsControlsWidget::NativeOnInitialized()
 		{
 			if (AxisMapClass)
 			{
-				UOptionsAxisRemapWidget* AxisMapWidget = CreateWidget<UOptionsAxisRemapWidget>(GetWorld(), AxisMapClass);
-				AxisMapWidget->SetContent(AxisMapping);
-				KeyVerticalBox->AddChild(AxisMapWidget);	
+				if (AxisMapping.AxisName != "LookUp" && AxisMapping.AxisName != "TurnAround")
+				{
+					UOptionsAxisRemapWidget* AxisMapWidget = CreateWidget<UOptionsAxisRemapWidget>(GetWorld(), AxisMapClass);
+					AxisMapWidget->SetContent(AxisMapping);
+					KeyVerticalBox->AddChild(AxisMapWidget);
+				}
 			}
 		}
 	}
