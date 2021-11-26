@@ -369,36 +369,7 @@ void APlayerCharacter::CameraZoomOut()
 	}
 }
 
-void APlayerCharacter::On_Camera_Move()
- {
- 	FTimerHandle TimerCameraMove;
- 	FTimerHandle TimerCameraStop;
- 	FTimerHandle TimerCameraBlock;
- 	if (Block == false)
- 	{
- 		InterpSpeed = (SpringArmComponent->SocketOffset.Y + tan(CameraComponent->GetRelativeRotation().Yaw * PI / 180) * SpringArmComponent->TargetArmLength) * 2.f / 50.f;
- 		if (IsMoving == false)
- 		{
- 			IsMoving = true;
- 			Block = true;
- 			GetWorld()->GetTimerManager().SetTimer(TimerCameraMove, this, &APlayerCharacter::Camera_Moving, 0.01f, true);
- 			GetWorld()->GetTimerManager().SetTimer(TimerCameraStop, this, &APlayerCharacter::Camera_Stop, 0.5f, false);
- 		}
- 		else
- 		{
- 			IsMoving = false;
- 			Block = true;
- 			GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
- 			GetWorld()->GetTimerManager().SetTimer(TimerCameraBlock, this, &APlayerCharacter::Camera_Block, 1.f, false);
- 			if (CamPos == true)
- 			{
- 				SpringArmComponent->SocketOffset.Y = CameraComponent->GetRelativeLocation().Y + 150.f;
- 				CamPos = false;
- 			}
- 			else {CamPos = true;}
- 		}
- 	}
- }
+
 
  
  void APlayerCharacter::Camera_Moving()

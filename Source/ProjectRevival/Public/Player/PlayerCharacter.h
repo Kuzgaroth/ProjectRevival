@@ -19,15 +19,12 @@ class PROJECTREVIVAL_API APlayerCharacter : public ABaseCharacter
 	GENERATED_BODY()
 public:
 	APlayerCharacter(const FObjectInitializer& ObjectInitializer);
-	UFUNCTION()
-	void TimelineProgress(float Value);
 
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
 	void TimelineProgress(float Value);
-
-	virtual void Tick(float DeltaTime) override;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoom PlayerAimZoom;
 	
@@ -66,9 +63,13 @@ public:
 	
 	void HighlightAbility();
 
-	virtual bool IsRunning() const override;
+	UFUNCTION()
+	void OnOverlapBeginForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-
+	// declare overlap end function used specially for detecting objects when using highlight function
+	UFUNCTION()
+	void OnOverlapEndForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
 	virtual bool IsRunning() const override;
 private:
 	bool bWantsToRun = false;
@@ -77,7 +78,28 @@ private:
 	void MoveRight(float Amount);
 	void StartRun();
 	void StopRun();
-
+	
+	UPROPERTY()
+	class USphereComponent* SphereDetectingHighlightables;
+	
+	bool IsHighlighting = false;
+	void TimelineFieldOfView(float Value);
+	
+	FTimerHandle THandle;
+	void Flip();
+	void StopFlip();
+	const float FlipTime = 0.5f;
+	const float FlipStrength = 2000.f;
+	// curve from content manager
+	UPROPERTY(EditAnywhere)
+	UCurveFloat* FlipCurve = LoadObject<UCurveFloat>(nullptr, TEXT("/Game/ProjectRevival/Core/Player/FlipCurve.FlipCurve"));
+	bool IsFlipping = false;
+	
+	UPROPERTY()
+	TArray<AActor*> ToHighlight;
+	//Array of objects/enemies to ignore at highlighting
+	UPROPERTY()
+	TArray<AActor*> ToIgnore;
 	UFUNCTION()
 	void OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
