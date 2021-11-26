@@ -3,7 +3,7 @@
 //Weapon
 class ABaseWeapon;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnClipEmptySignature, ABaseWeapon*)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnClipEmptySignature, ABaseWeapon*);
 
 USTRUCT(BlueprintType)
 struct FAmmoData
@@ -33,8 +33,8 @@ struct FWeaponData
 };
 
 //Health
-DECLARE_MULTICAST_DELEGATE(FOnDeath)
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, float)
+DECLARE_MULTICAST_DELEGATE(FOnDeath);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, float);
 
 //UI
 
@@ -137,3 +137,6 @@ struct FLevelData
 };
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnLevelSelectedSignature, const FLevelData&);
+
+// Log Categories
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAISystem, Log, All);

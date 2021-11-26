@@ -34,8 +34,6 @@ AAICharacter::AAICharacter(const FObjectInitializer& ObjectInitializer) :Super(
 	HState = HealthState::FULL_HEALTH;
 }
 
-
-
 void AAICharacter::OnDeath()
 {
 	Super::OnDeath();
@@ -45,7 +43,6 @@ void AAICharacter::OnDeath()
 	{
 		PRController->BrainComponent->Cleanup();
 	}
-	
 }
 
 void AAICharacter::Tick(float DeltaSeconds)
@@ -63,7 +60,8 @@ void AAICharacter::PossessedBy(AController* NewController)
 		BBComp = AICon->GetBlackboardComponent();
 		UE_LOG(LogTemp, Log, TEXT("Check if cast was successful"));
 	}
-	
+	UpdateHStateBlackboardKey(3);
+	UE_LOG(LogTemp, Log, TEXT("SPECIAL"));
 }
 
 void AAICharacter::BeginPlay()
