@@ -24,11 +24,21 @@ public:
 
 	UFUNCTION()
 	void TimelineProgress(float Value);
+
+	UFUNCTION()
+	void TimelineFieldOfView(float Value);
+
+	UFUNCTION()
+	void TimelineLeftSideView(float Value);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoom PlayerAimZoom;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
+	FLeftSideView LeftSideView;
 	
 	FTimeline CurveTimeline;
+	FTimeline LeftSideViewCurveTimeline;
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UCameraComponent* CameraComponent;
@@ -42,6 +52,10 @@ protected:
 	virtual void OnDeath() override;
 	virtual void BeginPlay() override;
 
+	void OnCameraMove();
+	void CameraStop();
+	void CameraBlock();
+	
 	void CameraZoomIn();
 	void CameraZoomOut();
 
@@ -83,8 +97,7 @@ private:
 	class USphereComponent* SphereDetectingHighlightables;
 	
 	bool IsHighlighting = false;
-	void TimelineFieldOfView(float Value);
-	
+
 	FTimerHandle THandle;
 	void Flip();
 	void StopFlip();
@@ -108,16 +121,5 @@ private:
 	void OnCameraCollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	void CheckCameraOverlap();
-
-	void On_Camera_Move();
-	bool Block = false;
-	bool IsMoving = false;
-	bool CamPos = false;
-	float InterpSpeed = 0.0;
-	void Camera_Moving();
-	void Camera_Stop();
-	void Camera_Block();
-
-	UPROPERTY(EditAnywhere, Category = "Interp")
-	FVector DeltaPosition;
+	
 };
