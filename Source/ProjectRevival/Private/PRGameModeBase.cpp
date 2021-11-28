@@ -4,7 +4,6 @@
 #include "PRGameModeBase.h"
 #include "Player/BasePlayerController.h"
 #include "Player/BaseCharacter.h"
-#include "AIController.h"
 #include "PRPlayerState.h"
 #include "UI/GameHUD.h"
 #include "RespawnComponent.h"
@@ -26,7 +25,7 @@ APRGameModeBase::APRGameModeBase()
 void APRGameModeBase::StartPlay()
 {
 	Super::StartPlay();
-
+	
 	SpawnBots();
 	CreateTeamsInfo();
 	
@@ -97,7 +96,7 @@ void APRGameModeBase::SpawnBots()
 		
 		RestartPlayer(AIPRController);
 	}
-	
+	ResetPlayers();
 }
 
 void APRGameModeBase::StartRound()
@@ -116,6 +115,7 @@ void APRGameModeBase::GameTimerUpdate()
 		{
 			UE_LOG(LogGamePrModeBase, Display, TEXT("Round %i/%i ended"), CurrentRound, GameData.RoundsNum);
 			++CurrentRound;
+			UE_LOG(LogTemp, Log, TEXT("GameTimerUpdate+if+if+true"));
 			ResetPlayers();
 			StartRound();
 			UE_LOG(LogGamePrModeBase, Display, TEXT("Round %i/%i starts"), CurrentRound, GameData.RoundsNum);
@@ -210,8 +210,8 @@ void APRGameModeBase::LogPlayerInfo()
 
 void APRGameModeBase::StartRespawn(AController* Controller)
 {
-	const auto RespawnAvaliable = RoundCountDown>MinRoundTimeForSpawn+GameData.RespawnTime;
-	if (!RespawnAvaliable) return;
+	const auto RespawnAvailable = RoundCountDown>MinRoundTimeForSpawn+GameData.RespawnTime;
+	if (!RespawnAvailable) return;
 	
 	const auto RespawnComponent = PRUtils::GetCharacterComponent<URespawnComponent>(Controller);
 	if (!RespawnComponent) return;
