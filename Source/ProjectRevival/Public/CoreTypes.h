@@ -176,3 +176,33 @@ struct FPlayerAimZoom
 	bool IsZooming = false;
 	
 };
+
+USTRUCT(BlueprintType)
+struct FLeftSideView
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timeline")
+	UCurveFloat* LeftSideFloat;
+
+	UPROPERTY()
+	bool Block = false;
+
+	UPROPERTY()
+	bool IsMoving = false;
+
+	UPROPERTY()
+	bool CamPos = false;
+
+	UPROPERTY()
+	float EndPos = 0.0;
+
+	UPROPERTY()
+	float StartPos = 0.0;
+
+	UPROPERTY()
+	float Proverka = 0.0;
+	
+	UPROPERTY()
+    bool Repeat = false;
+};

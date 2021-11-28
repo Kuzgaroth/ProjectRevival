@@ -65,7 +65,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Released,WeaponComponent, &UWeaponComponent::StopFire);
 	PlayerInputComponent->BindAction("NextWeapon",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::NextWeapon);
 	PlayerInputComponent->BindAction("Reload",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::Reload);
-	PlayerInputComponent->BindAction("Left_Camera_View", EInputEvent::IE_Pressed,this, &APlayerCharacter::On_Camera_Move);
+	PlayerInputComponent->BindAction("Left_Camera_View", EInputEvent::IE_Pressed,this, &APlayerCharacter::OnCameraMove);
 	AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent,
 	FGameplayAbilityInputBinds(FString("ConfirmTarget"),
 	FString("CancelTarget"), FString("EGASInputActions")));
@@ -228,6 +228,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	CurveTimeline.TickTimeline(DeltaTime);
+	LeftSideViewCurveTimeline.TickTimeline(DeltaTime);
 }
 
 
@@ -242,40 +243,60 @@ void APlayerCharacter::TimelineFieldOfView(float Value)
 {
 	float NewFieldOfView = FMath::Lerp(CameraComponent->FieldOfView, PlayerAimZoom.CurrentFieldOfView, Value);
 	CameraComponent->FieldOfView = NewFieldOfView;
+	if (CameraComponent->FieldOfView >= PlayerAimZoom.CurrentFieldOfView && PlayerAimZoom.CurrentFieldOfView == 90.0) PlayerAimZoom.IsZooming = false;
 }
 
-void APlayerCharacter::On_Camera_Move()
+
+void APlayerCharacter::TimelineLeftSideView(float Value)
 {
-	FTimerHandle TimerCameraMove;
-	FTimerHandle TimerCameraStop;
-	FTimerHandle TimerCameraBlock;
-	if (Block == false && PlayerAimZoom.IsZooming == false)
+	float NewView = FMath::Lerp(LeftSideView.StartPos, LeftSideView.EndPos, Value);
+	SpringArmComponent->SocketOffset.Y = NewView;
+	if ((SpringArmComponent->SocketOffset.Y >= LeftSideView.EndPos && LeftSideView.CamPos == true || SpringArmComponent->SocketOffset.Y <= LeftSideView.EndPos && LeftSideView.CamPos == false) && LeftSideView.Repeat == false) { CameraStop(); LeftSideView.Repeat = true; }
+	
+}
+
+
+void APlayerCharacter::OnCameraMove()
+{
+	if (LeftSideView.Block == false && PlayerAimZoom.IsZooming == false && LeftSideView.IsMoving == false)
 	{
-		float StartPos = SpringArmComponent->SocketOffset.Y;
-		InterpSpeed = (SpringArmComponent->SocketOffset.Y + tan(CameraComponent->GetRelativeRotation().Yaw * PI / 180) * SpringArmComponent->TargetArmLength) * 2.f / 50.f;
-		if (IsMoving == false)
-		{
-			IsMoving = true;
-			Block = true;
-			GetWorld()->GetTimerManager().SetTimer(TimerCameraMove, this, &APlayerCharacter::Camera_Moving, 0.01f, true);
-			GetWorld()->GetTimerManager().SetTimer(TimerCameraStop, this, &APlayerCharacter::Camera_Stop, 0.5f, false);
-		}
-		else
-		{
-			IsMoving = false;
-			Block = true;
-			GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
-			GetWorld()->GetTimerManager().SetTimer(TimerCameraBlock, this, &APlayerCharacter::Camera_Block, 1.f, false);
-			if (CamPos == true)
-			{
-				SpringArmComponent->SocketOffset.Y = StartPos;
-				CamPos = false;
-			}
-			else {CamPos = true;}
-			PlayerAimZoom.StartStartPos = SpringArmComponent->SocketOffset;
-		}
+		if (LeftSideView.CamPos == false) LeftSideView.Proverka = SpringArmComponent->SocketOffset.Y;
+		FOnTimelineFloat TimelineLeftSideView;
+		TimelineLeftSideView.BindUFunction(this, FName("TimelineLeftSideView"));
+		LeftSideViewCurveTimeline.AddInterpFloat(PlayerAimZoom.CurveFloat, TimelineLeftSideView);
+
+		LeftSideView.StartPos = SpringArmComponent->SocketOffset.Y;
+		LeftSideView.EndPos = LeftSideView.StartPos - (SpringArmComponent->SocketOffset.Y + tan(CameraComponent->GetRelativeRotation().Yaw * PI / 180) * SpringArmComponent->TargetArmLength) * 2.f;
+		LeftSideView.Block = true;
+		LeftSideView.IsMoving = true;
+		LeftSideView.Repeat = false;
+		LeftSideViewCurveTimeline.PlayFromStart();
 	}
 }
+
+
+void APlayerCharacter::CameraStop()
+{
+	FTimerHandle TimerCameraBlock;
+	LeftSideView.IsMoving = false;
+	GetWorld()->GetTimerManager().SetTimer(TimerCameraBlock, this, &APlayerCharacter::CameraBlock, 0.5, false);
+	if (LeftSideView.CamPos == true)
+	{
+		LeftSideView.CamPos = false;
+		SpringArmComponent->SocketOffset.Y = LeftSideView.Proverka;
+	}
+	else LeftSideView.CamPos = true;
+	PlayerAimZoom.StartStartPos = SpringArmComponent->SocketOffset;
+}
+
+
+
+void APlayerCharacter::CameraBlock()
+{
+	LeftSideView.Block = false;
+}
+
+
 void APlayerCharacter::Flip()
 {
 	//добавить в CanFire IfFlipping
@@ -321,14 +342,9 @@ void APlayerCharacter::StopFlip()
 	UE_LOG(LogPlayerCharacter, Verbose, TEXT("Flip was successful"));
 }
 
-void APlayerCharacter::Camera_Block()
-{
-	Block = false;
-}
-
 void APlayerCharacter::CameraZoomIn()
 {
-	if (IsMoving == false)
+	if (LeftSideView.IsMoving == false)
 	{
 		if (PlayerAimZoom.StartStartPos == FVector(0.0, 0.0, 0.0)) PlayerAimZoom.StartStartPos = SpringArmComponent->SocketOffset;
 		SpringArmComponent->SocketOffset = PlayerAimZoom.StartStartPos;
@@ -341,7 +357,7 @@ void APlayerCharacter::CameraZoomIn()
 
 		PlayerAimZoom.StartLoc = SpringArmComponent->SocketOffset;
 		PlayerAimZoom.EndLoc = FVector(SpringArmComponent->SocketOffset.X + PlayerAimZoom.Offset.X, SpringArmComponent->SocketOffset.Y, SpringArmComponent->SocketOffset.Z + PlayerAimZoom.Offset.Z);
-		if (CamPos == false) PlayerAimZoom.EndLoc.Y -= PlayerAimZoom.Offset.Y; else PlayerAimZoom.EndLoc.Y += PlayerAimZoom.Offset.Y / 2.0;
+		if (LeftSideView.CamPos == false) PlayerAimZoom.EndLoc.Y -= PlayerAimZoom.Offset.Y; else PlayerAimZoom.EndLoc.Y += PlayerAimZoom.Offset.Y / 2.0;
 		PlayerAimZoom.CurrentFieldOfView = PlayerAimZoom.FieldOfView;
 
 		PlayerAimZoom.IsZooming = true;
@@ -351,7 +367,7 @@ void APlayerCharacter::CameraZoomIn()
 
 void APlayerCharacter::CameraZoomOut()
 {
-	if (IsMoving == false && PlayerAimZoom.IsZooming == true)
+	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true)
 	{
 		FOnTimelineVector TimelineProgress;
 		FOnTimelineFloat TimelineFieldOfView;
@@ -363,22 +379,7 @@ void APlayerCharacter::CameraZoomOut()
 		PlayerAimZoom.EndLoc = PlayerAimZoom.StartLoc;
 		PlayerAimZoom.StartLoc = SpringArmComponent->SocketOffset;
 		PlayerAimZoom.CurrentFieldOfView = 90.0;
-
-		PlayerAimZoom.IsZooming = false;
+		
 		CurveTimeline.PlayFromStart();
 	}
 }
-
-
-
- 
- void APlayerCharacter::Camera_Moving()
- {
- 	SpringArmComponent->SocketOffset.Y = FMath::FInterpTo(SpringArmComponent->SocketOffset.Y, SpringArmComponent->SocketOffset.Y - InterpSpeed, 1.f, InterpSpeed);
- }
- 
- void APlayerCharacter::Camera_Stop()
- {
- 	Block = false;
- 	On_Camera_Move();
- }
