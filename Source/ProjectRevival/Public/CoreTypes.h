@@ -1,9 +1,14 @@
-﻿#pragma once
+#pragma once
+#include "Components/TimelineComponent.h"
 #include "CoreTypes.generated.h"
+
 //Weapon
 class ABaseWeapon;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnClipEmptySignature, ABaseWeapon*);
+
+// Log Categories
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAISystem, Log, All);
 
 USTRUCT(BlueprintType)
 struct FAmmoData
@@ -138,5 +143,36 @@ struct FLevelData
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnLevelSelectedSignature, const FLevelData&);
 
-// Log Categories
-DECLARE_LOG_CATEGORY_EXTERN(LogPRAISystem, Log, All);
+USTRUCT(BlueprintType)
+struct FPlayerAimZoom
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timeline")
+	UCurveVector* CurveVector;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timeline")
+	FVector Offset = FVector(150.0, 60.0, 0.0);
+	
+	UPROPERTY()
+	FVector StartLoc;
+	
+	UPROPERTY()
+	FVector EndLoc;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timeline")
+	UCurveFloat* CurveFloat;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timeline")
+	float FieldOfView = 60.0;
+	
+	UPROPERTY()
+	float CurrentFieldOfView;
+	
+	UPROPERTY()
+	FVector StartStartPos = FVector(0.0, 0.0, 0.0);
+	
+	UPROPERTY()
+	bool IsZooming = false;
+	
+};
