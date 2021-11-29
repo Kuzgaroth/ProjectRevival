@@ -80,6 +80,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category="Movement")
 	float GetMovementDirection() const;
+
+	UFUNCTION(BlueprintCallable, Category="Components")
+	UWeaponComponent* GetWeaponComponent() const;
 	
 	void SetPlayerColor(const FLinearColor& Color);
 	virtual TArray<UMaterialInstanceDynamic*> GetDynMaterials() override;

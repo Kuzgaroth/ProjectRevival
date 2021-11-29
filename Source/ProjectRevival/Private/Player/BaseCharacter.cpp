@@ -89,6 +89,11 @@ float ABaseCharacter::GetMovementDirection() const
 	return Degrees*FMath::Sign(CrossProduct.Z);
 }
 
+UWeaponComponent* ABaseCharacter::GetWeaponComponent() const
+{
+	return WeaponComponent;
+}
+
 // Called to bind functionality to input
 
 
