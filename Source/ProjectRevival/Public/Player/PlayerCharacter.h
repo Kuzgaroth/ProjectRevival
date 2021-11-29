@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Player/BaseCharacter.h"
 #include "Components/TimelineComponent.h"
+#include "CoreMinimal.h"
+#include "GameplayTags.h"
+#include "Player/BaseCharacter.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "PlayerCharacter.generated.h"
 
@@ -19,6 +20,7 @@ class PROJECTREVIVAL_API APlayerCharacter : public ABaseCharacter
 	GENERATED_BODY()
 public:
 	APlayerCharacter(const FObjectInitializer& ObjectInitializer);
+	
 	UFUNCTION()
 	void TimelineProgress(float Value);
 
@@ -28,6 +30,7 @@ public:
 	FPlayerAimZoom PlayerAimZoom;
 	
 	FTimeline CurveTimeline;
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UCameraComponent* CameraComponent;
@@ -60,8 +63,8 @@ public:
 	USpringArmComponent* SpringArmComponent;
 	virtual bool IsRunning() const override;
 	
-	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	const FGameplayTagContainer CharacterTags;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	FGameplayTagContainer CharacterTags;
 private:
 	bool bWantsToRun = false;
 	bool IsMovingForward = false;

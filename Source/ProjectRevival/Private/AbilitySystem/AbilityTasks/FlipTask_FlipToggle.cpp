@@ -3,14 +3,15 @@
 
 #include "AbilitySystem/AbilityTasks/FlipTask_FlipToggle.h"
 #include "AbilitySystem/PRAbilityTypes.h"
-#include "Kismet/GameplayStatics.h"
-#include "PlayerCharacter.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "Player/BaseCharacter.h"
 #include "Animation/AnimInstance.h"
 #include "Components/WeaponComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameplayTagContainer.h"
+#include "Kismet/GameplayStatics.h"
+#include "PlayerCharacter.h"
+#include "Player/BaseCharacter.h"
+
 
 void UFlipTask_FlipToggle::Activate()
 {
@@ -48,9 +49,9 @@ void UFlipTask_FlipToggle::TickTimeline(float Delta)
 
 void UFlipTask_FlipToggle::FlipStarted(float Strength, float Duration, UCurveFloat* Curve)
 {
-	const APlayerCharacter* Character = Cast<APlayerCharacter>(GetAvatarActor());
-	const AActor* Actor = Cast<AActor>(GetAvatarActor());
 	const FGameplayTag FlipTag = FGameplayTag::RequestGameplayTag(FName("Ability.Flip.IsFlipping"));
+	APlayerCharacter* const Character = Cast<APlayerCharacter>(GetAvatarActor());
+	Character->CharacterTags.AddTag(FlipTag);
 	UWeaponComponent* Weapon = Cast<UWeaponComponent>(Character->GetWeaponComponent());
 	if(Character->GetCharacterMovement()->IsFlying()||Character->GetCharacterMovement()->IsFalling()
 		||Character->CharacterTags.HasTag(FlipTag)||Weapon->IsShooting()||!Weapon->CanFire())
@@ -61,6 +62,7 @@ void UFlipTask_FlipToggle::FlipStarted(float Strength, float Duration, UCurveFlo
 	else
 	{
 		UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Flip has started"));
+		
 		//Character->CharacterTags.AddTag(FlipTag);
 		Timeline.SetTimelineFinishedFunc(OnFlipStarted);
 		Timeline.PlayFromStart();

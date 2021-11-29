@@ -2,7 +2,7 @@
 
 
 #include "AbilitySystem/Abilities/FlipAbility.h"
-#include "Abilities/GameplayAbilityTypes.h"
+//#include "Abilities/GameplayAbilityTypes.h"
 #include "AbilitySystem/AbilityTasks/FlipTask_FlipToggle.h"
 
 UFlipAbility::UFlipAbility()

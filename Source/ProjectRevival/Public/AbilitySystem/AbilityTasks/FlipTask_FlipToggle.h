@@ -2,14 +2,13 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
-#include "Components/TimelineComponent.h"
-#include "FuncActors/TickActor.h"
-#include "AbilitySystem/Abilities/PRGameplayAbility.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
+#include "AbilitySystem/Abilities/PRGameplayAbility.h"
+#include "Components/TimelineComponent.h"
+#include "CoreMinimal.h"
+#include "FuncActors/TickActor.h"
 #include "FlipTask_FlipToggle.generated.h"
-
 
 UCLASS()
 class PROJECTREVIVAL_API UFlipTask_FlipToggle : public UAbilityTask
