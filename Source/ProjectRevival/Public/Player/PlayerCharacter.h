@@ -4,7 +4,6 @@
 
 #include "Components/TimelineComponent.h"
 #include "CoreMinimal.h"
-#include "GameplayTags.h"
 #include "Player/BaseCharacter.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "PlayerCharacter.generated.h"
@@ -63,8 +62,6 @@ public:
 	USpringArmComponent* SpringArmComponent;
 	virtual bool IsRunning() const override;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	FGameplayTagContainer CharacterTags;
 private:
 	bool bWantsToRun = false;
 	bool IsMovingForward = false;

@@ -3,7 +3,6 @@
 
 #include "AbilitySystem/AbilityTasks/FlipTask_FlipToggle.h"
 #include "AbilitySystem/PRAbilityTypes.h"
-#include "Animation/AnimInstance.h"
 #include "Components/WeaponComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -26,9 +25,6 @@ void UFlipTask_FlipToggle::Activate(float Strength, float Duration, UCurveFloat*
 		TimeLineProgress.BindUFunction(this, FName("TimelineProgress"));
 		Timeline.AddInterpFloat(CurveFloat,TimeLineProgress);
 		Timeline.SetLooping(false);
-		TickActor = GetWorld()->SpawnActorDeferred<ATickActor>(ATickActor::StaticClass(),GetOwnerActor()->GetTransform(), GetOwnerActor());
-		TickActor->OnTick.AddUObject(this, &UFlipTask_FlipToggle::TickTimeline);
-		UGameplayStatics::FinishSpawningActor(TickActor,GetOwnerActor()->GetTransform());
 		FlipStarted(Strength, Duration, Curve);
 	}
 }
@@ -51,10 +47,9 @@ void UFlipTask_FlipToggle::FlipStarted(float Strength, float Duration, UCurveFlo
 {
 	const FGameplayTag FlipTag = FGameplayTag::RequestGameplayTag(FName("Ability.Flip.IsFlipping"));
 	APlayerCharacter* const Character = Cast<APlayerCharacter>(GetAvatarActor());
-	Character->CharacterTags.AddTag(FlipTag);
-	UWeaponComponent* Weapon = Cast<UWeaponComponent>(Character->GetWeaponComponent());
+		UWeaponComponent* Weapon = Cast<UWeaponComponent>(Character->GetWeaponComponent());
 	if(Character->GetCharacterMovement()->IsFlying()||Character->GetCharacterMovement()->IsFalling()
-		||Character->CharacterTags.HasTag(FlipTag)||Weapon->IsShooting()||!Weapon->CanFire())
+		||Weapon->IsShooting()||!Weapon->CanFire())
 	{
 		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Flip failed"));
 		EndTask();
@@ -62,8 +57,6 @@ void UFlipTask_FlipToggle::FlipStarted(float Strength, float Duration, UCurveFlo
 	else
 	{
 		UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Flip has started"));
-		
-		//Character->CharacterTags.AddTag(FlipTag);
 		Timeline.SetTimelineFinishedFunc(OnFlipStarted);
 		Timeline.PlayFromStart();
 		Character->SpringArmComponent->bUsePawnControlRotation = false;
@@ -88,7 +81,7 @@ void UFlipTask_FlipToggle::FlipStarted(float Strength, float Duration, UCurveFlo
 			UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
 			if(AnimInstance != nullptr)
 			{
-				AnimInstance->Montage_Play(FlipMontage, 1.f);
+				MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(Ability, NAME_None, FlipMontage, true, NAME_None, true);
 			}
 		}
 		else
@@ -102,17 +95,15 @@ void UFlipTask_FlipToggle::FlipStarted(float Strength, float Duration, UCurveFlo
 void UFlipTask_FlipToggle::FlipFinished()
 {
 	Timeline.SetTimelineFinishedFunc(OnFlipFinished);
-	const APlayerCharacter* Character = Cast<APlayerCharacter>(GetAvatarActor());
+	APlayerCharacter* const Character = Cast<APlayerCharacter>(GetAvatarActor());
 	Character->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	Character->SpringArmComponent->bUsePawnControlRotation = true;
 	APawn* ACharacter = Cast<APawn>(GetAvatarActor());
 	ACharacter->bUseControllerRotationYaw = true;
-	//Character->CharacterTags.RemoveTag(FGameplayTag::RequestGameplayTag(FName("Flip.Ability.IsFlipping")));
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 }
 
 void UFlipTask_FlipToggle::OnDestroy(bool bAbilityEnded)
 {
-	TickActor->Destroy();
 	Super::OnDestroy(bAbilityEnded);
 }

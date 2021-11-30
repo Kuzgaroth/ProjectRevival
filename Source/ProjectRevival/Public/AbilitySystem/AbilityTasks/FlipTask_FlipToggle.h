@@ -4,6 +4,7 @@
 
 #include "Abilities/Tasks/AbilityTask.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
+#include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "AbilitySystem/Abilities/PRGameplayAbility.h"
 #include "Components/TimelineComponent.h"
 #include "CoreMinimal.h"
@@ -34,14 +35,14 @@ public:
 private:
 	virtual void OnDestroy(bool AbilityEnded) override;
 	
-	UPROPERTY()
-	ATickActor* TickActor;
-	
 	UPROPERTY(EditDefaultsOnly)
 	UCurveFloat* CurveFloat;
 
 	UPROPERTY()
 	class UAbilityTask_ApplyRootMotionConstantForce* ForceTask;
+
+	UPROPERTY()
+	class UAbilityTask_PlayMontageAndWait* MontageTask;
 	
 	FTimeline Timeline;
 };
