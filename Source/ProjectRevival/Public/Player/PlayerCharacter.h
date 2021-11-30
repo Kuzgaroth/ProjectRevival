@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "Components/TimelineComponent.h"
 #include "CoreMinimal.h"
 #include "Player/BaseCharacter.h"
+#include "Components/TimelineComponent.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "PlayerCharacter.generated.h"
 
@@ -19,33 +19,49 @@ class PROJECTREVIVAL_API APlayerCharacter : public ABaseCharacter
 	GENERATED_BODY()
 public:
 	APlayerCharacter(const FObjectInitializer& ObjectInitializer);
-	
 	UFUNCTION()
 	void TimelineProgress(float Value);
 
 	virtual void Tick(float DeltaTime) override;
+	
+	UFUNCTION()
+	void TimelineFieldOfView(float Value);
 
+	UFUNCTION()
+	void TimelineLeftSideView(float Value);
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoom PlayerAimZoom;
 	
-	FTimeline CurveTimeline;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
+	FLeftSideView LeftSideView;
 	
+	FTimeline CurveTimeline;
+	FTimeline LeftSideViewCurveTimeline;
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UCameraComponent* CameraComponent;
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
+	USpringArmComponent* SpringArmComponent;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	USphereComponent* CameraCollisionComponent;
-	
+
 	virtual void OnDeath() override;
 	virtual void BeginPlay() override;
-
+	
+	void OnCameraMove();
+	void CameraStop();
+	void CameraBlock();
+	
 	void CameraZoomIn();
 	void CameraZoomOut();
 
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
+
+
 	//The range in which enemies and objects are highlighted 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
 	float HighlightRadius = 2000.f;
@@ -57,11 +73,17 @@ public:
 	//Types of collisions by which objects are going to be highlighted
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesToHighlight;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
-	USpringArmComponent* SpringArmComponent;
-	virtual bool IsRunning() const override;
 	
+	void HighlightAbility();
+
+	UFUNCTION()
+	void OnOverlapBeginForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	// declare overlap end function used specially for detecting objects when using highlight function
+	UFUNCTION()
+	void OnOverlapEndForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
+	virtual bool IsRunning() const override;
 private:
 	bool bWantsToRun = false;
 	bool IsMovingForward = false;
@@ -69,7 +91,27 @@ private:
 	void MoveRight(float Amount);
 	void StartRun();
 	void StopRun();
+	
+	UPROPERTY()
+	class USphereComponent* SphereDetectingHighlightables;
+	
+	bool IsHighlighting = false;
 
+	FTimerHandle THandle;
+	void Flip();
+	void StopFlip();
+	const float FlipTime = 0.5f;
+	const float FlipStrength = 2000.f;
+	// curve from content manager
+	UPROPERTY(EditAnywhere)
+	UCurveFloat* FlipCurve = LoadObject<UCurveFloat>(nullptr, TEXT("/Game/ProjectRevival/Core/Player/FlipCurve.FlipCurve"));
+	bool IsFlipping = false;
+	
+	UPROPERTY()
+	TArray<AActor*> ToHighlight;
+	//Array of objects/enemies to ignore at highlighting
+	UPROPERTY()
+	TArray<AActor*> ToIgnore;
 	UFUNCTION()
 	void OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
@@ -78,16 +120,5 @@ private:
 	void OnCameraCollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	void CheckCameraOverlap();
-
-	void On_Camera_Move();
-	bool Block = false;
-	bool IsMoving = false;
-	bool CamPos = false;
-	float InterpSpeed = 0.0;
-	void Camera_Moving();
-	void Camera_Stop();
-	void Camera_Block();
-
-	UPROPERTY(EditAnywhere, Category = "Interp")
-	FVector DeltaPosition;
+	
 };

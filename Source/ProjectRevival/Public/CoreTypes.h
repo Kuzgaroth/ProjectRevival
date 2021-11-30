@@ -1,11 +1,14 @@
-﻿#pragma once
+#pragma once
 #include "Components/TimelineComponent.h"
 #include "CoreTypes.generated.h"
 
 //Weapon
 class ABaseWeapon;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnClipEmptySignature, ABaseWeapon*)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnClipEmptySignature, ABaseWeapon*);
+
+// Log Categories
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAISystem, Log, All);
 
 USTRUCT(BlueprintType)
 struct FAmmoData
@@ -35,8 +38,8 @@ struct FWeaponData
 };
 
 //Health
-DECLARE_MULTICAST_DELEGATE(FOnDeath)
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, float)
+DECLARE_MULTICAST_DELEGATE(FOnDeath);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, float);
 
 //UI
 
@@ -172,4 +175,34 @@ struct FPlayerAimZoom
 	UPROPERTY()
 	bool IsZooming = false;
 	
+};
+
+USTRUCT(BlueprintType)
+struct FLeftSideView
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timeline")
+	UCurveFloat* LeftSideFloat;
+
+	UPROPERTY()
+	bool Block = false;
+
+	UPROPERTY()
+	bool IsMoving = false;
+
+	UPROPERTY()
+	bool CamPos = false;
+
+	UPROPERTY()
+	float EndPos = 0.0;
+
+	UPROPERTY()
+	float StartPos = 0.0;
+
+	UPROPERTY()
+	float Proverka = 0.0;
+	
+	UPROPERTY()
+    bool Repeat = false;
 };

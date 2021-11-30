@@ -15,6 +15,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Components/BaseCharacterMovementComponent.h"
+#include "ProjectRevival/ProjectRevival.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -33,14 +34,24 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	CameraCollisionComponent->SetSphereRadius(10.0f);
 	CameraCollisionComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 
+	ToIgnore.Add(this);
+
 	TraceChannelProvided = ECollisionChannel::ECC_GameTraceChannel2;
+
+	SphereDetectingHighlightables = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Highilght Detector Component"));
+	SphereDetectingHighlightables->InitSphereRadius(HighlightRadius);
+	SphereDetectingHighlightables->SetCollisionProfileName(TEXT("TriggerHighlighter"));
+	SphereDetectingHighlightables->SetupAttachment(RootComponent);
+	
+	SphereDetectingHighlightables->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapBeginForHighlight);
+	SphereDetectingHighlightables->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapEndForHighlight); 
 }
 
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	
+
 	PlayerInputComponent->BindAxis("MoveForward",this,&APlayerCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight",this,&APlayerCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("LookUp",this,&APlayerCharacter::AddControllerPitchInput);
@@ -54,7 +65,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Released,WeaponComponent, &UWeaponComponent::StopFire);
 	PlayerInputComponent->BindAction("NextWeapon",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::NextWeapon);
 	PlayerInputComponent->BindAction("Reload",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::Reload);
-	PlayerInputComponent->BindAction("Left_Camera_View", EInputEvent::IE_Pressed,this, &APlayerCharacter::On_Camera_Move);
+	PlayerInputComponent->BindAction("Left_Camera_View", EInputEvent::IE_Pressed,this, &APlayerCharacter::OnCameraMove);
 	AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent,
 	FGameplayAbilityInputBinds(FString("ConfirmTarget"),
 	FString("CancelTarget"), FString("EGASInputActions")));
@@ -81,6 +92,82 @@ void APlayerCharacter::StartRun()
 void APlayerCharacter::StopRun()
 {
 	bWantsToRun=false;
+}
+
+void APlayerCharacter::HighlightAbility()
+{
+	if (SphereDetectingHighlightables->GetScaledSphereRadius() != HighlightRadius)
+	{
+		SphereDetectingHighlightables->SetSphereRadius(HighlightRadius);
+	}
+	TArray<FHitResult> OutHits;
+	FVector ActorLocation = GetActorLocation();
+	
+	bool IsHitKismetByObj = UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), ActorLocation, ActorLocation, HighlightRadius,
+		ObjectTypesToHighlight, true, ToIgnore, EDrawDebugTrace::None, OutHits, true);
+	
+	if (IsHighlighting == false)
+	{
+		if(IsHitKismetByObj)
+		{
+			for (FHitResult& Hit : OutHits)
+			{
+				Hit.GetComponent()->SetRenderCustomDepth(true);
+			}
+		}
+		IsHighlighting = true;
+	} else if (IsHighlighting == true)
+	{
+		if(IsHitKismetByObj)
+		{
+			for (FHitResult& Hit : OutHits)
+			{
+				Hit.GetComponent()->SetRenderCustomDepth(false);
+			}
+		}
+		IsHighlighting = false;
+	}
+	
+}
+
+void APlayerCharacter::OnOverlapBeginForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
+	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (IsHighlighting == true)
+	{
+		if (OtherActor && (OtherActor != this) && OtherComp)
+		{
+			if (Cast<ACharacter>(OtherActor))
+			{
+				ACharacter* CharacterTmp = Cast<ACharacter>(OtherActor);
+				CharacterTmp->GetMesh()->SetRenderCustomDepth(true);
+			} 
+			// else
+			// {
+			// 	OtherComp->SetRenderCustomDepth(true);
+			// }
+		}
+	}
+}
+
+void APlayerCharacter::OnOverlapEndForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
+	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (IsHighlighting == true)
+	{
+		if (OtherActor && (OtherActor != this) && OtherComp)
+		{
+			if (Cast<ACharacter>(OtherActor))
+			{
+				ACharacter* CharacterTmp = Cast<ACharacter>(OtherActor);
+				CharacterTmp->GetMesh()->SetRenderCustomDepth(false);
+			} 
+			// else
+			// {
+			// 	OtherComp->SetRenderCustomDepth(false);
+			// }
+		}
+	}
 }
 
 void APlayerCharacter::OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -151,47 +238,24 @@ void APlayerCharacter::TimelineProgress(float Value)
 }
 
 
-void APlayerCharacter::On_Camera_Move()
+void APlayerCharacter::TimelineFieldOfView(float Value)
 {
-	FTimerHandle TimerCameraMove;
-	FTimerHandle TimerCameraStop;
-	FTimerHandle TimerCameraBlock;
-	if (Block == false && PlayerAimZoom.IsZooming == false)
-	{
-		float StartPos = SpringArmComponent->SocketOffset.Y;
-		InterpSpeed = (SpringArmComponent->SocketOffset.Y + tan(CameraComponent->GetRelativeRotation().Yaw * PI / 180) * SpringArmComponent->TargetArmLength) * 2.f / 50.f;
-		if (IsMoving == false)
-		{
-			IsMoving = true;
-			Block = true;
-			GetWorld()->GetTimerManager().SetTimer(TimerCameraMove, this, &APlayerCharacter::Camera_Moving, 0.01f, true);
-			GetWorld()->GetTimerManager().SetTimer(TimerCameraStop, this, &APlayerCharacter::Camera_Stop, 0.5f, false);
-		}
-		else
-		{
-			IsMoving = false;
-			Block = true;
-			GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
-			GetWorld()->GetTimerManager().SetTimer(TimerCameraBlock, this, &APlayerCharacter::Camera_Block, 1.f, false);
-			if (CamPos == true)
-			{
-				SpringArmComponent->SocketOffset.Y = StartPos;
-				CamPos = false;
-			}
-			else {CamPos = true;}
-			PlayerAimZoom.StartStartPos = SpringArmComponent->SocketOffset;
-		}
-	}
+	float NewFieldOfView = FMath::Lerp(CameraComponent->FieldOfView, PlayerAimZoom.CurrentFieldOfView, Value);
+	CameraComponent->FieldOfView = NewFieldOfView;
+	if (CameraComponent->FieldOfView >= PlayerAimZoom.CurrentFieldOfView && PlayerAimZoom.CurrentFieldOfView == 90.0) PlayerAimZoom.IsZooming = false;
 }
 
-void APlayerCharacter::Camera_Block()
+void APlayerCharacter::TimelineLeftSideView(float Value)
 {
-	Block = false;
+	float NewView = FMath::Lerp(LeftSideView.StartPos, LeftSideView.EndPos, Value);
+	SpringArmComponent->SocketOffset.Y = NewView;
+	if ((SpringArmComponent->SocketOffset.Y >= LeftSideView.EndPos && LeftSideView.CamPos == true || SpringArmComponent->SocketOffset.Y <= LeftSideView.EndPos && LeftSideView.CamPos == false) && LeftSideView.Repeat == false) { CameraStop(); LeftSideView.Repeat = true; }
+	
 }
 
 void APlayerCharacter::CameraZoomIn()
 {
-	if (IsMoving == false)
+	if (LeftSideView.IsMoving == false)
 	{
 		if (PlayerAimZoom.StartStartPos == FVector(0.0, 0.0, 0.0)) PlayerAimZoom.StartStartPos = SpringArmComponent->SocketOffset;
 		SpringArmComponent->SocketOffset = PlayerAimZoom.StartStartPos;
@@ -204,7 +268,7 @@ void APlayerCharacter::CameraZoomIn()
 
 		PlayerAimZoom.StartLoc = SpringArmComponent->SocketOffset;
 		PlayerAimZoom.EndLoc = FVector(SpringArmComponent->SocketOffset.X + PlayerAimZoom.Offset.X, SpringArmComponent->SocketOffset.Y, SpringArmComponent->SocketOffset.Z + PlayerAimZoom.Offset.Z);
-		if (CamPos == false) PlayerAimZoom.EndLoc.Y -= PlayerAimZoom.Offset.Y; else PlayerAimZoom.EndLoc.Y += PlayerAimZoom.Offset.Y / 2.0;
+		if (LeftSideView.CamPos == false) PlayerAimZoom.EndLoc.Y -= PlayerAimZoom.Offset.Y; else PlayerAimZoom.EndLoc.Y += PlayerAimZoom.Offset.Y / 2.0;
 		PlayerAimZoom.CurrentFieldOfView = PlayerAimZoom.FieldOfView;
 
 		PlayerAimZoom.IsZooming = true;
@@ -214,7 +278,7 @@ void APlayerCharacter::CameraZoomIn()
 
 void APlayerCharacter::CameraZoomOut()
 {
-	if (IsMoving == false && PlayerAimZoom.IsZooming == true)
+	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true)
 	{
 		FOnTimelineVector TimelineProgress;
 		FOnTimelineFloat TimelineFieldOfView;
@@ -231,14 +295,3 @@ void APlayerCharacter::CameraZoomOut()
 		CurveTimeline.PlayFromStart();
 	}
 }
- 
- void APlayerCharacter::Camera_Moving()
- {
- 	SpringArmComponent->SocketOffset.Y = FMath::FInterpTo(SpringArmComponent->SocketOffset.Y, SpringArmComponent->SocketOffset.Y - InterpSpeed, 1.f, InterpSpeed);
- }
- 
- void APlayerCharacter::Camera_Stop()
- {
- 	Block = false;
- 	On_Camera_Move();
- }
