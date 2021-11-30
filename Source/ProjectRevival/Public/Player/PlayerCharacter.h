@@ -2,9 +2,9 @@
 
 #pragma once
 
+#include "Components/TimelineComponent.h"
 #include "CoreMinimal.h"
 #include "Player/BaseCharacter.h"
-#include "Components/TimelineComponent.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "PlayerCharacter.generated.h"
 
@@ -19,29 +19,24 @@ class PROJECTREVIVAL_API APlayerCharacter : public ABaseCharacter
 	GENERATED_BODY()
 public:
 	APlayerCharacter(const FObjectInitializer& ObjectInitializer);
+	
 	UFUNCTION()
 	void TimelineProgress(float Value);
 
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION()
-	void TimelineProgress(float Value);
-
-	virtual void Tick(float DeltaTime) override;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoom PlayerAimZoom;
 	
 	FTimeline CurveTimeline;
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UCameraComponent* CameraComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
-	USpringArmComponent* SpringArmComponent;
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	USphereComponent* CameraCollisionComponent;
-
+	
 	virtual void OnDeath() override;
 	virtual void BeginPlay() override;
 
@@ -50,8 +45,7 @@ protected:
 
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-
+	
 	//The range in which enemies and objects are highlighted 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
 	float HighlightRadius = 2000.f;
@@ -63,13 +57,11 @@ public:
 	//Types of collisions by which objects are going to be highlighted
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesToHighlight;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
+	USpringArmComponent* SpringArmComponent;
+	virtual bool IsRunning() const override;
 	
-	void HighlightAbility();
-
-	virtual bool IsRunning() const override;
-
-
-	virtual bool IsRunning() const override;
 private:
 	bool bWantsToRun = false;
 	bool IsMovingForward = false;
