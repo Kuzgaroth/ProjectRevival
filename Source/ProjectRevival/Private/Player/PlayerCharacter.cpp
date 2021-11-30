@@ -228,6 +228,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	CurveTimeline.TickTimeline(DeltaTime);
+	LeftSideViewCurveTimeline.TickTimeline(DeltaTime);
 }
 
 
@@ -294,4 +295,44 @@ void APlayerCharacter::CameraZoomOut()
 		PlayerAimZoom.IsZooming = false;
 		CurveTimeline.PlayFromStart();
 	}
+}
+
+void APlayerCharacter::OnCameraMove()
+{
+	if (LeftSideView.Block == false && PlayerAimZoom.IsZooming == false && LeftSideView.IsMoving == false)
+	{
+		if (LeftSideView.CamPos == false) LeftSideView.Proverka = SpringArmComponent->SocketOffset.Y;
+		FOnTimelineFloat TimelineLeftSideView;
+		TimelineLeftSideView.BindUFunction(this, FName("TimelineLeftSideView"));
+		LeftSideViewCurveTimeline.AddInterpFloat(PlayerAimZoom.CurveFloat, TimelineLeftSideView);
+
+		LeftSideView.StartPos = SpringArmComponent->SocketOffset.Y;
+		LeftSideView.EndPos = LeftSideView.StartPos - (SpringArmComponent->SocketOffset.Y + tan(CameraComponent->GetRelativeRotation().Yaw * PI / 180) * SpringArmComponent->TargetArmLength) * 2.f;
+		LeftSideView.Block = true;
+		LeftSideView.IsMoving = true;
+		LeftSideView.Repeat = false;
+		LeftSideViewCurveTimeline.PlayFromStart();
+	}
+}
+
+
+void APlayerCharacter::CameraStop()
+{
+	FTimerHandle TimerCameraBlock;
+	LeftSideView.IsMoving = false;
+	GetWorld()->GetTimerManager().SetTimer(TimerCameraBlock, this, &APlayerCharacter::CameraBlock, 0.5, false);
+	if (LeftSideView.CamPos == true)
+	{
+		LeftSideView.CamPos = false;
+		SpringArmComponent->SocketOffset.Y = LeftSideView.Proverka;
+	}
+	else LeftSideView.CamPos = true;
+	PlayerAimZoom.StartStartPos = SpringArmComponent->SocketOffset;
+}
+
+
+
+void APlayerCharacter::CameraBlock()
+{
+	LeftSideView.Block = false;
 }

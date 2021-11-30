@@ -38,6 +38,8 @@ public:
 	
 	FTimeline CurveTimeline;
 	FTimeline LeftSideViewCurveTimeline;
+	
+	USpringArmComponent* GetPlayerSpringArmComponent(){return SpringArmComponent;}
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UCameraComponent* CameraComponent;

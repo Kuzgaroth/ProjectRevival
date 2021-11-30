@@ -59,7 +59,7 @@ void UFlipTask_FlipToggle::FlipStarted(float Strength, float Duration, UCurveFlo
 		UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Flip has started"));
 		Timeline.SetTimelineFinishedFunc(OnFlipStarted);
 		Timeline.PlayFromStart();
-		Character->SpringArmComponent->bUsePawnControlRotation = false;
+		Character->GetPlayerSpringArmComponent()->bUsePawnControlRotation = false;
 		APawn* ACharacter = Cast<APawn>(GetAvatarActor());
 		ACharacter->bUseControllerRotationYaw = false;
 		const FVector Forward  = Character->GetActorForwardVector();
@@ -97,7 +97,7 @@ void UFlipTask_FlipToggle::FlipFinished()
 	Timeline.SetTimelineFinishedFunc(OnFlipFinished);
 	APlayerCharacter* const Character = Cast<APlayerCharacter>(GetAvatarActor());
 	Character->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	Character->SpringArmComponent->bUsePawnControlRotation = true;
+	Character->GetPlayerSpringArmComponent()->bUsePawnControlRotation = true;
 	APawn* ACharacter = Cast<APawn>(GetAvatarActor());
 	ACharacter->bUseControllerRotationYaw = true;
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
