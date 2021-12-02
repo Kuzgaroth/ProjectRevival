@@ -11,12 +11,9 @@ void UOptionsAxisRemapWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	bCanInput = true;
-
 	if (ChangeInputButton)
 	{
-		ChangeInputButton->OnPressed.AddDynamic(this, &UOptionsAxisRemapWidget::OnChangeInputPressed);
-		ChangeInputButton->OnReleased.AddDynamic(this, &UOptionsAxisRemapWidget::OnChangeInputReleased);
+		ChangeInputButton->OnClicked.AddDynamic(this, &UOptionsAxisRemapWidget::OnChangeInputPressed);
 	}
 }
 
@@ -25,6 +22,7 @@ void UOptionsAxisRemapWidget::SetContent(const FInputAxisKeyMapping KeyMapping)
 	KeyMap = KeyMapping;
 	ActionText->SetText(FText::FromString(KeyMapping.AxisName.ToString()));
 	KeyText->SetText(FText::FromString(KeyMapping.Key.ToString()));
+	TipText->SetText(FText::FromString(""));
 }
 
 FReply UOptionsAxisRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
@@ -32,6 +30,15 @@ FReply UOptionsAxisRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, con
 	bool bCanUse = true;
 
 	FReply Reply = FReply::Unhandled();
+
+	if (InKeyEvent.GetKey().GetDisplayName().EqualTo(FText::FromString("Escape")))
+	{
+		SetContent(KeyMap);
+		bCanInput = false;
+		Reply = FReply::Handled();
+		
+		return Reply;
+	}
 
 	UInputSettings* Settings = const_cast<UInputSettings*>(GetDefault<UInputSettings>());
 	TArray<FInputActionKeyMapping> ActionMappings = Settings->GetActionMappings();
@@ -48,7 +55,7 @@ FReply UOptionsAxisRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, con
 
 	for (FInputAxisKeyMapping AxisMapping: AxisMappings)
 	{
-		if(AxisMapping.Key == InKeyEvent.GetKey())
+		if(AxisMapping.Key == InKeyEvent.GetKey() && AxisMapping.AxisName != KeyMap.AxisName)
 		{
 			bCanUse = false;
 		}
@@ -64,6 +71,55 @@ FReply UOptionsAxisRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, con
 
 		Reply = FReply::Handled();
 	}
+	else if (bCanInput && !bCanUse)
+	{
+		TipText->SetText(FText::FromString("Please, try another key"));
+	}
+
+	return Reply;
+}
+
+FReply UOptionsAxisRemapWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	bool bCanUse = true;
+
+	FReply Reply = FReply::Unhandled();
+
+	UInputSettings* Settings = const_cast<UInputSettings*>(GetDefault<UInputSettings>());
+	TArray<FInputActionKeyMapping> ActionMappings = Settings->GetActionMappings();
+
+	for (FInputActionKeyMapping ActionMapping: ActionMappings)
+	{
+		if(ActionMapping.Key == InMouseEvent.GetEffectingButton())
+		{
+			bCanUse = false;
+		}
+	}
+
+	TArray<FInputAxisKeyMapping> AxisMappings = Settings->GetAxisMappings();
+
+	for (FInputAxisKeyMapping AxisMapping: AxisMappings)
+	{
+		if(AxisMapping.Key == InMouseEvent.GetEffectingButton() && AxisMapping.AxisName != KeyMap.AxisName)
+		{
+			bCanUse = false;
+		}
+	}
+
+	if (bCanInput && bCanUse)
+	{
+		Settings->RemoveAxisMapping(KeyMap);
+		KeyMap.Key = InMouseEvent.GetEffectingButton();
+		SetContent(KeyMap);
+		bCanInput = false;
+		Settings->AddAxisMapping(KeyMap);
+
+		Reply = FReply::Handled();
+	}
+	else if (bCanInput && !bCanUse)
+	{
+		TipText->SetText(FText::FromString("Please, try another key"));
+	}
 
 	return Reply;
 }
@@ -71,7 +127,9 @@ FReply UOptionsAxisRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, con
 void UOptionsAxisRemapWidget::OnChangeInputPressed()
 {
 	KeyText->SetText(FText::FromString("?"));
+	TipText->SetText(FText::FromString("Press desired key"));
 	bCanInput = true;
+	SetKeyboardFocus();
 }
 
 void UOptionsAxisRemapWidget::OnChangeInputReleased()

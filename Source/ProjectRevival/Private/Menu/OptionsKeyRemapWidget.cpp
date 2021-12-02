@@ -10,13 +10,11 @@ void UOptionsKeyRemapWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	TipText->SetText(FText::FromString(""));
-
 	if (ChangeInputButton)
 	{
 		// ChangeInputButton->OnClicked.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInput);
 		ChangeInputButton->OnClicked.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInputPressed);
-		// ChangeInputButton->OnReleased.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInputReleased);
+		// ChangeInputButton->OnUnhovered.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInputReleased);
 	}
 }
 
@@ -25,22 +23,31 @@ void UOptionsKeyRemapWidget::SetContent(const FInputActionKeyMapping KeyMapping)
 	KeyMap = KeyMapping;
 	ActionText->SetText(FText::FromString(KeyMapping.ActionName.ToString()));
 	KeyText->SetText(FText::FromString(KeyMapping.Key.ToString()));
+	TipText->SetText(FText::FromString(""));
 }
 
 FReply UOptionsKeyRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 {
-	// Super::NativeOnKeyDown(InGeometry, InKeyEvent);
-
 	bool bCanUse = true;
 
 	FReply Reply = FReply::Unhandled();
 
+	if (InKeyEvent.GetKey().GetDisplayName().EqualTo(FText::FromString("Escape")))
+	{
+		SetContent(KeyMap);
+		bCanInput = false;
+		ChangeInputButton->SetIsEnabled(true);
+		Reply = FReply::Handled();
+		
+		return Reply;
+	}
+	
 	UInputSettings* Settings = const_cast<UInputSettings*>(GetDefault<UInputSettings>());
 	TArray<FInputActionKeyMapping> ActionMappings = Settings->GetActionMappings();
 
 	for (FInputActionKeyMapping ActionMapping: ActionMappings)
 	{
-		if(ActionMapping.Key == InKeyEvent.GetKey())
+		if(ActionMapping.Key == InKeyEvent.GetKey() && ActionMapping.ActionName != KeyMap.ActionName)
 		{
 			bCanUse = false;
 		}
@@ -63,11 +70,11 @@ FReply UOptionsKeyRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, cons
 		SetContent(KeyMap);
 		bCanInput = false;
 		Settings->AddActionMapping(KeyMap);
-		TipText->SetText(FText::FromString(""));
+		ChangeInputButton->SetIsEnabled(true);
 		
 		Reply = FReply::Handled();
 	}
-	else
+	else if (bCanInput && !bCanUse)
 	{
 		TipText->SetText(FText::FromString("Please, try another key"));
 	}
@@ -87,7 +94,7 @@ FReply UOptionsKeyRemapWidget::NativeOnMouseButtonDown(const FGeometry& InGeomet
 
 	for (FInputActionKeyMapping ActionMapping: ActionMappings)
 	{
-		if(ActionMapping.Key == InMouseEvent.GetEffectingButton())
+		if(ActionMapping.Key == InMouseEvent.GetEffectingButton() && ActionMapping.ActionName != KeyMap.ActionName)
 		{
 			bCanUse = false;
 		}
@@ -110,11 +117,11 @@ FReply UOptionsKeyRemapWidget::NativeOnMouseButtonDown(const FGeometry& InGeomet
 		SetContent(KeyMap);
 		bCanInput = false;
 		Settings->AddActionMapping(KeyMap);
-		TipText->SetText(FText::FromString(""));
-		
+		ChangeInputButton->SetIsEnabled(true);
+
 		Reply = FReply::Handled();
 	}
-	else
+	else if (bCanInput && !bCanUse)
 	{
 		TipText->SetText(FText::FromString("Please, try another key"));
 	}
@@ -134,9 +141,11 @@ void UOptionsKeyRemapWidget::OnChangeInputPressed()
 	TipText->SetText(FText::FromString("Press desired key"));
 	bCanInput = true;
 	SetKeyboardFocus();
+	ChangeInputButton->SetIsEnabled(false);
 }
 
 void UOptionsKeyRemapWidget::OnChangeInputReleased()
 {
-	SetKeyboardFocus();
+	SetContent(KeyMap);
+	bCanInput = false;
 }
