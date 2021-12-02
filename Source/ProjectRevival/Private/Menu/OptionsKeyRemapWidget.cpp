@@ -10,13 +10,13 @@ void UOptionsKeyRemapWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	bCanInput = true;
+	TipText->SetText(FText::FromString(""));
 
 	if (ChangeInputButton)
 	{
 		// ChangeInputButton->OnClicked.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInput);
-		ChangeInputButton->OnPressed.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInputPressed);
-		ChangeInputButton->OnReleased.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInputReleased);
+		ChangeInputButton->OnClicked.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInputPressed);
+		// ChangeInputButton->OnReleased.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInputReleased);
 	}
 }
 
@@ -63,12 +63,63 @@ FReply UOptionsKeyRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, cons
 		SetContent(KeyMap);
 		bCanInput = false;
 		Settings->AddActionMapping(KeyMap);
-
+		TipText->SetText(FText::FromString(""));
+		
 		Reply = FReply::Handled();
+	}
+	else
+	{
+		TipText->SetText(FText::FromString("Please, try another key"));
 	}
 
 	return Reply;
 
+}
+
+FReply UOptionsKeyRemapWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	bool bCanUse = true;
+
+	FReply Reply = FReply::Unhandled();
+
+	UInputSettings* Settings = const_cast<UInputSettings*>(GetDefault<UInputSettings>());
+	TArray<FInputActionKeyMapping> ActionMappings = Settings->GetActionMappings();
+
+	for (FInputActionKeyMapping ActionMapping: ActionMappings)
+	{
+		if(ActionMapping.Key == InMouseEvent.GetEffectingButton())
+		{
+			bCanUse = false;
+		}
+	}
+
+	TArray<FInputAxisKeyMapping> AxisMappings = Settings->GetAxisMappings();
+
+	for (FInputAxisKeyMapping AxisMapping: AxisMappings)
+	{
+		if(AxisMapping.Key == InMouseEvent.GetEffectingButton())
+		{
+			bCanUse = false;
+		}
+	}
+
+	if (bCanInput && bCanUse)
+	{
+		Settings->RemoveActionMapping(KeyMap);
+		KeyMap.Key = InMouseEvent.GetEffectingButton();
+		SetContent(KeyMap);
+		bCanInput = false;
+		Settings->AddActionMapping(KeyMap);
+		TipText->SetText(FText::FromString(""));
+		
+		Reply = FReply::Handled();
+	}
+	else
+	{
+		TipText->SetText(FText::FromString("Please, try another key"));
+	}
+
+	return Reply;
 }
 
 void UOptionsKeyRemapWidget::OnChangeInput()
@@ -80,11 +131,12 @@ void UOptionsKeyRemapWidget::OnChangeInput()
 void UOptionsKeyRemapWidget::OnChangeInputPressed()
 {
 	KeyText->SetText(FText::FromString("?"));
+	TipText->SetText(FText::FromString("Press desired key"));
 	bCanInput = true;
-	// SetKeyboardFocus();
+	SetKeyboardFocus();
 }
 
 void UOptionsKeyRemapWidget::OnChangeInputReleased()
 {
-	KeyText->SetText(FText::FromString(KeyMap.Key.ToString()));
+	SetKeyboardFocus();
 }

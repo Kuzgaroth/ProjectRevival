@@ -28,12 +28,17 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	UTextBlock* KeyText;
 
+	UPROPERTY(meta=(BindWidget))
+	UTextBlock* TipText;
+
 	virtual void NativeOnInitialized() override;
 
 	UFUNCTION()
 	void SetContent(const FInputActionKeyMapping KeyMapping);
 	
 	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
+
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	
 private:
 	bool bCanInput;
