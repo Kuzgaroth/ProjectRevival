@@ -17,5 +17,4 @@ Content/ExternalContent
 .clang-format.txt
 *.sln.*
 *.uproject
-*.umap
 *BuiltData.uasset
