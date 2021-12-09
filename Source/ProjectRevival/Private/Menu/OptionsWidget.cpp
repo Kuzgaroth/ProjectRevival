@@ -28,17 +28,17 @@ void UOptionsWidget::NativeOnInitialized()
 	{
 		SoundButton->OnClicked.AddDynamic(this, &UOptionsWidget::OnSound);
 	}
+	if (OptionsGraphicsWidgetClass)
+	{
+		UOptionsGraphicsWidget* OptionsGraphicsWidget = CreateWidget<UOptionsGraphicsWidget>(GetWorld(),
+                                                                                            OptionsGraphicsWidgetClass);
+		OptionsWidgetSwitcher->AddChild(OptionsGraphicsWidget);
+	}
 	if (OptionsControlsWidgetClass)
 	{
 		UOptionsControlsWidget* OptionsControlsWidget = CreateWidget<UOptionsControlsWidget>(GetWorld(),
 																							OptionsControlsWidgetClass);
 		OptionsWidgetSwitcher->AddChild(OptionsControlsWidget);
-	}
-	if (OptionsGraphicsWidgetClass)
-	{
-		UOptionsGraphicsWidget* OptionsGraphicsWidget = CreateWidget<UOptionsGraphicsWidget>(GetWorld(),
-																							OptionsGraphicsWidgetClass);
-		OptionsWidgetSwitcher->AddChild(OptionsGraphicsWidget);
 	}
 	if (OptionsSoundWidgetClass)
 	{
@@ -61,7 +61,7 @@ void UOptionsWidget::OnControls()
 {
 	if (OptionsWidgetSwitcher)
 	{
-		OptionsWidgetSwitcher->SetActiveWidgetIndex(0);
+		OptionsWidgetSwitcher->SetActiveWidgetIndex(1);
 	}
 }
 
@@ -69,7 +69,7 @@ void UOptionsWidget::OnGraphics()
 {
 	if (OptionsWidgetSwitcher)
 	{
-		OptionsWidgetSwitcher->SetActiveWidgetIndex(1);
+		OptionsWidgetSwitcher->SetActiveWidgetIndex(0);
 	}
 }
 
