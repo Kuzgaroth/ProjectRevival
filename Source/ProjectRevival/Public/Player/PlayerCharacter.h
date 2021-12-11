@@ -60,6 +60,7 @@ protected:
 	void CameraZoomIn();
 	void CameraZoomOut();
 
+	void OnWorldChanged();
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 

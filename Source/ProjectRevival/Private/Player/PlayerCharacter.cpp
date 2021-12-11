@@ -16,6 +16,8 @@
 #include "Components/TimelineComponent.h"
 #include "Components/BaseCharacterMovementComponent.h"
 #include "ProjectRevival/ProjectRevival.h"
+#include "GameFeature/StaticObjectToNothing.h"
+#include "Kismet/GameplayStatics.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -65,12 +67,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Released,WeaponComponent, &UWeaponComponent::StopFire);
 	PlayerInputComponent->BindAction("NextWeapon",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::NextWeapon);
 	PlayerInputComponent->BindAction("Reload",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::Reload);
-	PlayerInputComponent->BindAction("Left_Camera_View", EInputEvent::IE_Pressed,this, &APlayerCharacter::OnCameraMove);
+	PlayerInputComponent->BindAction("LeftCameraView", EInputEvent::IE_Pressed,this, &APlayerCharacter::OnCameraMove);
 	AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent,
 	FGameplayAbilityInputBinds(FString("ConfirmTarget"),
 	FString("CancelTarget"), FString("EGASInputActions")));
 	InputComponent->BindAction("Zoom", IE_Pressed, this, &APlayerCharacter::CameraZoomIn);
 	InputComponent->BindAction("Zoom", IE_Released, this, &APlayerCharacter::CameraZoomOut);
+	PlayerInputComponent->BindAction("ChangeWorld", EInputEvent::IE_Pressed,this, &APlayerCharacter::OnWorldChanged);
 }
 
 void APlayerCharacter::MoveForward(float Amount)
@@ -297,6 +300,7 @@ void APlayerCharacter::CameraZoomOut()
 	}
 }
 
+
 void APlayerCharacter::OnCameraMove()
 {
 	if (LeftSideView.Block == false && PlayerAimZoom.IsZooming == false && LeftSideView.IsMoving == false)
@@ -335,4 +339,17 @@ void APlayerCharacter::CameraStop()
 void APlayerCharacter::CameraBlock()
 {
 	LeftSideView.Block = false;
+}
+
+
+void APlayerCharacter::OnWorldChanged()
+{
+	TSubclassOf<AStaticObjectToNothing> ClassToFind;
+	ClassToFind = AStaticObjectToNothing::StaticClass();
+	TArray<AActor*> OutActors;
+	UGameplayStatics::GetAllActorsOfClass(this, ClassToFind, OutActors);
+	for (int EveryActor = 0; EveryActor < OutActors.Num(); EveryActor++)
+	{
+		Cast<AStaticObjectToNothing>(OutActors[EveryActor])->Changing();
+	}
 }
