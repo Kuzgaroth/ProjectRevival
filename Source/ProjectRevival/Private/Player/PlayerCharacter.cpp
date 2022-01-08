@@ -221,6 +221,29 @@ bool APlayerCharacter::IsRunning() const
 	return bWantsToRun && IsMovingForward && !GetVelocity().IsZero();
 }
 
+void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (OnEnergyValueChangedHandle.IsBound()) OnEnergyValueChangedHandle.Clear();
+	CameraCollisionComponent->OnComponentBeginOverlap.Clear();
+	CameraCollisionComponent->OnComponentEndOverlap.Clear();
+	Super::EndPlay(EndPlayReason);
+}
+
+void APlayerCharacter::OnEnergyAttributeChanged(const FOnAttributeChangeData& Data)
+{
+	Super::OnEnergyAttributeChanged(Data);
+	//Для подключения делегата необходимо получить объект типа APlayerCharacter и сделать OnEnergyValueChangedHandle.BindUObject(this, &тип_класса::название_метода);
+	//Далее указанный метод будет вызываться автоматически при помощи следующей команды
+	if (OnEnergyValueChangedHandle.IsBound()) OnEnergyValueChangedHandle.Execute(Data.NewValue);
+	
+}
+
+void APlayerCharacter::OnCooldownExpired(const FActiveGameplayEffect& ExpiredEffect)
+{
+	Super::OnCooldownExpired(ExpiredEffect);
+	
+}
+
 void APlayerCharacter::OnDeath()
 {
 	Super::OnDeath();

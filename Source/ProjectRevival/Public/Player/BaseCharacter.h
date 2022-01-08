@@ -64,7 +64,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Abilities)
 	TMap<EGASInputActions, TSubclassOf<UPRGameplayAbility>> GameplayAbilities;
-	
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void AddStartupGameplayAbilities();
 	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data);
 	virtual void OnCooldownExpired(const FActiveGameplayEffect& ExpiredEffect); 

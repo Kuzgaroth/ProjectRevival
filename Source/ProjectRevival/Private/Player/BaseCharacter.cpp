@@ -113,6 +113,13 @@ TArray<UMaterialInstanceDynamic*> ABaseCharacter::GetDynMaterials()
 	return FullMaterialArray;
 }
 
+void ABaseCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetEnergyAttribute()).Clear();
+	AbilitySystemComponent->OnAnyGameplayEffectRemovedDelegate().Clear();
+	Super::EndPlay(EndPlayReason);
+}
+
 void ABaseCharacter::AddStartupGameplayAbilities()
 {
 	for (const auto& Ability : GameplayAbilities)
