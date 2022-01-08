@@ -3,7 +3,6 @@
 #define HIGHLIGHTABLE_TRACE_CHANNEL ECC_GameTraceChannel2
 #define HIGHLIGHTABLE_COLLISION_OBJECT ECC_GameTraceChannel1
 
-
 #include "Player/PlayerCharacter.h"
 #include "AICharacter.h"
 #include "DrawDebugHelpers.h"
@@ -15,7 +14,6 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Components/BaseCharacterMovementComponent.h"
-#include "ProjectRevival/ProjectRevival.h"
 #include "GameFeature/StaticObjectToNothing.h"
 #include "Kismet/GameplayStatics.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
@@ -35,18 +33,8 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	CameraCollisionComponent->SetupAttachment(CameraComponent);
 	CameraCollisionComponent->SetSphereRadius(10.0f);
 	CameraCollisionComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-
-	ToIgnore.Add(this);
-
-	TraceChannelProvided = ECollisionChannel::ECC_GameTraceChannel2;
-
-	SphereDetectingHighlightables = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Highilght Detector Component"));
-	SphereDetectingHighlightables->InitSphereRadius(HighlightRadius);
-	SphereDetectingHighlightables->SetCollisionProfileName(TEXT("TriggerHighlighter"));
-	SphereDetectingHighlightables->SetupAttachment(RootComponent);
 	
-	SphereDetectingHighlightables->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapBeginForHighlight);
-	SphereDetectingHighlightables->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapEndForHighlight); 
+	
 }
 
 
@@ -95,82 +83,6 @@ void APlayerCharacter::StartRun()
 void APlayerCharacter::StopRun()
 {
 	bWantsToRun=false;
-}
-
-void APlayerCharacter::HighlightAbility()
-{
-	if (SphereDetectingHighlightables->GetScaledSphereRadius() != HighlightRadius)
-	{
-		SphereDetectingHighlightables->SetSphereRadius(HighlightRadius);
-	}
-	TArray<FHitResult> OutHits;
-	FVector ActorLocation = GetActorLocation();
-	
-	bool IsHitKismetByObj = UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), ActorLocation, ActorLocation, HighlightRadius,
-		ObjectTypesToHighlight, true, ToIgnore, EDrawDebugTrace::None, OutHits, true);
-	
-	if (IsHighlighting == false)
-	{
-		if(IsHitKismetByObj)
-		{
-			for (FHitResult& Hit : OutHits)
-			{
-				Hit.GetComponent()->SetRenderCustomDepth(true);
-			}
-		}
-		IsHighlighting = true;
-	} else if (IsHighlighting == true)
-	{
-		if(IsHitKismetByObj)
-		{
-			for (FHitResult& Hit : OutHits)
-			{
-				Hit.GetComponent()->SetRenderCustomDepth(false);
-			}
-		}
-		IsHighlighting = false;
-	}
-	
-}
-
-void APlayerCharacter::OnOverlapBeginForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
-	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (IsHighlighting == true)
-	{
-		if (OtherActor && (OtherActor != this) && OtherComp)
-		{
-			if (Cast<ACharacter>(OtherActor))
-			{
-				ACharacter* CharacterTmp = Cast<ACharacter>(OtherActor);
-				CharacterTmp->GetMesh()->SetRenderCustomDepth(true);
-			} 
-			// else
-			// {
-			// 	OtherComp->SetRenderCustomDepth(true);
-			// }
-		}
-	}
-}
-
-void APlayerCharacter::OnOverlapEndForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
-	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	if (IsHighlighting == true)
-	{
-		if (OtherActor && (OtherActor != this) && OtherComp)
-		{
-			if (Cast<ACharacter>(OtherActor))
-			{
-				ACharacter* CharacterTmp = Cast<ACharacter>(OtherActor);
-				CharacterTmp->GetMesh()->SetRenderCustomDepth(false);
-			} 
-			// else
-			// {
-			// 	OtherComp->SetRenderCustomDepth(false);
-			// }
-		}
-	}
 }
 
 void APlayerCharacter::OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

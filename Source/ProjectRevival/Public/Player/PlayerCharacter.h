@@ -82,15 +82,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesToHighlight;
 	
-	void HighlightAbility();
-
-	UFUNCTION()
-	void OnOverlapBeginForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	// declare overlap end function used specially for detecting objects when using highlight function
-	UFUNCTION()
-	void OnOverlapEndForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-	
 	virtual bool IsRunning() const override;
 private:
 	bool bWantsToRun = false;
@@ -103,7 +94,6 @@ private:
 	UPROPERTY()
 	class USphereComponent* SphereDetectingHighlightables;
 	
-	bool IsHighlighting = false;
 
 	FTimerHandle THandle;
 	void Flip();
@@ -115,11 +105,6 @@ private:
 	UCurveFloat* FlipCurve = LoadObject<UCurveFloat>(nullptr, TEXT("/Game/ProjectRevival/Core/Player/FlipCurve.FlipCurve"));
 	bool IsFlipping = false;
 	
-	UPROPERTY()
-	TArray<AActor*> ToHighlight;
-	//Array of objects/enemies to ignore at highlighting
-	UPROPERTY()
-	TArray<AActor*> ToIgnore;
 	UFUNCTION()
 	void OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
