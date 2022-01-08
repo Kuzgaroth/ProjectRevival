@@ -49,7 +49,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	USphereComponent* CameraCollisionComponent;
-
+	
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data) override;
+	virtual void OnCooldownExpired(const FActiveGameplayEffect& ExpiredEffect) override;
+	
 	virtual void OnDeath() override;
 	virtual void BeginPlay() override;
 	
@@ -64,6 +68,7 @@ protected:
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	FOnEnergyValueChanged OnEnergyValueChangedHandle;
 
 	//The range in which enemies and objects are highlighted 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
