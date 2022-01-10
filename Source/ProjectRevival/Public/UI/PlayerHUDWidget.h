@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "CirclePBWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "PlayerHUDWidget.generated.h"
@@ -11,7 +13,7 @@ UCLASS()
 class PROJECTREVIVAL_API UPlayerHUDWidget : public UUserWidget
 {
 	GENERATED_BODY()
-public:
+public:	
 	UFUNCTION(BlueprintCallable, Category="UI")
 	float GetHealthPercentage() const ;
 
