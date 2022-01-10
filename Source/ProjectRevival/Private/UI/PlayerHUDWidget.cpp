@@ -2,6 +2,8 @@
 
 
 #include "UI/PlayerHUDWidget.h"
+
+#include "HealthPBWidget.h"
 #include "Components/HealthComponent.h"
 #include "Components/WeaponComponent.h"
 #include "ProjectRevival/Public/Miscellaneous/PRUtils.h"
@@ -55,6 +57,7 @@ void UPlayerHUDWidget::NativeOnInitialized()
 void UPlayerHUDWidget::OnHealthChanged(float Health, float DeltaHealth)
 {
 	if (DeltaHealth<0) OnTakeDamage(Health);
+	HealthPB->ChangePercent(GetHealthPercentage());
 }
 
 void UPlayerHUDWidget::OnNewPawn(APawn* NewPawn)
@@ -64,4 +67,5 @@ void UPlayerHUDWidget::OnNewPawn(APawn* NewPawn)
 	{
 		HealthComponent->OnHealthChanged.AddUObject(this, &UPlayerHUDWidget::OnHealthChanged);
 	}
+	HealthPB->ChangePercent(GetHealthPercentage());
 }

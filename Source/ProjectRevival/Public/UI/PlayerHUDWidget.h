@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 
 #include "CirclePBWidget.h"
+#include "HealthPBWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "PlayerHUDWidget.generated.h"
@@ -33,6 +34,9 @@ public:
 	void OnTakeDamage(float Health);
 	
 protected:
+	UPROPERTY(meta=(BindWidget))
+	UHealthPBWidget* HealthPB;
+	
 	virtual void NativeOnInitialized() override;
 private:
 	void OnHealthChanged(float Health, float DeltaHealth);
