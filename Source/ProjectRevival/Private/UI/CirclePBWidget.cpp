@@ -22,10 +22,6 @@ void UCirclePBWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	Percent = FMath::FInterpConstantTo(Percent, 100, InDeltaTime, 1/CooldownTime);
 	DMI->SetScalarParameterValue("Percent", Percent);
 	ExternalCircle->SetBrushFromMaterial(DMI);
-	if (Percent == 100)
-	{
-		EndCooldown();
-	}
 }
 
 void UCirclePBWidget::StartCooldown()
@@ -43,4 +39,5 @@ void UCirclePBWidget::EndCooldown()
 	InnerCircle->SetBrushFromTexture(InnerCircleFull);
 	Icon->SetOpacity(1);
 	bEnable = true;
+	OnEndCooldown();
 }

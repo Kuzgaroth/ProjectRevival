@@ -33,8 +33,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void StartCooldown();
-	
-	void EndCooldown();
+
+	UFUNCTION(BlueprintImplementableEvent, Category="UI")
+	void OnEndCooldown();
 	
 protected:
 	UPROPERTY(BlueprintReadWrite, meta=(BindWidget))
@@ -52,6 +53,8 @@ protected:
 	virtual void NativeOnInitialized() override;
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+	void EndCooldown();
 	
 private:
 	float Percent;
