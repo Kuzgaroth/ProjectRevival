@@ -6,6 +6,7 @@
 
 #include "CirclePBWidget.h"
 #include "HealthPBWidget.h"
+#include "AbilitySystem/PRAbilityTypes.h"
 #include "Blueprint/UserWidget.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "PlayerHUDWidget.generated.h"
@@ -32,13 +33,33 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category="UI")
 	void OnTakeDamage(float Health);
+
+	UFUNCTION(BlueprintCallable, Category="UI")
+	void OnEnergyValueChanged(float Energy);
+
+	UCirclePBWidget* GetWidgetByAction(EGASInputActions AbilityAction) const;
 	
 protected:
 	UPROPERTY(meta=(BindWidget))
 	UHealthPBWidget* HealthPB;
+
+	UPROPERTY(meta=(BindWidget))
+	UHealthPBWidget* EnergyPB;
+
+	UPROPERTY(meta=(BindWidget))
+	UCirclePBWidget* GhostPB;
+
+	UPROPERTY(meta=(BindWidget))
+	UCirclePBWidget* VisorPB;
+
+	UPROPERTY(meta=(BindWidget))
+	UCirclePBWidget* FlipPB;
 	
 	virtual void NativeOnInitialized() override;
 private:
+	UPROPERTY()
+	TArray<UCirclePBWidget*> CirclePBWidgets;
+	
 	void OnHealthChanged(float Health, float DeltaHealth);
 	void OnNewPawn(APawn* NewPawn);
 };

@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "AbilitySystem/PRAbilityTypes.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Image.h"
 
@@ -17,26 +19,30 @@ class PROJECTREVIVAL_API UCirclePBWidget : public UUserWidget
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Default")
-	float CooldownTime;
-	
+	EGASInputActions AbilityAction;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="UI")
 	UTexture2D* IconImage;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="UI")
 	UTexture2D* InnerCircleFull;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="UI")
 	UTexture2D* InnerCircleEmpty;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="UI")
 	UMaterialInterface* ExternalCircleMaterial;
 
 	UFUNCTION(BlueprintCallable)
-	void StartCooldown();
+	void StartCooldown(float NewCooldownTime);
 
 	UFUNCTION(BlueprintImplementableEvent, Category="UI")
 	void OnEndCooldown();
-	
+
+	EGASInputActions GetAbilityAction() const { return AbilityAction; }
+
+	void SetAbilityAction(EGASInputActions NewAbilityAction) { AbilityAction = NewAbilityAction; }
+
 protected:
 	UPROPERTY(BlueprintReadWrite, meta=(BindWidget))
 	UImage* ExternalCircle;
@@ -55,8 +61,9 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	void EndCooldown();
-	
+
 private:
+	float CooldownTime;
 	float Percent;
 	bool bEnable;
 };

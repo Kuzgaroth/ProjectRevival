@@ -4,6 +4,7 @@
 #include "UI/PlayerHUDWidget.h"
 
 #include "HealthPBWidget.h"
+#include "PlayerCharacter.h"
 #include "Components/HealthComponent.h"
 #include "Components/WeaponComponent.h"
 #include "ProjectRevival/Public/Miscellaneous/PRUtils.h"
@@ -44,6 +45,24 @@ bool UPlayerHUDWidget::IsPlayerAlive() const
 	return HealthComponent && !HealthComponent->IsDead();
 }
 
+void UPlayerHUDWidget::OnEnergyValueChanged(float Energy)
+{
+	EnergyPB->ChangePercent(Energy);
+}
+
+UCirclePBWidget* UPlayerHUDWidget::GetWidgetByAction(EGASInputActions AbilityAction) const
+{
+	for (auto CircleWidget : CirclePBWidgets)
+	{
+		if (CircleWidget->GetAbilityAction() == AbilityAction)
+		{
+			return CircleWidget;
+		}
+	}
+
+	return nullptr;
+}
+
 void UPlayerHUDWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
@@ -52,6 +71,10 @@ void UPlayerHUDWidget::NativeOnInitialized()
 		GetOwningPlayer()->GetOnNewPawnNotifier().AddUObject(this,&UPlayerHUDWidget::OnNewPawn);
 		OnNewPawn(GetOwningPlayerPawn());
 	}
+	
+	CirclePBWidgets.Add(GhostPB);
+	CirclePBWidgets.Add(VisorPB);
+	CirclePBWidgets.Add(FlipPB);
 }
 
 void UPlayerHUDWidget::OnHealthChanged(float Health, float DeltaHealth)
@@ -60,6 +83,7 @@ void UPlayerHUDWidget::OnHealthChanged(float Health, float DeltaHealth)
 	HealthPB->ChangePercent(GetHealthPercentage());
 }
 
+
 void UPlayerHUDWidget::OnNewPawn(APawn* NewPawn)
 {
 	const auto HealthComponent = PRUtils::GetCharacterComponent<UHealthComponent>(NewPawn);
@@ -67,5 +91,11 @@ void UPlayerHUDWidget::OnNewPawn(APawn* NewPawn)
 	{
 		HealthComponent->OnHealthChanged.AddUObject(this, &UPlayerHUDWidget::OnHealthChanged);
 	}
+	if (NewPawn)
+	{
+		APlayerCharacter* const Character = Cast<APlayerCharacter>(NewPawn);
+		Character->OnEnergyValueChangedHandle.BindUFunction(this, FName("OnEnergyValueChanged"));
+	}
 	HealthPB->ChangePercent(GetHealthPercentage());
+	EnergyPB->ChangePercent(1);
 }

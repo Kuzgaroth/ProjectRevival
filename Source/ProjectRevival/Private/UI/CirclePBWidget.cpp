@@ -24,8 +24,9 @@ void UCirclePBWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	ExternalCircle->SetBrushFromMaterial(DMI);
 }
 
-void UCirclePBWidget::StartCooldown()
+void UCirclePBWidget::StartCooldown(float NewCooldownTime)
 {
+	CooldownTime = NewCooldownTime;
 	InnerCircle->SetBrushFromTexture(InnerCircleEmpty);
 	Icon->SetOpacity(0.5);
 	Percent = 0;
