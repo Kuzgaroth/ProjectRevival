@@ -258,7 +258,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	check(CameraCollisionComponent);
-
+	check(GetCharacterMovement());
 	CameraCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionBeginOverlap);
 	CameraCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionEndOverlap);
 }
