@@ -234,7 +234,8 @@ void APlayerCharacter::OnEnergyAttributeChanged(const FOnAttributeChangeData& Da
 	Super::OnEnergyAttributeChanged(Data);
 	//Для подключения делегата необходимо получить объект типа APlayerCharacter и сделать OnEnergyValueChangedHandle.BindUObject(this, &тип_класса::название_метода);
 	//Далее указанный метод будет вызываться автоматически при помощи следующей команды
-	if (OnEnergyValueChangedHandle.IsBound()) OnEnergyValueChangedHandle.Execute(Data.NewValue);
+	float MaxEnergy = AttributeSet->GetMaxEnergy();
+	if (OnEnergyValueChangedHandle.IsBound()) OnEnergyValueChangedHandle.Execute(Data.NewValue/MaxEnergy);
 	
 }
 

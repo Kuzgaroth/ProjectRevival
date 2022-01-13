@@ -7,6 +7,7 @@
 
 UVisorAbility::UVisorAbility()
 {
+	AbilityAction = EGASInputActions::Visor;
 }
 
 void UVisorAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
