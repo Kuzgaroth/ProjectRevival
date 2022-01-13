@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BaseCharacterMovementComponent.h"
 #include "Player/BaseCharacter.h"
 #include "Components/TimelineComponent.h"
 #include "ProjectRevival/Public/CoreTypes.h"
@@ -38,6 +39,8 @@ public:
 	
 	FTimeline CurveTimeline;
 	FTimeline LeftSideViewCurveTimeline;
+
+	
 	
 	USpringArmComponent* GetPlayerSpringArmComponent(){return SpringArmComponent;}
 protected:
@@ -66,6 +69,10 @@ public:
 	
 	virtual bool IsRunning() const override;
 private:
+
+	UPROPERTY()
+	UBaseCharacterMovementComponent* PlayerMovementComponent;
+	
 	bool bWantsToRun = false;
 	bool IsMovingForward = false;
 	void MoveForward(float Amount);
@@ -79,8 +86,7 @@ private:
 	bool IsHighlighting = false;
 
 	FTimerHandle THandle;
-	void Flip();
-	void StopFlip();
+
 	const float FlipTime = 0.5f;
 	const float FlipStrength = 2000.f;
 	// curve from content manager
