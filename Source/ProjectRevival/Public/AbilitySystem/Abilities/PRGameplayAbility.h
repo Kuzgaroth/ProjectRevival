@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "CirclePBWidget.h"
 #include "Abilities/GameplayAbility.h"
 #include "AbilitySystem/PRAbilityTypes.h"
 #include "PRGameplayAbility.generated.h"
@@ -17,6 +19,8 @@ public:
 protected:
 	//Необходимо ввести С++ тип виджета способности
 	//Тип виджета способности AbilityWidget;
+	UPROPERTY()
+	UCirclePBWidget* AbilityWidget;
 
 	UPROPERTY(EditDefaultsOnly)
 	EGASInputActions AbilityAction;
