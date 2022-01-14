@@ -59,7 +59,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAxis("MoveForward",this,&APlayerCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight",this,&APlayerCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("MoveRight",PlayerMovementComponent,&UBaseCharacterMovementComponent::MoveRight);
 	PlayerInputComponent->BindAxis("LookUp",this,&APlayerCharacter::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("TurnAround",this,&APlayerCharacter::AddControllerYawInput);
 	PlayerInputComponent->BindAction("Jump",EInputEvent::IE_Pressed,PlayerMovementComponent, &UBaseCharacterMovementComponent::Jump);
@@ -82,33 +82,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::MoveForward(float Amount)
 {
-	IsMovingForward = Amount>0.f;
-	if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump()) return;
-	if ( (Controller != nullptr) && (Amount != 0.0f) )
-	{
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-	
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		AddMovementInput(Direction, Amount);
-	}
-}
-
-void APlayerCharacter::MoveRight(float Amount)
-{
-	if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump()) return;
-	if (PlayerMovementComponent->GetPlayerMovementLogic().IsTurning) return;
-	if ( (Controller != nullptr) && (Amount != 0.0f) )
-	{
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-		
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		
-		AddMovementInput(Direction, Amount);
-	}
-
-	PlayerMovementComponent->TurnRight();
+	IsMovingForward = Amount>0;
+	PlayerMovementComponent->MoveForward(Amount);
 }
 
 void APlayerCharacter::StartRun()
@@ -285,6 +260,11 @@ void APlayerCharacter::CameraZoomIn()
 {
 	if (LeftSideView.IsMoving == false)
 	{
+		PlayerMovementComponent->bOrientRotationToMovement = 0;
+		
+		PlayerMovementComponent->AimStart();
+
+		
 		if (PlayerAimZoom.StartStartPos == FVector(0.0, 0.0, 0.0)) PlayerAimZoom.StartStartPos = SpringArmComponent->SocketOffset;
 		SpringArmComponent->SocketOffset = PlayerAimZoom.StartStartPos;
 		FOnTimelineVector TimelineProgress;
@@ -301,8 +281,6 @@ void APlayerCharacter::CameraZoomIn()
 
 		PlayerAimZoom.IsZooming = true;
 		CurveTimeline.PlayFromStart();
-
-		PlayerMovementComponent->bOrientRotationToMovement = 0;
 		
 	}
 }
@@ -311,6 +289,13 @@ void APlayerCharacter::CameraZoomOut()
 {
 	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true)
 	{
+		PlayerMovementComponent->bOrientRotationToMovement = 1;
+		
+		PlayerMovementComponent->AimEnd();
+
+
+
+		
 		FOnTimelineVector TimelineProgress;
 		FOnTimelineFloat TimelineFieldOfView;
 		TimelineProgress.BindUFunction(this, FName("TimelineProgress"));
@@ -324,8 +309,6 @@ void APlayerCharacter::CameraZoomOut()
 
 		PlayerAimZoom.IsZooming = false;
 		CurveTimeline.PlayFromStart();
-
-		PlayerMovementComponent->bOrientRotationToMovement = 1;
 	}
 }
 

@@ -98,7 +98,6 @@ private:
 	bool bWantsToRun = false;
 	bool IsMovingForward = false;
 	void MoveForward(float Amount);
-	void MoveRight(float Amount);
 	void StartRun();
 	void StopRun();
 	
