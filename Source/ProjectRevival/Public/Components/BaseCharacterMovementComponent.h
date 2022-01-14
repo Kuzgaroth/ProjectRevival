@@ -18,7 +18,8 @@ struct FPlayerMovementLogic
 	bool JumpStarted=false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool IsTurning=false;
-	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsPivotTargeted=false;
 	bool IsInJump() const {return JumpStarted || JumpPressed;}
 };
 
@@ -33,21 +34,23 @@ class PROJECTREVIVAL_API UBaseCharacterMovementComponent : public UCharacterMove
 	void JumpPressEnded();
 	void JumpProcessEnded();
 	void TurnFinished();
+	void AimStartFinished();
+	void AimEndFininshed();
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Turns")
-	UAnimMontage* TurnAimLeftMontage;
+	UAnimSequence* TurnAimLeftMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category="Turns")
-	UAnimMontage* TurnAimRightMontage;
+	UAnimSequence* TurnAimRightMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category="Turns")
-	UAnimMontage* TurnLeftMontage;
+	UAnimSequence* TurnLeftMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category="Turns")
-	UAnimMontage* TurnRightAnim;
+	UAnimSequence* TurnRightAnim;
 
 	UPROPERTY(EditDefaultsOnly, Category="Turns")
-	UAnimMontage* TurnBackwardMontage;
+	UAnimSequence* TurnBackwardMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category="Jump")
 	UAnimSequence* JumpAnim;
@@ -55,6 +58,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Jump")
 	UAnimSequence* JumpEndAnim;
 
+	UPROPERTY(EditDefaultsOnly, Category="Aim")
+	UAnimMontage* AimMontage;
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement", meta=(ClampMin="1.5", ClampMax="3.0"))
 	float RunModifier=1.5;
@@ -64,7 +69,10 @@ public:
 	void TurnRight();
 	void TurnBackward();
 	void Jump();
-	
+	void MoveRight(float Amount);
+	void MoveForward(float Amount);
+	void AimStart();
+	void AimEnd();
 	UFUNCTION(BlueprintCallable)
 	FPlayerMovementLogic GetPlayerMovementLogic();
 };
