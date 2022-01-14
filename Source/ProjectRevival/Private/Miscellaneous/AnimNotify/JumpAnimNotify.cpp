@@ -5,7 +5,7 @@
 
 void UJumpAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
-	OnJumpStarted.ExecuteIfBound();
-	OnJumpStarted.Unbind();
+	OnActionPointReached.ExecuteIfBound();
+	OnActionPointReached.Unbind();
 	Super::Notify(MeshComp, Animation);
 }

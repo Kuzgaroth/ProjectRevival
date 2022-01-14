@@ -4,6 +4,8 @@
 #include "Components/BaseCharacterMovementComponent.h"
 #include "AnimUtils.h"
 #include "JumpAnimNotify.h"
+#include "TurnAnimNotify.h"
+#include "Components/CapsuleComponent.h"
 #include "Player/BaseCharacter.h"
 
 DEFINE_LOG_CATEGORY(LogPlayerMovement);
@@ -19,7 +21,7 @@ void UBaseCharacterMovementComponent::JumpPressEnded()
 	auto JumpEndedNotify = AnimUtils::FindNotifyByClass<UJumpAnimNotify>(JumpEndAnim);
 	if (JumpEndedNotify)
 	{
-		JumpEndedNotify->OnJumpStarted.BindUObject(this, &UBaseCharacterMovementComponent::JumpProcessEnded);
+		JumpEndedNotify->OnActionPointReached.BindUObject(this, &UBaseCharacterMovementComponent::JumpProcessEnded);
 	}
 	CharacterOwner->Jump();
 	
@@ -31,6 +33,12 @@ void UBaseCharacterMovementComponent::JumpProcessEnded()
 	PlayerMovementLogic.JumpPressed=false;
 }
 
+void UBaseCharacterMovementComponent::TurnFinished()
+{
+	PlayerMovementLogic.IsTurning=false;
+	UE_LOG(LogPlayerMovement, Warning, TEXT("current Yaw is %f"), CharacterOwner->GetCapsuleComponent()->GetForwardVector().Y);
+}
+
 float UBaseCharacterMovementComponent::GetMaxSpeed() const
 {
 	const float MaxSpeed = Super::GetMaxSpeed();
@@ -38,15 +46,23 @@ float UBaseCharacterMovementComponent::GetMaxSpeed() const
 	return Player && Player->IsRunning() ? MaxSpeed*RunModifier:MaxSpeed;
 }
 
-void UBaseCharacterMovementComponent::TurnLeft(bool IsPivotTargeted)
+void UBaseCharacterMovementComponent::TurnLeft()
 {
 }
 
-void UBaseCharacterMovementComponent::TurnRight(bool IsPivotTargeted)
+void UBaseCharacterMovementComponent::TurnRight()
 {
+	if (PlayerMovementLogic.IsTurning) return;
+	auto TurnRightNotify = AnimUtils::FindNotifyByClass<UTurnAnimNotify>(TurnRightAnim);
+	if (TurnRightNotify)
+	{
+		TurnRightNotify->OnActionPointReached.BindUObject(this, &UBaseCharacterMovementComponent::TurnFinished);
+	}
+	PlayerMovementLogic.IsTurning = true;
+	UE_LOG(LogPlayerMovement, Warning, TEXT("current Yaw is %f"), CharacterOwner->GetCapsuleComponent()->GetForwardVector().Y);
 }
 
-void UBaseCharacterMovementComponent::TurnBackward(bool IsPivotTargeted)
+void UBaseCharacterMovementComponent::TurnBackward()
 {
 }
 
@@ -59,7 +75,7 @@ void UBaseCharacterMovementComponent::Jump()
 	auto JumpStartedNotify = AnimUtils::FindNotifyByClass<UJumpAnimNotify>(JumpAnim);
 	if (JumpStartedNotify)
 	{
-		JumpStartedNotify->OnJumpStarted.BindUObject(this, &UBaseCharacterMovementComponent::JumpPressEnded);
+		JumpStartedNotify->OnActionPointReached.BindUObject(this, &UBaseCharacterMovementComponent::JumpPressEnded);
 	}
 }
 

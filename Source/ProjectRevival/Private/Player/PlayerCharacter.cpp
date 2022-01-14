@@ -83,12 +83,32 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::MoveForward(float Amount)
 {
 	IsMovingForward = Amount>0.f;
-	AddMovementInput(GetActorForwardVector(),Amount);
+	if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump()) return;
+	if ( (Controller != nullptr) && (Amount != 0.0f) )
+	{
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+	
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		AddMovementInput(Direction, Amount);
+	}
 }
 
 void APlayerCharacter::MoveRight(float Amount)
 {
-	AddMovementInput(GetActorRightVector(),Amount);
+	if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump()) return;
+	if (PlayerMovementComponent->GetPlayerMovementLogic().IsTurning) return;
+	if ( (Controller != nullptr) && (Amount != 0.0f) )
+	{
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		
+		AddMovementInput(Direction, Amount);
+	}
+
+	PlayerMovementComponent->TurnRight();
 }
 
 void APlayerCharacter::StartRun()
@@ -281,6 +301,9 @@ void APlayerCharacter::CameraZoomIn()
 
 		PlayerAimZoom.IsZooming = true;
 		CurveTimeline.PlayFromStart();
+
+		PlayerMovementComponent->bOrientRotationToMovement = 0;
+		
 	}
 }
 
@@ -301,6 +324,8 @@ void APlayerCharacter::CameraZoomOut()
 
 		PlayerAimZoom.IsZooming = false;
 		CurveTimeline.PlayFromStart();
+
+		PlayerMovementComponent->bOrientRotationToMovement = 1;
 	}
 }
 
