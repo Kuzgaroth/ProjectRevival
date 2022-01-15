@@ -88,6 +88,9 @@ public:
 	// declare overlap end function used specially for detecting objects when using highlight function
 	UFUNCTION()
 	void OnOverlapEndForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION(BlueprintCallable)
+	FRotator GetAimDelta() const;
 	
 	virtual bool IsRunning() const override;
 private:
