@@ -170,8 +170,23 @@ void APlayerCharacter::OnOverlapEndForHighlight(class UPrimitiveComponent* Overl
 	}
 }
 
+FRotator APlayerCharacter::GetAimDelta() const
+{
+	if (!GetController()) return FRotator();
+	const auto CameraRotation = GetController()->K2_GetActorRotation();
+	const auto PawnRotation = GetActorRotation();
+
+	auto Delta = CameraRotation.Yaw-PawnRotation.Yaw;
+	if (FMath::Abs<float>(Delta)>180)
+	{
+		Delta = Delta + 360.0*FMath::Sign<float>(Delta)*(-1.0);
+	}
+
+	return FRotator(CameraRotation.Pitch, Delta, 0.0f);
+}
+
 void APlayerCharacter::OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                                     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	CheckCameraOverlap();
 }
@@ -256,7 +271,7 @@ void APlayerCharacter::TimelineLeftSideView(float Value)
 
 void APlayerCharacter::CameraZoomIn()
 {
-	if (LeftSideView.IsMoving == false)
+	if (LeftSideView.IsMoving == false || PlayerAimZoom.IsZooming==false)
 	{
 		PlayerMovementComponent->bOrientRotationToMovement = 0;
 		

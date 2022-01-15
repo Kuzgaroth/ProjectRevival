@@ -66,6 +66,31 @@ protected:
 	void OnWorldChanged();
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+
+	//The range in which enemies and objects are highlighted 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
+	float HighlightRadius = 2000.f;
+
+	//Trace Channel we use to detect all the stuff
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
+	TEnumAsByte<ECollisionChannel> TraceChannelProvided;
+
+	//Types of collisions by which objects are going to be highlighted
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesToHighlight;
+	
+	void HighlightAbility();
+
+	UFUNCTION()
+	void OnOverlapBeginForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	// declare overlap end function used specially for detecting objects when using highlight function
+	UFUNCTION()
+	void OnOverlapEndForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION(BlueprintCallable)
+	FRotator GetAimDelta() const;
 	
 	virtual bool IsRunning() const override;
 private:
@@ -93,6 +118,11 @@ private:
 	UCurveFloat* FlipCurve = LoadObject<UCurveFloat>(nullptr, TEXT("/Game/ProjectRevival/Core/Player/FlipCurve.FlipCurve"));
 	bool IsFlipping = false;
 	
+	UPROPERTY()
+	TArray<AActor*> ToHighlight;
+	//Array of objects/enemies to ignore at highlighting
+	UPROPERTY()
+	TArray<AActor*> ToIgnore;
 	UFUNCTION()
 	void OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
