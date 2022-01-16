@@ -62,6 +62,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	InputComponent->BindAction("Zoom", IE_Pressed, this, &APlayerCharacter::CameraZoomIn);
 	InputComponent->BindAction("Zoom", IE_Released, this, &APlayerCharacter::CameraZoomOut);
 	PlayerInputComponent->BindAction("ChangeWorld", EInputEvent::IE_Pressed,this, &APlayerCharacter::OnWorldChanged);
+	PlayerInputComponent->BindAction("Cover", EInputEvent::IE_Pressed,this, &APlayerCharacter::Cover);
+	
 }
 
 void APlayerCharacter::MoveForward(float Amount)
@@ -85,8 +87,21 @@ void APlayerCharacter::StopRun()
 	bWantsToRun=false;
 }
 
+void APlayerCharacter::Cover()
+{
+	if (IsInCover)
+	{
+		StopCover_Internal();
+		return;
+	}
+	FHitResult CoverHit;
+	const ECoverType CoverType = CoverTrace(CoverHit);
+	if (CoverType==ECoverType::None) return;
+	StartCover_Internal(CoverHit);
+}
+
 void APlayerCharacter::OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                                     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	CheckCameraOverlap();
 }
@@ -288,4 +303,20 @@ void APlayerCharacter::OnWorldChanged()
 	{
 		Cast<AStaticObjectToNothing>(OutActors[EveryActor])->Changing();
 	}
+}
+
+bool APlayerCharacter::StartCover_Internal(FHitResult& CoverHit)
+{
+	const bool Sup = Super::StartCover_Internal(CoverHit);
+	if (!Sup)return false;
+	IsInCover=true;
+	return true;
+}
+
+bool APlayerCharacter::StopCover_Internal()
+{
+	const bool Sup = Super::StopCover_Internal();
+	if (!Sup)return false;
+	IsInCover=false;;
+	return true;
 }
