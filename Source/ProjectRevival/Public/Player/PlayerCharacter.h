@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BaseCharacterMovementComponent.h"
 #include "Player/BaseCharacter.h"
 #include "Components/TimelineComponent.h"
 #include "ProjectRevival/Public/CoreTypes.h"
@@ -84,15 +85,24 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesToHighlight;
 	
+	UFUNCTION(BlueprintCallable)
+	FRotator GetAimDelta() const;
+	
 	virtual bool IsRunning() const override;
 private:
+
+	UPROPERTY()
+	UBaseCharacterMovementComponent* PlayerMovementComponent;
+	
 	bool bWantsToRun = false;
 	bool IsMovingForward = false;
 	void MoveForward(float Amount);
-	void MoveRight(float Amount);
 	void StartRun();
 	void StopRun();
 	void Cover();
+	void StartFire();
+	void LookUp(float Amount);
+	void LookAround(float Amount);
 	UPROPERTY()
 	class USphereComponent* SphereDetectingHighlightables;
 	
