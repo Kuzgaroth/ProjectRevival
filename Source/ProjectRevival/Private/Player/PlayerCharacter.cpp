@@ -60,14 +60,14 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAxis("MoveForward",this,&APlayerCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight",PlayerMovementComponent,&UBaseCharacterMovementComponent::MoveRight);
-	PlayerInputComponent->BindAxis("LookUp",this,&APlayerCharacter::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("TurnAround",this,&APlayerCharacter::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("LookUp",this,&APlayerCharacter::LookUp);
+	PlayerInputComponent->BindAxis("TurnAround",this,&APlayerCharacter::LookAround);
 	PlayerInputComponent->BindAction("Jump",EInputEvent::IE_Pressed,PlayerMovementComponent, &UBaseCharacterMovementComponent::Jump);
 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Pressed,this, &APlayerCharacter::StartRun);
 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Released,this, &APlayerCharacter::StopRun);
 	//PlayerInputComponent->BindAction("Flip",EInputEvent::IE_Pressed,this, &APlayerCharacter::Flip);
 	//PlayerInputComponent->BindAction("Highlight",EInputEvent::IE_Pressed,this, &APlayerCharacter::HighlightAbility);
-	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::StartFire);
+	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Pressed,this, &APlayerCharacter::StartFire);
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Released,WeaponComponent, &UWeaponComponent::StopFire);
 	PlayerInputComponent->BindAction("NextWeapon",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::NextWeapon);
 	PlayerInputComponent->BindAction("Reload",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::Reload);
@@ -94,6 +94,23 @@ void APlayerCharacter::StartRun()
 void APlayerCharacter::StopRun()
 {
 	bWantsToRun=false;
+}
+
+void APlayerCharacter::StartFire()
+{
+	if (!PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted ||
+		PlayerMovementComponent->GetPlayerMovementLogic().IsInJump()) return;
+	WeaponComponent->StartFire();
+}
+
+void APlayerCharacter::LookUp(float Amount)
+{
+	AddControllerPitchInput(Amount);
+}
+
+void APlayerCharacter::LookAround(float Amount)
+{
+	AddControllerYawInput(Amount);
 }
 
 void APlayerCharacter::HighlightAbility()
@@ -275,8 +292,9 @@ void APlayerCharacter::CameraZoomIn()
 {
 	if (LeftSideView.IsMoving == false || PlayerAimZoom.IsZooming==false)
 	{
+		if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump() || PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted) return;
 		PlayerMovementComponent->bOrientRotationToMovement = 0;
-		
+		bUseControllerRotationYaw=true;
 		PlayerMovementComponent->AimStart();
 
 		
@@ -305,11 +323,8 @@ void APlayerCharacter::CameraZoomOut()
 	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true)
 	{
 		PlayerMovementComponent->bOrientRotationToMovement = 1;
-		
+		bUseControllerRotationYaw=false;;
 		PlayerMovementComponent->AimEnd();
-
-
-
 		
 		FOnTimelineVector TimelineProgress;
 		FOnTimelineFloat TimelineFieldOfView;
