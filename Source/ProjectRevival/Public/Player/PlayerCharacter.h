@@ -65,6 +65,8 @@ protected:
 	void CameraZoomOut();
 
 	void OnWorldChanged();
+	virtual bool StartCover_Internal(FHitResult& CoverHit) override;
+	virtual bool StopCover_Internal() override;
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -90,11 +92,11 @@ private:
 	void MoveRight(float Amount);
 	void StartRun();
 	void StopRun();
-	
+	void Cover();
 	UPROPERTY()
 	class USphereComponent* SphereDetectingHighlightables;
 	
-
+	bool IsInCover=false;
 	FTimerHandle THandle;
 	void Flip();
 	void StopFlip();
