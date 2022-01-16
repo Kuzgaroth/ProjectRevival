@@ -1,7 +1,10 @@
 // Project Revival. All Rights Reserved
 
+#define COVER_TRACE_CHANNEL ECC_GameTraceChannel3
 
 #include "Player/BaseCharacter.h"
+
+#include "DrawDebugHelpers.h"
 #include "Components/BaseCharacterMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/HealthComponent.h"
@@ -113,6 +116,21 @@ TArray<UMaterialInstanceDynamic*> ABaseCharacter::GetDynMaterials()
 	return FullMaterialArray;
 }
 
+bool ABaseCharacter::StartCover(AActor* InstigatorObj)
+{
+	if (!Cast<AController>(InstigatorObj)) return false;
+	FHitResult CoverHit;
+	const ECoverType CoverType = CoverTrace(CoverHit);
+	if (CoverType==ECoverType::None) return false;;
+	return StartCover_Internal(CoverHit);
+}
+
+bool ABaseCharacter::StopCover(AActor* InstigatorObj)
+{
+	if (!Cast<AController>(InstigatorObj)) return false;;
+	return StopCover_Internal();
+}
+
 void ABaseCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetEnergyAttribute()).Clear();
@@ -168,6 +186,37 @@ void ABaseCharacter::OnHealthChanged(float CurrentHealth, float HealthDelta)
 {
 	//const auto Health = HealthComponent->GetHealth();
 	
+}
+
+bool ABaseCharacter::StartCover_Internal(FHitResult& CoverHit)
+{
+	
+	GetCharacterMovement()->SetPlaneConstraintEnabled(true);
+	GetCharacterMovement()->SetPlaneConstraintNormal(CoverHit.Normal);
+	return true;
+}
+
+bool ABaseCharacter::StopCover_Internal()
+{
+	GetCharacterMovement()->SetPlaneConstraintEnabled(false);
+	return true;
+}
+
+ECoverType ABaseCharacter::CoverTrace(FHitResult& CoverHit)
+{
+	const FVector Location = GetActorLocation();
+	FVector HighLocation;
+	HighLocation.Set(Location.X, Location.Y, 200.0f);
+	const bool HighTraceResult = UKismetSystemLibrary::LineTraceSingle(GetWorld(), HighLocation, GetActorForwardVector()*100.0f+HighLocation,
+		UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, CoverHit, true);
+	//DrawDebugLine(GetWorld(), HighLocation, GetActorRotation().Vector()*25.0f, FColor::Red, false, 2,0, 2);
+	if (HighTraceResult) return ECoverType::High;
+
+	const bool LowTraceResult = UKismetSystemLibrary::LineTraceSingle(GetWorld(), Location, GetActorForwardVector()*100.0f+Location,
+		UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, CoverHit, true);
+	//DrawDebugLine(GetWorld(), Location, GetActorRotation().Vector()*25.0f, FColor::Red, false, 2,0, 2);
+	if (LowTraceResult) return ECoverType::Low;
+	return ECoverType::None;
 }
 
 void ABaseCharacter::OnGroundLanded(const FHitResult& HitResult)
