@@ -103,7 +103,9 @@ private:
 	void MoveForward(float Amount);
 	void StartRun();
 	void StopRun();
-	
+	void StartFire();
+	void LookUp(float Amount);
+	void LookAround(float Amount);
 	UPROPERTY()
 	class USphereComponent* SphereDetectingHighlightables;
 	

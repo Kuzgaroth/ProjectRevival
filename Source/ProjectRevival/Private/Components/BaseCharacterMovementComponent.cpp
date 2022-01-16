@@ -8,13 +8,11 @@
 #include "JumpAnimNotify.h"
 #include "TurnAnimNotify.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Player/BaseCharacter.h"
+#include "Widgets/Text/ISlateEditableTextWidget.h"
 
 DEFINE_LOG_CATEGORY(LogPlayerMovement);
-
-void UBaseCharacterMovementComponent::PlayTurnAnimation()
-{
-}
 
 void UBaseCharacterMovementComponent::JumpPressEnded()
 {
@@ -35,12 +33,6 @@ void UBaseCharacterMovementComponent::JumpProcessEnded()
 	PlayerMovementLogic.JumpPressed=false;
 }
 
-void UBaseCharacterMovementComponent::TurnFinished()
-{
-	PlayerMovementLogic.IsTurning=false;
-	UE_LOG(LogPlayerMovement, Warning, TEXT("current Yaw is %f"), CharacterOwner->GetCapsuleComponent()->GetForwardVector().Y);
-}
-
 void UBaseCharacterMovementComponent::AimStartFinished()
 {
 	PlayerMovementLogic.IsPivotTargeted=true;
@@ -51,6 +43,11 @@ void UBaseCharacterMovementComponent::AimEndFininshed()
 	PlayerMovementLogic.IsPivotTargeted=false;
 }
 
+void UBaseCharacterMovementComponent::JumpInMoveStarted()
+{
+	CharacterOwner->AddMovementInput(CharacterOwner->GetActorForwardVector()*100.0f);
+}
+
 float UBaseCharacterMovementComponent::GetMaxSpeed() const
 {
 	const float MaxSpeed = Super::GetMaxSpeed();
@@ -58,33 +55,29 @@ float UBaseCharacterMovementComponent::GetMaxSpeed() const
 	return Player && Player->IsRunning() ? MaxSpeed*RunModifier:MaxSpeed;
 }
 
-void UBaseCharacterMovementComponent::TurnLeft()
-{
-}
-
-void UBaseCharacterMovementComponent::TurnRight()
-{
-	if (PlayerMovementLogic.IsTurning) return;
-	auto TurnRightNotify = AnimUtils::FindNotifyByClass<UTurnAnimNotify>(TurnRightAnim);
-	if (TurnRightNotify)
-	{
-		TurnRightNotify->OnActionPointReached.BindUObject(this, &UBaseCharacterMovementComponent::TurnFinished);
-	}
-	PlayerMovementLogic.IsTurning = true;
-	UE_LOG(LogPlayerMovement, Warning, TEXT("current Yaw is %f"), CharacterOwner->GetCapsuleComponent()->GetForwardVector().Y);
-}
-
-void UBaseCharacterMovementComponent::TurnBackward()
-{
-}
-
 void UBaseCharacterMovementComponent::Jump()
 {
 	UE_LOG(LogPlayerMovement, Warning, TEXT("Jump pressed = %s, jump started = %s"),
 		PlayerMovementLogic.JumpPressed ? "1" : "0",PlayerMovementLogic.JumpStarted ? "1" : "0");
-	
+	if (PlayerMovementLogic.IsPivotTargeted) return;
 	if (PlayerMovementLogic.IsInJump()) return;
+	if (CharacterOwner->GetVelocity().Size()>=300.0f)
+	{
+		UE_LOG(LogPlayerMovement, Warning, TEXT("Jump in movement"));
+		auto JumpInMoveNotify = AnimUtils::FindNotifiesByClass<UJumpAnimNotify>(JumpInMove);
+		if (JumpInMoveNotify[0])
+		{
+			JumpInMoveNotify[0]->OnActionPointReached.BindUObject(this, &UBaseCharacterMovementComponent::JumpInMoveStarted);
+		}
+		if (JumpInMoveNotify[1])
+		{
+			JumpInMoveNotify[1]->OnActionPointReached.BindUObject(this, &UBaseCharacterMovementComponent::JumpProcessEnded);
+		}
+		PlayerMovementLogic.JumpStarted=true;
+		return;
+	}
 	PlayerMovementLogic.JumpPressed = true;
+	UE_LOG(LogPlayerMovement, Warning, TEXT("Jump in place"));
 	auto JumpStartedNotify = AnimUtils::FindNotifyByClass<UJumpAnimNotify>(JumpAnim);
 	if (JumpStartedNotify)
 	{
@@ -95,7 +88,6 @@ void UBaseCharacterMovementComponent::Jump()
 void UBaseCharacterMovementComponent::MoveRight(float Amount)
 {
 	if (PlayerMovementLogic.IsInJump()) return;
-	if (PlayerMovementLogic.IsTurning) return;
 	if ( (CharacterOwner->GetController() != nullptr) && (Amount != 0.0f) )
 	{
 		const FRotator Rotation = CharacterOwner->GetController()->GetControlRotation();
@@ -109,8 +101,7 @@ void UBaseCharacterMovementComponent::MoveRight(float Amount)
 
 void UBaseCharacterMovementComponent::MoveForward(float Amount)
 {
-	if (PlayerMovementLogic.IsInJump()) return;
-	if (PlayerMovementLogic.IsTurning) return;
+	if (PlayerMovementLogic.IsInJump() && CharacterOwner->GetVelocity().Size()<300.0f) return;
 	if ( (CharacterOwner->GetController() != nullptr) && (Amount != 0.0f) )
 	{
 		const FRotator Rotation = CharacterOwner->GetController()->GetControlRotation();
