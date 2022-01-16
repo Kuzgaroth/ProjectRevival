@@ -39,8 +39,6 @@ public:
 	
 	FTimeline CurveTimeline;
 	FTimeline LeftSideViewCurveTimeline;
-
-	
 	
 	USpringArmComponent* GetPlayerSpringArmComponent(){return SpringArmComponent;}
 protected:
@@ -52,7 +50,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	USphereComponent* CameraCollisionComponent;
-
+	
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data) override;
+	virtual void OnCooldownExpired(const FActiveGameplayEffect& ExpiredEffect) override;
+	
 	virtual void OnDeath() override;
 	virtual void BeginPlay() override;
 	
@@ -64,9 +66,12 @@ protected:
 	void CameraZoomOut();
 
 	void OnWorldChanged();
+	virtual bool StartCover_Internal(FHitResult& CoverHit) override;
+	virtual bool StopCover_Internal() override;
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	FOnEnergyValueChanged OnEnergyValueChangedHandle;
 
 	//The range in which enemies and objects are highlighted 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
@@ -80,15 +85,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesToHighlight;
 	
-	void HighlightAbility();
-
-	UFUNCTION()
-	void OnOverlapBeginForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	// declare overlap end function used specially for detecting objects when using highlight function
-	UFUNCTION()
-	void OnOverlapEndForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
 	UFUNCTION(BlueprintCallable)
 	FRotator GetAimDelta() const;
 	
@@ -103,16 +99,17 @@ private:
 	void MoveForward(float Amount);
 	void StartRun();
 	void StopRun();
+	void Cover();
 	void StartFire();
 	void LookUp(float Amount);
 	void LookAround(float Amount);
 	UPROPERTY()
 	class USphereComponent* SphereDetectingHighlightables;
 	
-	bool IsHighlighting = false;
-
+	bool IsInCover=false;
 	FTimerHandle THandle;
-
+	void Flip();
+	void StopFlip();
 	const float FlipTime = 0.5f;
 	const float FlipStrength = 2000.f;
 	// curve from content manager
@@ -120,11 +117,6 @@ private:
 	UCurveFloat* FlipCurve = LoadObject<UCurveFloat>(nullptr, TEXT("/Game/ProjectRevival/Core/Player/FlipCurve.FlipCurve"));
 	bool IsFlipping = false;
 	
-	UPROPERTY()
-	TArray<AActor*> ToHighlight;
-	//Array of objects/enemies to ignore at highlighting
-	UPROPERTY()
-	TArray<AActor*> ToIgnore;
 	UFUNCTION()
 	void OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);

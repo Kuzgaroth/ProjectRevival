@@ -20,8 +20,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
 
-
-
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -37,18 +35,6 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	CameraCollisionComponent->SetupAttachment(CameraComponent);
 	CameraCollisionComponent->SetSphereRadius(10.0f);
 	CameraCollisionComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-
-	ToIgnore.Add(this);
-
-	TraceChannelProvided = ECollisionChannel::ECC_GameTraceChannel2;
-
-	SphereDetectingHighlightables = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Highilght Detector Component"));
-	SphereDetectingHighlightables->InitSphereRadius(HighlightRadius);
-	SphereDetectingHighlightables->SetCollisionProfileName(TEXT("TriggerHighlighter"));
-	SphereDetectingHighlightables->SetupAttachment(RootComponent);
-	
-	SphereDetectingHighlightables->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapBeginForHighlight);
-	SphereDetectingHighlightables->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapEndForHighlight);
 
 	PlayerMovementComponent = Cast<UBaseCharacterMovementComponent>(GetCharacterMovement());
 }
@@ -78,6 +64,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &APlayerCharacter::CameraZoomIn);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &APlayerCharacter::CameraZoomOut);
 	PlayerInputComponent->BindAction("ChangeWorld", EInputEvent::IE_Pressed,this, &APlayerCharacter::OnWorldChanged);
+	PlayerInputComponent->BindAction("Cover", EInputEvent::IE_Pressed,this, &APlayerCharacter::Cover);
+	
 }
 
 void APlayerCharacter::MoveForward(float Amount)
@@ -113,80 +101,18 @@ void APlayerCharacter::LookAround(float Amount)
 	AddControllerYawInput(Amount);
 }
 
-void APlayerCharacter::HighlightAbility()
+void APlayerCharacter::Cover()
 {
-	if (SphereDetectingHighlightables->GetScaledSphereRadius() != HighlightRadius)
-	{
-		SphereDetectingHighlightables->SetSphereRadius(HighlightRadius);
-	}
-	TArray<FHitResult> OutHits;
-	FVector ActorLocation = GetActorLocation();
 	
-	bool IsHitKismetByObj = UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), ActorLocation, ActorLocation, HighlightRadius,
-		ObjectTypesToHighlight, true, ToIgnore, EDrawDebugTrace::None, OutHits, true);
-	
-	if (IsHighlighting == false)
+	if (IsInCover)
 	{
-		if(IsHitKismetByObj)
-		{
-			for (FHitResult& Hit : OutHits)
-			{
-				Hit.GetComponent()->SetRenderCustomDepth(true);
-			}
-		}
-		IsHighlighting = true;
-	} else if (IsHighlighting == true)
-	{
-		if(IsHitKismetByObj)
-		{
-			for (FHitResult& Hit : OutHits)
-			{
-				Hit.GetComponent()->SetRenderCustomDepth(false);
-			}
-		}
-		IsHighlighting = false;
+		StopCover_Internal();
+		return;
 	}
-	
-}
-
-void APlayerCharacter::OnOverlapBeginForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
-	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (IsHighlighting == true)
-	{
-		if (OtherActor && (OtherActor != this) && OtherComp)
-		{
-			if (Cast<ACharacter>(OtherActor))
-			{
-				ACharacter* CharacterTmp = Cast<ACharacter>(OtherActor);
-				CharacterTmp->GetMesh()->SetRenderCustomDepth(true);
-			} 
-			// else
-			// {
-			// 	OtherComp->SetRenderCustomDepth(true);
-			// }
-		}
-	}
-}
-
-void APlayerCharacter::OnOverlapEndForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
-	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	if (IsHighlighting == true)
-	{
-		if (OtherActor && (OtherActor != this) && OtherComp)
-		{
-			if (Cast<ACharacter>(OtherActor))
-			{
-				ACharacter* CharacterTmp = Cast<ACharacter>(OtherActor);
-				CharacterTmp->GetMesh()->SetRenderCustomDepth(false);
-			} 
-			// else
-			// {
-			// 	OtherComp->SetRenderCustomDepth(false);
-			// }
-		}
-	}
+	FHitResult CoverHit;
+	const ECoverType CoverType = CoverTrace(CoverHit);
+	if (CoverType==ECoverType::None) return;
+	StartCover_Internal(CoverHit);
 }
 
 FRotator APlayerCharacter::GetAimDelta() const
@@ -240,6 +166,30 @@ bool APlayerCharacter::IsRunning() const
 	return bWantsToRun && IsMovingForward && !GetVelocity().IsZero();
 }
 
+void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (OnEnergyValueChangedHandle.IsBound()) OnEnergyValueChangedHandle.Clear();
+	CameraCollisionComponent->OnComponentBeginOverlap.Clear();
+	CameraCollisionComponent->OnComponentEndOverlap.Clear();
+	Super::EndPlay(EndPlayReason);
+}
+
+void APlayerCharacter::OnEnergyAttributeChanged(const FOnAttributeChangeData& Data)
+{
+	Super::OnEnergyAttributeChanged(Data);
+	//Для подключения делегата необходимо получить объект типа APlayerCharacter и сделать OnEnergyValueChangedHandle.BindUObject(this, &тип_класса::название_метода);
+	//Далее указанный метод будет вызываться автоматически при помощи следующей команды
+	float MaxEnergy = AttributeSet->GetMaxEnergy();
+	if (OnEnergyValueChangedHandle.IsBound()) OnEnergyValueChangedHandle.Execute(Data.NewValue/MaxEnergy);
+	
+}
+
+void APlayerCharacter::OnCooldownExpired(const FActiveGameplayEffect& ExpiredEffect)
+{
+	Super::OnCooldownExpired(ExpiredEffect);
+	
+}
+
 void APlayerCharacter::OnDeath()
 {
 	Super::OnDeath();
@@ -253,7 +203,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	check(CameraCollisionComponent);
-
+	check(GetCharacterMovement());
 	CameraCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionBeginOverlap);
 	CameraCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionEndOverlap);
 }
@@ -394,4 +344,20 @@ void APlayerCharacter::OnWorldChanged()
 	{
 		Cast<AStaticObjectToNothing>(OutActors[EveryActor])->Changing();
 	}
+}
+
+bool APlayerCharacter::StartCover_Internal(FHitResult& CoverHit)
+{
+	const bool Sup = Super::StartCover_Internal(CoverHit);
+	if (!Sup)return false;
+	IsInCover=true;
+	return true;
+}
+
+bool APlayerCharacter::StopCover_Internal()
+{
+	const bool Sup = Super::StopCover_Internal();
+	if (!Sup)return false;
+	IsInCover=false;;
+	return true;
 }
