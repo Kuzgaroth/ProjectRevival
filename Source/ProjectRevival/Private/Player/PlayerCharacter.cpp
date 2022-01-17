@@ -76,6 +76,7 @@ void APlayerCharacter::MoveForward(float Amount)
 
 void APlayerCharacter::StartRun()
 {
+	if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump() || PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted) return;
 	bWantsToRun=true;
 }
 
@@ -243,6 +244,7 @@ void APlayerCharacter::CameraZoomIn()
 	if (LeftSideView.IsMoving == false || PlayerAimZoom.IsZooming==false)
 	{
 		if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump() || PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted) return;
+		bWantsToRun=false;
 		PlayerMovementComponent->bOrientRotationToMovement = 0;
 		bUseControllerRotationYaw=true;
 		PlayerMovementComponent->AimStart();
