@@ -52,7 +52,10 @@ float UBaseCharacterMovementComponent::GetMaxSpeed() const
 {
 	const float MaxSpeed = Super::GetMaxSpeed();
 	const ABaseCharacter* Player = Cast<ABaseCharacter>(GetPawnOwner());
-	return Player && Player->IsRunning() ? MaxSpeed*RunModifier:MaxSpeed;
+	if (Player && Player->IsRunning()) return MaxSpeed*RunModifier;
+	if (PlayerMovementLogic.IsPivotTargeted) return MaxSpeed*0.5f;
+	return MaxSpeed;
+	
 }
 
 void UBaseCharacterMovementComponent::Jump()
