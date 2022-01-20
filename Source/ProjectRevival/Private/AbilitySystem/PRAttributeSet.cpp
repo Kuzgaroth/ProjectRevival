@@ -23,6 +23,7 @@ void UPRAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 {
 	Super::PostGameplayEffectExecute(Data);
 	
+	//UE_LOG(LogPRAbilitySystemBase,Display, TEXT("%f"), Data.EffectSpec.GetModifiedAttribute(GetEnergyAttribute())->TotalMagnitude);
 }
 
 void UPRAttributeSet::AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute,

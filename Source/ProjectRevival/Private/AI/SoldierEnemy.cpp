@@ -69,21 +69,6 @@ void ASoldierEnemy::BeginPlay()
 	check(HealthWidgetComponent);
 }
 
-void ASoldierEnemy::StartCovering()
-{
-	bWantsToCover=true;
-}
-
-void ASoldierEnemy::StopCovering()
-{
-	bWantsToCover=false;
-}
-
-bool ASoldierEnemy::IsCovering() const
-{
-	return bWantsToCover && IsMovingToCover && !GetVelocity().IsZero();
-}
-
 void ASoldierEnemy::OnHealthChanged(float CurrentHealth, float HealthDelta)
 {
 	Super::OnHealthChanged(CurrentHealth, HealthDelta);
@@ -135,4 +120,8 @@ void ASoldierEnemy::UpdateHealthWidgetVisibility()
 	const auto Distance = FVector::Distance(PlayerLocation, GetActorLocation());
 
 	HealthWidgetComponent->SetVisibility(Distance<HealthVisibilityDistance, true);
+}
+
+void ASoldierEnemy::TakeCover()
+{
 }

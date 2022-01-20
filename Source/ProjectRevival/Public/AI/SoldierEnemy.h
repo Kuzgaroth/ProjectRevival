@@ -20,15 +20,6 @@ enum class HealthStateSoldier: uint8
 	FULL_HEALTH
 };
 
-UENUM(BlueprintType)
-enum class CoverType: uint8
-{
-	NEAR_DEATH,
-	BADLY_INJURED,
-	SLIGHTLY_INJURED,
-	FULL_HEALTH
-};
-
 UCLASS()
 class PROJECTREVIVAL_API ASoldierEnemy : public ABaseCharacter
 {
@@ -50,9 +41,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
 	FName HealthStatus = "HStatus";
-
-	UFUNCTION(BlueprintCallable)
-	virtual bool IsCovering() const;
 	
 	virtual void OnDeath() override;
 	virtual void Tick(float DeltaSeconds) override;
@@ -67,10 +55,8 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void OnHealthChanged(float CurrentHealth, float HealthDelta) override;
 private:
-	bool bWantsToCover = false;
-	bool IsMovingToCover = false;
 	void UpdateHealthWidgetVisibility();
 	void UpdateHStateBlackboardKey(uint8 EnumKey);
-	void StartCovering();
-	void StopCovering();
+
+	void TakeCover();
 };

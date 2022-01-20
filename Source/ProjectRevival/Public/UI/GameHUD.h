@@ -12,6 +12,8 @@ class PROJECTREVIVAL_API AGameHUD : public AHUD
 {
 	GENERATED_BODY()
 public:
+	UUserWidget* GetPlayerHUDWidget() { return PlayerHUDWidget; }
+	
 	virtual void DrawHUD() override;
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
@@ -22,7 +24,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> GameOverWidgetClass;
-	
+
 	virtual void BeginPlay() override;
 private:
 	UPROPERTY()
@@ -30,7 +32,10 @@ private:
 
 	UPROPERTY()
 	UUserWidget* CurrentWidget = nullptr;
-	
+
+	UPROPERTY()
+	UUserWidget* PlayerHUDWidget = nullptr;
+
 	void DrawCrossHair();
 	void OnMatchStateChanged(EMatchState NewMatchState);
 };

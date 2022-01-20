@@ -16,7 +16,13 @@ class UHealthComponent;
 class UWeaponComponent;
 class USoundCue;
 
-
+UENUM()
+enum ECoverType
+{
+	High,
+	Low,
+	None
+};
 
 UCLASS()
 class PROJECTREVIVAL_API ABaseCharacter : public ACharacter,  public IAbilitySystemInterface, public IIDynMaterialsFromMesh
@@ -64,7 +70,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Abilities)
 	TMap<EGASInputActions, TSubclassOf<UPRGameplayAbility>> GameplayAbilities;
-	
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void AddStartupGameplayAbilities();
 	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data);
 	virtual void OnCooldownExpired(const FActiveGameplayEffect& ExpiredEffect); 
@@ -72,6 +79,10 @@ protected:
 	virtual void OnDeath();
 	virtual void BeginPlay() override;
 	virtual void OnHealthChanged(float CurrentHealth, float HealthDelta);
+
+	virtual bool StartCover_Internal(FHitResult& CoverHit);
+	virtual bool StopCover_Internal();
+	virtual ECoverType CoverTrace(FHitResult& CoverHit);
 public:	
 	virtual void Tick(float DeltaTime) override;
 	
@@ -86,6 +97,14 @@ public:
 	
 	void SetPlayerColor(const FLinearColor& Color);
 	virtual TArray<UMaterialInstanceDynamic*> GetDynMaterials() override;
+
+	UFUNCTION()
+	bool StartCover(AActor* InstigatorObj);
+	UFUNCTION()
+	bool StopCover(AActor* InstigatorObj);
+	
+	UFUNCTION(BlueprintCallable, Category="Covering")
+	virtual bool IsCovering() const;
 private:
 	UPROPERTY()
 	TArray<UMaterialInstanceDynamic*> DynamicMaterials;
@@ -94,6 +113,8 @@ private:
 	void OnGroundLanded(const FHitResult& HitResult);
 
 	friend UPRAttributeSet;
+
+	bool IsCoveringRightNow = false;
 };
 
 

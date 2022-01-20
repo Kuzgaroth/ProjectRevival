@@ -147,8 +147,12 @@ void UWeaponComponent::EquipWeapon(int32 WeaponIndex)
 		{return CurrentWeapon->GetClass()==Data.WeaponClass;});
 	CurrentReloadAnimMontage = CurrentWeaponData ? CurrentWeaponData->ReloadAnimMontage : nullptr;
 	AttachWeaponToSocket(CurrentWeapon, Character->GetMesh(),WeaponEquipSocketName);
-	EquipAnimInProgress = true;
-	PlayAnimMontage(EquipAnimMontage);
+	if (EquipAnimMontage)
+	{
+		EquipAnimInProgress = true;
+		PlayAnimMontage(EquipAnimMontage);
+	}
+	
 }
 
 void UWeaponComponent::PlayAnimMontage(UAnimMontage* MontageToPlay) const
