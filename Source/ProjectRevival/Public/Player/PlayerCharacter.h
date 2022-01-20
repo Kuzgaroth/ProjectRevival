@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BaseCharacterMovementComponent.h"
 #include "Player/BaseCharacter.h"
 #include "Components/TimelineComponent.h"
 #include "ProjectRevival/Public/CoreTypes.h"
@@ -49,7 +50,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	USphereComponent* CameraCollisionComponent;
-
+	
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data) override;
+	virtual void OnCooldownExpired(const FActiveGameplayEffect& ExpiredEffect) override;
+	
 	virtual void OnDeath() override;
 	virtual void BeginPlay() override;
 	
@@ -61,23 +66,47 @@ protected:
 	void CameraZoomOut();
 
 	void OnWorldChanged();
+	virtual bool StartCover_Internal(FHitResult& CoverHit) override;
+	virtual bool StopCover_Internal() override;
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	FOnEnergyValueChanged OnEnergyValueChangedHandle;
+
+	//The range in which enemies and objects are highlighted 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
+	float HighlightRadius = 2000.f;
+
+	//Trace Channel we use to detect all the stuff
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
+	TEnumAsByte<ECollisionChannel> TraceChannelProvided;
+
+	//Types of collisions by which objects are going to be highlighted
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesToHighlight;
+	
+	UFUNCTION(BlueprintCallable)
+	FRotator GetAimDelta() const;
 	
 	virtual bool IsRunning() const override;
 private:
+
+	UPROPERTY()
+	UBaseCharacterMovementComponent* PlayerMovementComponent;
+	
 	bool bWantsToRun = false;
 	bool IsMovingForward = false;
 	void MoveForward(float Amount);
-	void MoveRight(float Amount);
 	void StartRun();
 	void StopRun();
-	
+	void Cover();
+	void StartFire();
+	void LookUp(float Amount);
+	void LookAround(float Amount);
 	UPROPERTY()
 	class USphereComponent* SphereDetectingHighlightables;
 	
-	bool IsHighlighting = false;
-
+	bool IsInCover=false;
 	FTimerHandle THandle;
 	void Flip();
 	void StopFlip();

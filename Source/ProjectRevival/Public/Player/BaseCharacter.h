@@ -102,9 +102,6 @@ public:
 	bool StartCover(AActor* InstigatorObj);
 	UFUNCTION()
 	bool StopCover(AActor* InstigatorObj);
-	
-	UFUNCTION(BlueprintCallable, Category="Covering")
-	virtual bool IsCovering() const;
 private:
 	UPROPERTY()
 	TArray<UMaterialInstanceDynamic*> DynamicMaterials;
@@ -114,7 +111,7 @@ private:
 
 	friend UPRAttributeSet;
 
-	bool IsCoveringRightNow = false;
+	
 };
 
 

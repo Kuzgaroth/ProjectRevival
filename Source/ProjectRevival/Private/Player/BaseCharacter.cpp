@@ -190,7 +190,7 @@ void ABaseCharacter::OnHealthChanged(float CurrentHealth, float HealthDelta)
 
 bool ABaseCharacter::StartCover_Internal(FHitResult& CoverHit)
 {
-	IsCoveringRightNow = true;
+	
 	GetCharacterMovement()->SetPlaneConstraintEnabled(true);
 	GetCharacterMovement()->SetPlaneConstraintNormal(CoverHit.Normal);
 	return true;
@@ -198,7 +198,6 @@ bool ABaseCharacter::StartCover_Internal(FHitResult& CoverHit)
 
 bool ABaseCharacter::StopCover_Internal()
 {
-	IsCoveringRightNow = false;
 	GetCharacterMovement()->SetPlaneConstraintEnabled(false);
 	return true;
 }
@@ -210,30 +209,15 @@ ECoverType ABaseCharacter::CoverTrace(FHitResult& CoverHit)
 	HighLocation.Set(Location.X, Location.Y, 200.0f);
 	const bool HighTraceResult = UKismetSystemLibrary::LineTraceSingle(GetWorld(), HighLocation, GetActorForwardVector()*100.0f+HighLocation,
 		UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, CoverHit, true);
-	DrawDebugLine(GetWorld(), HighLocation, GetActorRotation().Vector()*25.0f, FColor::Red, false, 2,0, 2);
-	if (HighTraceResult)
-	{
-		IsCoveringRightNow = true;
-		return ECoverType::High;
-	}
+	//DrawDebugLine(GetWorld(), HighLocation, GetActorRotation().Vector()*25.0f, FColor::Red, false, 2,0, 2);
+	if (HighTraceResult) return ECoverType::High;
 
 	const bool LowTraceResult = UKismetSystemLibrary::LineTraceSingle(GetWorld(), Location, GetActorForwardVector()*100.0f+Location,
 		UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, CoverHit, true);
-	DrawDebugLine(GetWorld(), Location, GetActorRotation().Vector()*25.0f, FColor::Red, false, 2,0, 2);
-	if (LowTraceResult)
-	{
-		IsCoveringRightNow = true;
-		return ECoverType::Low;
-	}
-	IsCoveringRightNow = false;
+	//DrawDebugLine(GetWorld(), Location, GetActorRotation().Vector()*25.0f, FColor::Red, false, 2,0, 2);
+	if (LowTraceResult) return ECoverType::Low;
 	return ECoverType::None;
 }
-
-bool ABaseCharacter::IsCovering() const
-{
-	return IsCoveringRightNow;
-}
-
 
 void ABaseCharacter::OnGroundLanded(const FHitResult& HitResult)
 {
