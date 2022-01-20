@@ -12,18 +12,19 @@ AStaticObjectToNothing::AStaticObjectToNothing()
 	PrimaryActorTick.bCanEverTick = true;
 
 	SceneComponent = CreateDefaultSubobject<USceneComponent>("SceneComponent");
+	SceneComponent->SetMobility(EComponentMobility::Static);
 	RootComponent = SceneComponent;
 
 	CollisionComponent = CreateDefaultSubobject<UBoxComponent>(FName("CollisionMesh"));
 	CollisionComponent->SetBoxExtent(FVector(32.f, 32.f, 32.f));
 	CollisionComponent->bDynamicObstacle = true;
 	CollisionComponent->SetupAttachment(RootComponent);
-	CollisionComponent->SetMobility(EComponentMobility::Movable);
+	CollisionComponent->SetMobility(EComponentMobility::Static);
 	CollisionComponent->SetCollisionProfileName("BlockAll");
 	
 	SuperMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SuperMesh"));
 	SuperMesh->SetupAttachment(CollisionComponent);
-	SuperMesh->SetMobility(EComponentMobility::Static);
+	SuperMesh->SetMobility(EComponentMobility::Movable);
 	
 }
 

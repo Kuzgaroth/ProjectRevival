@@ -207,6 +207,7 @@ void APlayerCharacter::BeginPlay()
 	check(GetCharacterMovement());
 	CameraCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionBeginOverlap);
 	CameraCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionEndOverlap);
+	
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -338,15 +339,18 @@ void APlayerCharacter::CameraBlock()
 
 void APlayerCharacter::OnWorldChanged()
 {
-	TSubclassOf<AStaticObjectToNothing> ClassToFind;
-	ClassToFind = AStaticObjectToNothing::StaticClass();
+	TSubclassOf<AChangeWorld> ClassToFind = AChangeWorld::StaticClass();
 	TArray<AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClass(this, ClassToFind, OutActors);
 	for (int EveryActor = 0; EveryActor < OutActors.Num(); EveryActor++)
 	{
-		Cast<AStaticObjectToNothing>(OutActors[EveryActor])->Changing();
+		Cast<AChangeWorld>(OutActors[EveryActor])->Changing();
 	}
+	/*AStaticObjectToNothing StaticObjectToNothing;
+	AChangeWorld *ChangeWorld = &StaticObjectToNothing;
+	ChangeWorld->Changing();*/
 }
+
 
 bool APlayerCharacter::StartCover_Internal(FHitResult& CoverHit)
 {
