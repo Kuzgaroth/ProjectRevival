@@ -6,6 +6,7 @@
 
 UFlipAbility::UFlipAbility()
 {
+	AbilityAction = EGASInputActions::Flip;
 }
 
 void UFlipAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

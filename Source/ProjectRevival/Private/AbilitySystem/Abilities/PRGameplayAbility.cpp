@@ -3,6 +3,7 @@
 
 #include "AbilitySystem/Abilities/PRGameplayAbility.h"
 #include "BasePlayerController.h"
+#include "GameHUD.h"
 #include "PlayerHUDWidget.h"
 
 UPRGameplayAbility::UPRGameplayAbility()
@@ -22,7 +23,17 @@ void UPRGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, 
 		UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Cooldown is %f seconds"), CooldownMagnitude);
 	}
 	//Вызов старта кулдауна способности
-	//Ability->StartCooldown(CooldownMagnitude);
+	auto PlayerHUDWidget = Cast<UPlayerHUDWidget>(Cast<ABasePlayerController>(ActorInfo->PlayerController.Get())->GetHUD<AGameHUD>()->GetPlayerHUDWidget());
+	if (PlayerHUDWidget)
+	{
+		AbilityWidget = PlayerHUDWidget->GetWidgetByAction(AbilityAction);
+	}
+	
+	if (!AbilityWidget) UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Widget have not found. Check Blueprint version on AbilityAction parameter or widget method directly"));
+	if (AbilityWidget)
+	{
+		AbilityWidget->StartCooldown(CooldownMagnitude);	
+	}
 	
 	//K2_EndAbility();
 }
@@ -38,7 +49,13 @@ void UPRGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInf
 	Super::OnGiveAbility(ActorInfo, Spec);
 
 	//Получение соответствующего инстанса виджета
-	//AbilityWidget = Cast<ABasePlayerController>(ActorInfo->PlayerController.Get())->GetHUD<AGameHUD>()->GetPlayerHUDWidget()->GetWidgetByAction(AbilityAction);
-	//if (!AbilityWidget) UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Widget have not found. Check Blueprint version on AbilityAction parameter or widget method directly"));
+	// auto PlayerHUDWidget = Cast<UPlayerHUDWidget>(Cast<ABasePlayerController>(ActorInfo->PlayerController.Get())->GetHUD<AGameHUD>()->GetPlayerHUDWidget());
+	// if (PlayerHUDWidget)
+	// {
+	// 	// AbilityWidget = PlayerHUDWidget->GetWidgetByAction(AbilityAction);
+	// }
+	// AbilityWidget = PlayerHUDWidget->GetWidgetByAction(AbilityAction);
+	// // AbilityWidget = Cast<UPlayerHUDWidget>(Cast<ABasePlayerController>(ActorInfo->PlayerController.Get())->GetHUD<AGameHUD>()->GetCurrentWidget())->GetWidgetByAction(AbilityAction);
+	// if (!AbilityWidget) UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Widget have not found. Check Blueprint version on AbilityAction parameter or widget method directly"));
 
 }

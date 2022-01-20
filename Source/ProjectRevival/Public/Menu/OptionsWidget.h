@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/WidgetSwitcher.h"
+
 #include "OptionsWidget.generated.h"
 
 class UButton;
@@ -19,12 +21,42 @@ protected:
 	UPROPERTY(meta=(BindWidget))
 	UButton* BackButton;
 
+	UPROPERTY(meta=(BindWidget))
+	UWidgetSwitcher* OptionsWidgetSwitcher;
+
+	UPROPERTY(meta=(BindWidget))
+	UButton* ControlsButton;
+
+	UPROPERTY(meta=(BindWidget))
+	UButton* GraphicsButton;
+
+	UPROPERTY(meta=(BindWidget))
+	UButton* SoundButton;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> MenuWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
+	TSubclassOf<UUserWidget> OptionsControlsWidgetClass;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
+	TSubclassOf<UUserWidget> OptionsSoundWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
+	TSubclassOf<UUserWidget> OptionsGraphicsWidgetClass;
 
 	virtual void NativeOnInitialized() override;
 
 private:
 	UFUNCTION()
     void OnBack();
+
+	UFUNCTION()
+	void OnControls();
+
+	UFUNCTION()
+	void OnGraphics();
+
+	UFUNCTION()
+	void OnSound();
 };
