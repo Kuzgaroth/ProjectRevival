@@ -27,7 +27,7 @@ void UWeaponFXComponent::PlayImpactFX(const FHitResult& HitResult)
 		}
 	}
 
-	if (ImpactData.bUseNiagara == true && ImpactData.NiagaraEffect)
+	if (ImpactData.bUseNiagaraImpactEffect == true && ImpactData.NiagaraEffect)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactData.NiagaraEffect, HitResult.ImpactPoint,
 		HitResult.ImpactNormal.Rotation());
