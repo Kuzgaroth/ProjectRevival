@@ -122,6 +122,28 @@ void ASoldierEnemy::UpdateHealthWidgetVisibility()
 	HealthWidgetComponent->SetVisibility(Distance<HealthVisibilityDistance, true);
 }
 
+bool ASoldierEnemy::StartCover_Internal(FHitResult& CoverHit)
+{
+	const bool Sup = Super::StartCover_Internal(CoverHit);
+	if (!Sup)return false;
+	IsInCover = true;
+	return true;
+}
+
+bool ASoldierEnemy::StopCover_Internal()
+{
+	const bool Sup = Super::StopCover_Internal();
+	if (!Sup)return false;
+	IsInCover = false;
+	return true;
+}
+
+bool ASoldierEnemy::IsCovering() const
+{
+	return IsInCover;
+}
+
 void ASoldierEnemy::TakeCover()
 {
+	
 }

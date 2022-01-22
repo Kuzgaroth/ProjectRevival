@@ -45,6 +45,9 @@ public:
 	virtual void OnDeath() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void PossessedBy(AController* NewController) override;
+
+	UFUNCTION(BlueprintCallable, Category="Covering")
+	virtual bool IsCovering() const;
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UWidgetComponent* HealthWidgetComponent;
@@ -54,9 +57,13 @@ protected:
 	
 	virtual void BeginPlay() override;
 	virtual void OnHealthChanged(float CurrentHealth, float HealthDelta) override;
+
+	virtual bool StartCover_Internal(FHitResult& CoverHit) override;
+	virtual bool StopCover_Internal() override;
 private:
 	void UpdateHealthWidgetVisibility();
 	void UpdateHStateBlackboardKey(uint8 EnumKey);
 
 	void TakeCover();
+	bool IsInCover=false;
 };
