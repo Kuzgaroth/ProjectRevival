@@ -6,6 +6,8 @@
 #include "Perception/AIPerceptionComponent.h"
 #include "PRSoldierAIPerceptionComponent.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIPerception, Log, All);
+
 /**
  * 
  */
