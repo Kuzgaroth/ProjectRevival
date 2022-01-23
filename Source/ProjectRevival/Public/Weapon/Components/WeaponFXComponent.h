@@ -25,8 +25,6 @@ protected:
 	TMap<UPhysicalMaterial*, FImpactData> ImpactDataMap;
 	
 	//virtual void BeginPlay() override;
-public:	
+public:
 	void PlayImpactFX(const FHitResult& HitResult);
-	
-		
 };

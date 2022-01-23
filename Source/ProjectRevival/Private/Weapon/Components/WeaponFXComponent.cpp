@@ -26,9 +26,18 @@ void UWeaponFXComponent::PlayImpactFX(const FHitResult& HitResult)
 			ImpactData = ImpactDataMap[PhysMaterial];
 		}
 	}
-	
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactData.NiagaraEffect, HitResult.ImpactPoint,
+
+	if (ImpactData.bUseNiagaraImpactEffect == true && ImpactData.NiagaraEffect)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactData.NiagaraEffect, HitResult.ImpactPoint,
 		HitResult.ImpactNormal.Rotation());
+	}
+	else if (ImpactData.CascadeEffect)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactData.CascadeEffect, HitResult.ImpactPoint,
+		HitResult.ImpactNormal.Rotation());
+	}
+	else return;
 	auto DecalComponent = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), ImpactData.DecalData.Material, ImpactData.DecalData.Size,
 		HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation());
 	if (DecalComponent)

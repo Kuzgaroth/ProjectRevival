@@ -6,6 +6,7 @@
 
 UGhostAbility::UGhostAbility()
 {
+	AbilityAction = EGASInputActions::Ghost;
 }
 
 void UGhostAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

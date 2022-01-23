@@ -36,17 +36,7 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	CameraCollisionComponent->SetSphereRadius(10.0f);
 	CameraCollisionComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 
-	ToIgnore.Add(this);
-
-	TraceChannelProvided = ECollisionChannel::ECC_GameTraceChannel2;
-
-	SphereDetectingHighlightables = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Highilght Detector Component"));
-	SphereDetectingHighlightables->InitSphereRadius(HighlightRadius);
-	SphereDetectingHighlightables->SetCollisionProfileName(TEXT("TriggerHighlighter"));
-	SphereDetectingHighlightables->SetupAttachment(RootComponent);
-	
-	SphereDetectingHighlightables->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapBeginForHighlight);
-	SphereDetectingHighlightables->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapEndForHighlight); 
+	PlayerMovementComponent = Cast<UBaseCharacterMovementComponent>(GetCharacterMovement());
 }
 
 
@@ -55,15 +45,15 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAxis("MoveForward",this,&APlayerCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight",this,&APlayerCharacter::MoveRight);
-	PlayerInputComponent->BindAxis("LookUp",this,&APlayerCharacter::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("TurnAround",this,&APlayerCharacter::AddControllerYawInput);
-	PlayerInputComponent->BindAction("Jump",EInputEvent::IE_Pressed,this, &ABaseCharacter::Jump);
+	PlayerInputComponent->BindAxis("MoveRight",PlayerMovementComponent,&UBaseCharacterMovementComponent::MoveRight);
+	PlayerInputComponent->BindAxis("LookUp",this,&APlayerCharacter::LookUp);
+	PlayerInputComponent->BindAxis("TurnAround",this,&APlayerCharacter::LookAround);
+	PlayerInputComponent->BindAction("Jump",EInputEvent::IE_Pressed,PlayerMovementComponent, &UBaseCharacterMovementComponent::Jump);
 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Pressed,this, &APlayerCharacter::StartRun);
 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Released,this, &APlayerCharacter::StopRun);
 	//PlayerInputComponent->BindAction("Flip",EInputEvent::IE_Pressed,this, &APlayerCharacter::Flip);
 	//PlayerInputComponent->BindAction("Highlight",EInputEvent::IE_Pressed,this, &APlayerCharacter::HighlightAbility);
-	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::StartFire);
+	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Pressed,this, &APlayerCharacter::StartFire);
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Released,WeaponComponent, &UWeaponComponent::StopFire);
 	PlayerInputComponent->BindAction("NextWeapon",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::NextWeapon);
 	PlayerInputComponent->BindAction("Reload",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::Reload);
@@ -71,24 +61,22 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent,
 	FGameplayAbilityInputBinds(FString("ConfirmTarget"),
 	FString("CancelTarget"), FString("EGASInputActions")));
-	InputComponent->BindAction("Zoom", IE_Pressed, this, &APlayerCharacter::CameraZoomIn);
-	InputComponent->BindAction("Zoom", IE_Released, this, &APlayerCharacter::CameraZoomOut);
+	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &APlayerCharacter::CameraZoomIn);
+	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &APlayerCharacter::CameraZoomOut);
 	PlayerInputComponent->BindAction("ChangeWorld", EInputEvent::IE_Pressed,this, &APlayerCharacter::OnWorldChanged);
+	PlayerInputComponent->BindAction("Cover", EInputEvent::IE_Pressed,this, &APlayerCharacter::Cover);
+	
 }
 
 void APlayerCharacter::MoveForward(float Amount)
 {
-	IsMovingForward = Amount>0.f;
-	AddMovementInput(GetActorForwardVector(),Amount);
-}
-
-void APlayerCharacter::MoveRight(float Amount)
-{
-	AddMovementInput(GetActorRightVector(),Amount);
+	IsMovingForward = Amount>0;
+	PlayerMovementComponent->MoveForward(Amount);
 }
 
 void APlayerCharacter::StartRun()
 {
+	if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump() || PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted) return;
 	bWantsToRun=true;
 }
 
@@ -97,84 +85,54 @@ void APlayerCharacter::StopRun()
 	bWantsToRun=false;
 }
 
-void APlayerCharacter::HighlightAbility()
+void APlayerCharacter::StartFire()
 {
-	if (SphereDetectingHighlightables->GetScaledSphereRadius() != HighlightRadius)
-	{
-		SphereDetectingHighlightables->SetSphereRadius(HighlightRadius);
-	}
-	TArray<FHitResult> OutHits;
-	FVector ActorLocation = GetActorLocation();
-	
-	bool IsHitKismetByObj = UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), ActorLocation, ActorLocation, HighlightRadius,
-		ObjectTypesToHighlight, true, ToIgnore, EDrawDebugTrace::None, OutHits, true);
-	
-	if (IsHighlighting == false)
-	{
-		if(IsHitKismetByObj)
-		{
-			for (FHitResult& Hit : OutHits)
-			{
-				Hit.GetComponent()->SetRenderCustomDepth(true);
-			}
-		}
-		IsHighlighting = true;
-	} else if (IsHighlighting == true)
-	{
-		if(IsHitKismetByObj)
-		{
-			for (FHitResult& Hit : OutHits)
-			{
-				Hit.GetComponent()->SetRenderCustomDepth(false);
-			}
-		}
-		IsHighlighting = false;
-	}
-	
+	if (!PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted ||
+		PlayerMovementComponent->GetPlayerMovementLogic().IsInJump()) return;
+	WeaponComponent->StartFire();
 }
 
-void APlayerCharacter::OnOverlapBeginForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
-	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void APlayerCharacter::LookUp(float Amount)
 {
-	if (IsHighlighting == true)
-	{
-		if (OtherActor && (OtherActor != this) && OtherComp)
-		{
-			if (Cast<ACharacter>(OtherActor))
-			{
-				ACharacter* CharacterTmp = Cast<ACharacter>(OtherActor);
-				CharacterTmp->GetMesh()->SetRenderCustomDepth(true);
-			} 
-			// else
-			// {
-			// 	OtherComp->SetRenderCustomDepth(true);
-			// }
-		}
-	}
+	AddControllerPitchInput(Amount);
 }
 
-void APlayerCharacter::OnOverlapEndForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
-	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void APlayerCharacter::LookAround(float Amount)
 {
-	if (IsHighlighting == true)
+	AddControllerYawInput(Amount);
+}
+
+void APlayerCharacter::Cover()
+{
+	
+	if (IsInCover)
 	{
-		if (OtherActor && (OtherActor != this) && OtherComp)
-		{
-			if (Cast<ACharacter>(OtherActor))
-			{
-				ACharacter* CharacterTmp = Cast<ACharacter>(OtherActor);
-				CharacterTmp->GetMesh()->SetRenderCustomDepth(false);
-			} 
-			// else
-			// {
-			// 	OtherComp->SetRenderCustomDepth(false);
-			// }
-		}
+		StopCover_Internal();
+		return;
 	}
+	FHitResult CoverHit;
+	const ECoverType CoverType = CoverTrace(CoverHit);
+	if (CoverType==ECoverType::None) return;
+	StartCover_Internal(CoverHit);
+}
+
+FRotator APlayerCharacter::GetAimDelta() const
+{
+	if (!GetController()) return FRotator();
+	const auto CameraRotation = GetController()->K2_GetActorRotation();
+	const auto PawnRotation = GetActorRotation();
+
+	auto Delta = CameraRotation.Yaw-PawnRotation.Yaw;
+	if (FMath::Abs<float>(Delta)>180)
+	{
+		Delta = Delta + 360.0*FMath::Sign<float>(Delta)*(-1.0);
+	}
+
+	return FRotator(CameraRotation.Pitch, Delta, 0.0f);
 }
 
 void APlayerCharacter::OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                                     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	CheckCameraOverlap();
 }
@@ -209,6 +167,30 @@ bool APlayerCharacter::IsRunning() const
 	return bWantsToRun && IsMovingForward && !GetVelocity().IsZero();
 }
 
+void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (OnEnergyValueChangedHandle.IsBound()) OnEnergyValueChangedHandle.Clear();
+	CameraCollisionComponent->OnComponentBeginOverlap.Clear();
+	CameraCollisionComponent->OnComponentEndOverlap.Clear();
+	Super::EndPlay(EndPlayReason);
+}
+
+void APlayerCharacter::OnEnergyAttributeChanged(const FOnAttributeChangeData& Data)
+{
+	Super::OnEnergyAttributeChanged(Data);
+	//Для подключения делегата необходимо получить объект типа APlayerCharacter и сделать OnEnergyValueChangedHandle.BindUObject(this, &тип_класса::название_метода);
+	//Далее указанный метод будет вызываться автоматически при помощи следующей команды
+	float MaxEnergy = AttributeSet->GetMaxEnergy();
+	if (OnEnergyValueChangedHandle.IsBound()) OnEnergyValueChangedHandle.Execute(Data.NewValue/MaxEnergy);
+	
+}
+
+void APlayerCharacter::OnCooldownExpired(const FActiveGameplayEffect& ExpiredEffect)
+{
+	Super::OnCooldownExpired(ExpiredEffect);
+	
+}
+
 void APlayerCharacter::OnDeath()
 {
 	Super::OnDeath();
@@ -222,9 +204,10 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	check(CameraCollisionComponent);
-
+	check(GetCharacterMovement());
 	CameraCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionBeginOverlap);
 	CameraCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionEndOverlap);
+	
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -259,8 +242,15 @@ void APlayerCharacter::TimelineLeftSideView(float Value)
 
 void APlayerCharacter::CameraZoomIn()
 {
-	if (LeftSideView.IsMoving == false)
+	if (LeftSideView.IsMoving == false || PlayerAimZoom.IsZooming==false)
 	{
+		if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump() || PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted) return;
+		bWantsToRun=false;
+		PlayerMovementComponent->bOrientRotationToMovement = 0;
+		bUseControllerRotationYaw=true;
+		PlayerMovementComponent->AimStart();
+
+		
 		if (PlayerAimZoom.StartStartPos == FVector(0.0, 0.0, 0.0)) PlayerAimZoom.StartStartPos = SpringArmComponent->SocketOffset;
 		SpringArmComponent->SocketOffset = PlayerAimZoom.StartStartPos;
 		FOnTimelineVector TimelineProgress;
@@ -277,6 +267,7 @@ void APlayerCharacter::CameraZoomIn()
 
 		PlayerAimZoom.IsZooming = true;
 		CurveTimeline.PlayFromStart();
+		
 	}
 }
 
@@ -284,6 +275,10 @@ void APlayerCharacter::CameraZoomOut()
 {
 	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true)
 	{
+		PlayerMovementComponent->bOrientRotationToMovement = 1;
+		bUseControllerRotationYaw=false;;
+		PlayerMovementComponent->AimEnd();
+		
 		FOnTimelineVector TimelineProgress;
 		FOnTimelineFloat TimelineFieldOfView;
 		TimelineProgress.BindUFunction(this, FName("TimelineProgress"));
@@ -344,12 +339,31 @@ void APlayerCharacter::CameraBlock()
 
 void APlayerCharacter::OnWorldChanged()
 {
-	TSubclassOf<AStaticObjectToNothing> ClassToFind;
-	ClassToFind = AStaticObjectToNothing::StaticClass();
+	TSubclassOf<AChangeWorld> ClassToFind = AChangeWorld::StaticClass();
 	TArray<AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClass(this, ClassToFind, OutActors);
 	for (int EveryActor = 0; EveryActor < OutActors.Num(); EveryActor++)
 	{
-		Cast<AStaticObjectToNothing>(OutActors[EveryActor])->Changing();
+		Cast<AChangeWorld>(OutActors[EveryActor])->Changing();
 	}
+	/*AStaticObjectToNothing StaticObjectToNothing;
+	AChangeWorld *ChangeWorld = &StaticObjectToNothing;
+	ChangeWorld->Changing();*/
+}
+
+
+bool APlayerCharacter::StartCover_Internal(FHitResult& CoverHit)
+{
+	const bool Sup = Super::StartCover_Internal(CoverHit);
+	if (!Sup)return false;
+	IsInCover=true;
+	return true;
+}
+
+bool APlayerCharacter::StopCover_Internal()
+{
+	const bool Sup = Super::StopCover_Internal();
+	if (!Sup)return false;
+	IsInCover=false;;
+	return true;
 }

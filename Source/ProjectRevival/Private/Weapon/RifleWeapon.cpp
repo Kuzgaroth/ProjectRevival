@@ -17,7 +17,7 @@ void ARifleWeapon::MakeShot()
 		StopFire();
 		return;
 	}
-
+	
 	FVector TraceStart;
     FVector TraceEnd;
     if (!GetTraceData(TraceStart, TraceEnd)) return;
@@ -33,6 +33,10 @@ void ARifleWeapon::MakeShot()
 		//DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 10.0f, 24, FColor::Red, false, 5.0f);
 		MakeDamage(HitResult);
 		WeaponFXComponent->PlayImpactFX(HitResult);
+	}
+	if(MuzzleFXComponentCascade)
+	{
+		MuzzleFXComponentCascade->Activate();
 	}
 	SpawnTraceFX(GetMuzzleWorldLocation(), TraceFXEnd);
 	DecreaseAmmo();
@@ -85,9 +89,19 @@ void ARifleWeapon::BeginPlay()
 
 void ARifleWeapon::InitFX()
 {
-	if (!MuzzelFXComponent)
+	if (bUseNiagaraMuzzleEffect == true)
 	{
-		MuzzelFXComponent = SpawnMuzzelFX();
+		if (!MuzzleFXComponentNiagara)
+		{
+			MuzzleFXComponentNiagara = SpawnMuzzleFXNiagara();
+		}
+	}
+	else
+	{
+		if (!MuzzleFXComponentCascade)
+		{
+			MuzzleFXComponentCascade = SpawnMuzzleFXCascade();
+		}
 	}
 	
 	if (!FireAudioComponent)
@@ -99,10 +113,28 @@ void ARifleWeapon::InitFX()
 
 void ARifleWeapon::SetFXActive(bool IsActive)
 {
-	if (MuzzelFXComponent)
+	if (bUseNiagaraMuzzleEffect == true)
 	{
-		MuzzelFXComponent->SetPaused(!IsActive);
-		MuzzelFXComponent->SetVisibility(IsActive, true);
+		if (MuzzleFXComponentNiagara)
+		{
+			MuzzleFXComponentNiagara->SetPaused(!IsActive);
+			MuzzleFXComponentNiagara->SetVisibility(IsActive, true);
+		}
+	}
+	else
+	{
+		if (MuzzleFXComponentCascade)
+		{
+			MuzzleFXComponentCascade->SetVisibility(IsActive, true);
+			if (IsActive == true)
+			{
+				MuzzleFXComponentCascade->Activate();
+			}
+			else
+			{
+				MuzzleFXComponentCascade->Deactivate();
+			}
+		}
 	}
 
 	if (FireAudioComponent)
@@ -113,10 +145,21 @@ void ARifleWeapon::SetFXActive(bool IsActive)
 
 void ARifleWeapon::SpawnTraceFX(const FVector& TraceStart, const FVector& TraceEnd)
 {
-	const auto TraceFXComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TraceFX, TraceStart);
-	if (TraceFXComponent)
+	if (bUseNiagaraTraceEffect == true)
 	{
-		TraceFXComponent->SetNiagaraVariableVec3(TraceTargetName, TraceEnd);
+		const auto TraceFXComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TraceFXNiagara, TraceStart);
+		if (TraceFXComponent)
+		{
+			TraceFXComponent->SetNiagaraVariableVec3(TraceTargetName, TraceEnd);
+		}
+	}
+	else
+	{
+		const auto TraceFXComponent = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TraceFXCascade, TraceStart);
+		if (TraceFXComponent)
+		{
+			TraceFXComponent->SetBeamEndPoint(0, TraceEnd);
+		}
 	}
 }
 

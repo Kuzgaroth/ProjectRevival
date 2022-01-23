@@ -35,7 +35,14 @@ void ALauncherWeapon::MakeShot()
 		Projectile->FinishSpawning(SpawnTransform);
 	}
 	DecreaseAmmo();
-	SpawnMuzzelFX();
+	if (bUseNiagaraMuzzleEffect == true)
+	{
+		SpawnMuzzleFXNiagara();
+	}
+	else
+	{
+		SpawnMuzzleFXCascade();
+	}
 
 	UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzelSocketName);
 }

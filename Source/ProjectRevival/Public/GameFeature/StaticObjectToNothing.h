@@ -4,20 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ChangeWorld.h"
 #include "StaticObjectToNothing.generated.h"
 
 class UBoxComponent;
 
-UENUM(BlueprintType, Category = "GameRules")
-enum EChangeWorld
-{
-	OrdinaryWorld UMETA(DisplayName = "Ordinary World"),
-	OtherWorld UMETA(DisplayName = "Other World")
-};
-
 UCLASS()
 
-class PROJECTREVIVAL_API AStaticObjectToNothing : public AActor
+class PROJECTREVIVAL_API AStaticObjectToNothing : public AChangeWorld
 {
 	GENERATED_BODY()
 	
@@ -39,13 +33,11 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
 	
-	TEnumAsByte<EChangeWorld> CurrentWorld = OrdinaryWorld;
-	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	UBoxComponent* CollisionComponent = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* SceneComponent;
 
-	void Changing();
+	void Changing() override;
 };

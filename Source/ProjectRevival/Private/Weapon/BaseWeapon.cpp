@@ -156,10 +156,16 @@ bool ABaseWeapon::IsAmmoFull() const
 	return CurrentAmmo.Clips == DefaultAmmo.Clips && CurrentAmmo.Bullets == DefaultAmmo.Bullets;
 }
 
-UNiagaraComponent* ABaseWeapon::SpawnMuzzelFX()
+UNiagaraComponent* ABaseWeapon::SpawnMuzzleFXNiagara()
 {
-	return UNiagaraFunctionLibrary::SpawnSystemAttached(MuzzelFX, WeaponMesh, MuzzelSocketName, FVector::ZeroVector,
+	return UNiagaraFunctionLibrary::SpawnSystemAttached(MuzzleFXNiagara, WeaponMesh, MuzzelSocketName, FVector::ZeroVector,
 		FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
+}
+
+UParticleSystemComponent* ABaseWeapon::SpawnMuzzleFXCascade()
+{
+	return UGameplayStatics::SpawnEmitterAttached(MuzzleFXCascade, WeaponMesh, MuzzelSocketName, FVector::ZeroVector,
+		FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
 }
 
 void ABaseWeapon::ChangeClip()
