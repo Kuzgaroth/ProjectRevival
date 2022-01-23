@@ -45,8 +45,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	FWeaponUIData UIData;
 
+	//if set to "true" then Niagara is used, otherwise uses Cascade. By default is set to "true"
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
-	UNiagaraSystem* MuzzelFX;
+	bool bUseNiagaraMuzzleEffect = true;
+	
+	//Niagara effect to play
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
+	UNiagaraSystem* MuzzleFXNiagara;
+	
+	//Cascade effect to play
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
+	UParticleSystem* MuzzleFXCascade;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Sound")
 	USoundCue* FireSound;
@@ -64,7 +73,8 @@ protected:
 	
 	bool IsClipEmpty() const;
 	bool IsAmmoFull() const;
-	UNiagaraComponent* SpawnMuzzelFX();
+	UNiagaraComponent* SpawnMuzzleFXNiagara();
+	UParticleSystemComponent* SpawnMuzzleFXCascade();
 public:	
 	virtual void StartFire();
 	virtual void StopFire();

@@ -81,8 +81,17 @@ struct FImpactData
 {
 	GENERATED_BODY()
 
+	//if set to "true" then Niagara is used, otherwise uses Cascade. By default is set to "true"
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
+	bool bUseNiagaraImpactEffect = true;
+	
+	//Niagara effect to play
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
 	UNiagaraSystem* NiagaraEffect;
+
+	//Cascade effect to play
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
+	UParticleSystem* CascadeEffect;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
 	FDecalData DecalData;

@@ -25,8 +25,17 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category="VFX")
 	UWeaponFXComponent* WeaponFXComponent;
 
+	//if set to "true" then Niagara is used, otherwise uses Cascade. By default is set to "true"
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
-	UNiagaraSystem* TraceFX;
+	bool bUseNiagaraTraceEffect = true;
+	
+	//Niagara effect to play
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
+	UNiagaraSystem* TraceFXNiagara;
+	
+	//Cascade effect to play
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
+	UParticleSystem* TraceFXCascade;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
 	FString TraceTargetName = "TraceTarget";
@@ -43,8 +52,11 @@ protected:
 	virtual void BeginPlay() override;
 private:
 	FTimerHandle ShotTimerHandle;
+	
 	UPROPERTY()
-	UNiagaraComponent* MuzzelFXComponent;
+	UNiagaraComponent* MuzzleFXComponentNiagara;
+	UPROPERTY()
+	UParticleSystemComponent* MuzzleFXComponentCascade;
 
 	UPROPERTY()
 	UAudioComponent* FireAudioComponent;
