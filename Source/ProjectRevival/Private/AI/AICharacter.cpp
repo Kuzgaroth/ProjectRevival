@@ -14,11 +14,13 @@
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 
+DEFINE_LOG_CATEGORY(LogPRAICharacter);
+
 AAICharacter::AAICharacter(const FObjectInitializer& ObjectInitializer) :Super(
 	ObjectInitializer.SetDefaultSubobjectClass<UAIWeaponComponent>("WeaponComponent"))
 {
 	AutoPossessAI = EAutoPossessAI::Disabled;
-	AIControllerClass = ABaseAIController::StaticClass();
+	AIControllerClass = ASoldierAIController::StaticClass();
 	bUseControllerRotationYaw = false;
 	if (GetCharacterMovement())
 	{
@@ -38,7 +40,7 @@ void AAICharacter::OnDeath()
 {
 	Super::OnDeath();
 
-	const auto PRController = Cast<ABaseAIController>(GetController());
+	const auto PRController = Cast<ASoldierAIController>(GetController());
 	if (PRController && PRController->BrainComponent)
 	{
 		PRController->BrainComponent->Cleanup();
@@ -53,21 +55,23 @@ void AAICharacter::Tick(float DeltaSeconds)
 void AAICharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	AICon = Cast<ABaseAIController>(GetController());
-	UE_LOG(LogTemp, Log, TEXT("After AICon cast"));
+	AICon = Cast<ASoldierAIController>(GetController());
 	if (AICon)
 	{
 		BBComp = AICon->GetBlackboardComponent();
-		UE_LOG(LogTemp, Log, TEXT("Check if cast was successful"));
 	}
 	UpdateHStateBlackboardKey(3);
-	UE_LOG(LogTemp, Log, TEXT("SPECIAL"));
 }
 
 void AAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	check(HealthWidgetComponent);
+}
+
+void AAICharacter::StartFiring(const FVector& PlayerPos)
+{
+	UE_LOG(LogPRAICharacter, Log, TEXT("Started Firing"));
 }
 
 void AAICharacter::OnHealthChanged(float CurrentHealth, float HealthDelta)
