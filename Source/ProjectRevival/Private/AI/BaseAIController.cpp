@@ -36,6 +36,7 @@ void ABaseAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	const auto AimActor = GetFocusOnActor();
+	/* Ненужный кусок кода, т.к сделал взаимодействие через EQS
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AHealthPickup::StaticClass(), FoundActors);
 	for (const auto Actor : FoundActors)
@@ -44,9 +45,10 @@ void ABaseAIController::Tick(float DeltaSeconds)
 		if(Interface)
 		{
 			Blackboard->SetValueAsObject("HealthPickup", Actor);
-			//Interface->Execute_OnInteraction(Actor, this);
+			Interface->Execute_OnInteraction(Actor, this);
 		}
 	}
+	*/
 	SetFocus(AimActor);
 }
 

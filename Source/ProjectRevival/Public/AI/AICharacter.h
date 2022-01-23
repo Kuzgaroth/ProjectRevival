@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseAIController.h"
+#include "AI/Soldier/SoldierAIController.h"
 #include "EnvironmentQuery/EQSTestingPawn.h"
 #include "Player/BaseCharacter.h"
 #include "AICharacter.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAICharacter, Log, All)
 
 class UBehaviorTree;
 class UWidgetComponent;
@@ -32,9 +34,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
 	UBehaviorTree* BehaviorTreeAsset;
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
-	ABaseAIController* AICon;
+	ASoldierAIController* AICon;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
 	UBlackboardComponent* BBComp;
@@ -45,6 +47,8 @@ public:
 	virtual void OnDeath() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void PossessedBy(AController* NewController) override;
+	void StartFiring(const FVector& PlayerPos);
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UWidgetComponent* HealthWidgetComponent;
