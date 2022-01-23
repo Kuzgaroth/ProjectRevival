@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "ProjectRevival/Public/CoreTypes.h"
-#include "AIController.h"
+#include "AI/Soldier/SoldierAIController.h"
 #include "PRGameModeBase.generated.h"
 
 
