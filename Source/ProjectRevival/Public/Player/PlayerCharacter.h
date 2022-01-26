@@ -15,7 +15,7 @@ class USphereComponent;
 class UCurveFloat;
 
 UCLASS()
-class PROJECTREVIVAL_API APlayerCharacter : public ABaseCharacter
+class PROJECTREVIVAL_API APlayerCharacter : public ABaseCharacter, public IICoverable
 {
 	GENERATED_BODY()
 public:
@@ -89,10 +89,16 @@ public:
 	FRotator GetAimDelta() const;
 	
 	virtual bool IsRunning() const override;
+	virtual ECoverType CheckCover() override;
+	virtual void Falling() override;
+	virtual void Landed(const FHitResult& Hit) override;
+	UFUNCTION(BlueprintCallable)
+	FCoverData& GetCoverData();
 private:
-
 	UPROPERTY()
 	UBaseCharacterMovementComponent* PlayerMovementComponent;
+	UPROPERTY()
+	FCoverData CoverData;
 	
 	bool bWantsToRun = false;
 	bool IsMovingForward = false;
@@ -108,8 +114,6 @@ private:
 	
 	bool IsInCover=false;
 	FTimerHandle THandle;
-	void Flip();
-	void StopFlip();
 	const float FlipTime = 0.5f;
 	const float FlipStrength = 2000.f;
 	// curve from content manager
@@ -125,5 +129,4 @@ private:
 	void OnCameraCollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	void CheckCameraOverlap();
-	
 };

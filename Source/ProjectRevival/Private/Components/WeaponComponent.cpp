@@ -42,6 +42,7 @@ TArray<UMaterialInstanceDynamic*> UWeaponComponent::GetCurrentWeaponMaterials()
 
 void UWeaponComponent::NextWeapon()
 {
+	return;
 	if (!CanEquip()) return;
 	CurrentWeaponIndex = (CurrentWeaponIndex+1) % Weapons.Num();
 	EquipWeapon(CurrentWeaponIndex);

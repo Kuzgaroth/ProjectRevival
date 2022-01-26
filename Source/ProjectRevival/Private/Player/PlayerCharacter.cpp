@@ -77,6 +77,7 @@ void APlayerCharacter::MoveForward(float Amount)
 void APlayerCharacter::StartRun()
 {
 	if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump() || PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted) return;
+	if (CoverData.IsInCover()) return;
 	bWantsToRun=true;
 }
 
@@ -104,8 +105,10 @@ void APlayerCharacter::LookAround(float Amount)
 
 void APlayerCharacter::Cover()
 {
-	
-	if (IsInCover)
+	if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump()) return;
+	if (LeftSideView.Block == false && LeftSideView.IsMoving == false) return;
+	if (FMath::Abs(GetAimDelta().Yaw)>60.f) return;
+	if (CoverData.IsInCover())
 	{
 		StopCover_Internal();
 		return;
@@ -129,6 +132,11 @@ FRotator APlayerCharacter::GetAimDelta() const
 	}
 
 	return FRotator(CameraRotation.Pitch, Delta, 0.0f);
+}
+
+FCoverData& APlayerCharacter::GetCoverData()
+{
+	return CoverData;
 }
 
 void APlayerCharacter::OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -162,9 +170,28 @@ void APlayerCharacter::CheckCameraOverlap()
 	}
 }
 
+void APlayerCharacter::Falling()
+{
+	CameraZoomOut();
+	PlayerMovementComponent->JumpPressEnded();
+	Super::Falling();
+}
+
+void APlayerCharacter::Landed(const FHitResult& Hit)
+{
+	bWantsToRun=false;
+	Super::Landed(Hit);
+}
+
 bool APlayerCharacter::IsRunning() const
 {
 	return bWantsToRun && IsMovingForward && !GetVelocity().IsZero();
+}
+
+ECoverType APlayerCharacter::CheckCover()
+{
+	FHitResult HitResult;
+	return CoverTrace(HitResult);
 }
 
 void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -356,7 +383,10 @@ bool APlayerCharacter::StartCover_Internal(FHitResult& CoverHit)
 {
 	const bool Sup = Super::StartCover_Internal(CoverHit);
 	if (!Sup)return false;
-	IsInCover=true;
+	CameraZoomOut();
+	bWantsToRun = false;
+	WeaponComponent->StopFire();
+	CoverData.StartCover(1, 0, CheckCover(), CoverHit.GetActor());
 	return true;
 }
 
@@ -364,6 +394,6 @@ bool APlayerCharacter::StopCover_Internal()
 {
 	const bool Sup = Super::StopCover_Internal();
 	if (!Sup)return false;
-	IsInCover=false;;
+	CoverData.StopCover();
 	return true;
 }
