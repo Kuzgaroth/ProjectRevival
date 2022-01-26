@@ -106,7 +106,7 @@ void APlayerCharacter::LookAround(float Amount)
 void APlayerCharacter::Cover()
 {
 	if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump()) return;
-	if (LeftSideView.Block == false && LeftSideView.IsMoving == false) return;
+	if (!(LeftSideView.Block == false && LeftSideView.IsMoving == false)) return;
 	if (FMath::Abs(GetAimDelta().Yaw)>60.f) return;
 	if (CoverData.IsInCover())
 	{
