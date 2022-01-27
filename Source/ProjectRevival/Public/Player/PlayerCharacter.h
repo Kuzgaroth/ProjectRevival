@@ -103,12 +103,14 @@ private:
 	bool bWantsToRun = false;
 	bool IsMovingForward = false;
 	void MoveForward(float Amount);
+	void MoveRight(float Amount);
 	void StartRun();
 	void StopRun();
 	void Cover();
 	void StartFire();
 	void LookUp(float Amount);
 	void LookAround(float Amount);
+	void CoverCrouch();
 	UPROPERTY()
 	class USphereComponent* SphereDetectingHighlightables;
 	

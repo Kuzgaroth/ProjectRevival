@@ -15,11 +15,11 @@ class PROJECTREVIVAL_API UCoverAnimNotify : public UAnimNotify
 	GENERATED_BODY()
 
 public:
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	TEnumAsByte<ECoverType> CoverType;
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	TEnumAsByte<ECoverSide> CoverSide;
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	TEnumAsByte<ECoverPart> CoverPart;
 
 	FCoverDelegateSignature CoverDelegate;

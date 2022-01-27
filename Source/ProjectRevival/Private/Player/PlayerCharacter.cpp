@@ -45,7 +45,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAxis("MoveForward",this,&APlayerCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight",PlayerMovementComponent,&UBaseCharacterMovementComponent::MoveRight);
+	PlayerInputComponent->BindAxis("MoveRight",this,&APlayerCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("LookUp",this,&APlayerCharacter::LookUp);
 	PlayerInputComponent->BindAxis("TurnAround",this,&APlayerCharacter::LookAround);
 	PlayerInputComponent->BindAction("Jump",EInputEvent::IE_Pressed,PlayerMovementComponent, &UBaseCharacterMovementComponent::Jump);
@@ -65,13 +65,25 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &APlayerCharacter::CameraZoomOut);
 	PlayerInputComponent->BindAction("ChangeWorld", EInputEvent::IE_Pressed,this, &APlayerCharacter::OnWorldChanged);
 	PlayerInputComponent->BindAction("Cover", EInputEvent::IE_Pressed,this, &APlayerCharacter::Cover);
+	PlayerInputComponent->BindAction("Crouch", EInputEvent::IE_Pressed,this, &APlayerCharacter::CoverCrouch);
 	
 }
 
 void APlayerCharacter::MoveForward(float Amount)
 {
+	if (CoverData.IsInCover() || CoverData.IsInTransition()) return;
 	IsMovingForward = Amount>0;
 	PlayerMovementComponent->MoveForward(Amount);
+}
+
+void APlayerCharacter::MoveRight(float Amount) 
+{
+	if (CoverData.IsInCover())
+	{
+		CoverData.TurnStart(Amount);
+	}
+	if (CoverData.IsInTransition()) return;
+	PlayerMovementComponent->MoveRight(Amount);
 }
 
 void APlayerCharacter::StartRun()
@@ -101,6 +113,11 @@ void APlayerCharacter::LookUp(float Amount)
 void APlayerCharacter::LookAround(float Amount)
 {
 	AddControllerYawInput(Amount);
+}
+
+void APlayerCharacter::CoverCrouch()
+{
+	CoverData.TrySwitchCoverType(this);
 }
 
 void APlayerCharacter::Cover()
@@ -269,6 +286,7 @@ void APlayerCharacter::TimelineLeftSideView(float Value)
 
 void APlayerCharacter::CameraZoomIn()
 {
+	if (CoverData.IsInTransition()) return;
 	if (LeftSideView.IsMoving == false || PlayerAimZoom.IsZooming==false)
 	{
 		if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump() || PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted) return;
@@ -386,7 +404,9 @@ bool APlayerCharacter::StartCover_Internal(FHitResult& CoverHit)
 	CameraZoomOut();
 	bWantsToRun = false;
 	WeaponComponent->StopFire();
-	CoverData.StartCover(1, 0, CheckCover(), CoverHit.GetActor());
+	PlayerMovementComponent->bOrientRotationToMovement = false;
+	bUseControllerRotationYaw = false;
+	CoverData.StartCover(FMath::Sign(SpringArmComponent->SocketOffset.Y), 0, CheckCover(), CoverHit.GetActor());
 	return true;
 }
 
@@ -395,5 +415,7 @@ bool APlayerCharacter::StopCover_Internal()
 	const bool Sup = Super::StopCover_Internal();
 	if (!Sup)return false;
 	CoverData.StopCover();
+	PlayerMovementComponent->bOrientRotationToMovement = true;
+	bUseControllerRotationYaw = false;
 	return true;
 }

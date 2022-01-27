@@ -68,10 +68,12 @@ struct FCoverData
 	bool IsInCover() const;
 	void StartCover(int8 CameraPos, int8 PartPos, ECoverType CType, AActor* CoverActor);
 	void StopCover();
-	void TurnStart();
+	void TurnStart(float Amount);
 	void TurnEnd(ECoverSide NewSide);
 	void TrySwitchCoverType(IICoverable* ICoverablePawn);
 	void OnCoverStatusUpdated(ECoverType CType, ECoverSide CSide, ECoverPart CPart);
+	bool IsInTransition() const;
+	bool IsFiringInCover() const;
 	FCoverData();
 };
 

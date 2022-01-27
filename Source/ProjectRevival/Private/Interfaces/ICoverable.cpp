@@ -5,15 +5,15 @@
 
 bool FCoverData::IsInCover() const
 {
-	return CoverType==None ? false : true;
+	return CoverType==None || IsInCoverTransition ? false : true;
 }
 
 void FCoverData::StartCover(int8 CameraPos, int8 PartPos, ECoverType CType, AActor* CoverActor)
 {
-	PendingCoverType = CType;
-	PendingCoverSide = CameraPos>0 ? Right : Left;
-	PendingCoverPart = PartPos==0 ? Middle : Edge;
 	IsInCoverTransition=true;
+	CoverType = CType;
+	CoverSide = CameraPos>0 ? Right : Left;
+	CoverPart = PartPos==0 ? Middle : Edge;
 	CoverObject = CoverActor;
 }
 
@@ -23,9 +23,9 @@ void FCoverData::StopCover()
 	CoverObject = nullptr;
 }
 
-void FCoverData::TurnStart()
+void FCoverData::TurnStart(float Amount)
 {
-	IsTurning = true;
+	if (Amount>0 && CoverSide==Left || Amount<0 && CoverSide==Right) IsTurning = true;
 }
 
 void FCoverData::TurnEnd(ECoverSide NewSide)
@@ -52,10 +52,22 @@ void FCoverData::TrySwitchCoverType(IICoverable* ICoverablePawn)
 
 void FCoverData::OnCoverStatusUpdated(ECoverType CType, ECoverSide CSide, ECoverPart CPart)
 {
+	if (IsInFireTransition) IsFiring = !IsFiring;
+	IsTurning = IsSwitchingCoverType = IsInCoverTransition = IsInFireTransition = false;
 	CoverType = CType;
 	CoverSide = CSide;
 	CoverPart = CPart;
-	IsTurning = IsSwitchingCoverType = IsInCoverTransition = IsInFireTransition = false;
+	UE_LOG(LogTemp, Warning, TEXT("updating param is here"));
+}
+
+bool FCoverData::IsInTransition() const
+{
+	return IsInFireTransition || IsInCoverTransition || IsTurning || IsSwitchingCoverType;
+}
+
+bool FCoverData::IsFiringInCover() const
+{
+	return IsFiring;
 }
 
 FCoverData::FCoverData()
