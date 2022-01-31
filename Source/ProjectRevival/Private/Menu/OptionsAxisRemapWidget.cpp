@@ -67,7 +67,8 @@ FReply UOptionsAxisRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, con
 		KeyMap.Key = InKeyEvent.GetKey();
 		SetContent(KeyMap);
 		bCanInput = false;
-		Settings->AddAxisMapping(KeyMap);
+		Settings->AddAxisMapping(KeyMap, true);
+		Settings->SaveKeyMappings();
 
 		Reply = FReply::Handled();
 	}
@@ -112,7 +113,8 @@ FReply UOptionsAxisRemapWidget::NativeOnMouseButtonDown(const FGeometry& InGeome
 		KeyMap.Key = InMouseEvent.GetEffectingButton();
 		SetContent(KeyMap);
 		bCanInput = false;
-		Settings->AddAxisMapping(KeyMap);
+		Settings->AddAxisMapping(KeyMap, true);
+		Settings->SaveKeyMappings();
 
 		Reply = FReply::Handled();
 	}

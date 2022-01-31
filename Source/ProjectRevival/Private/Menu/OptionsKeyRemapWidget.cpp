@@ -12,9 +12,7 @@ void UOptionsKeyRemapWidget::NativeOnInitialized()
 
 	if (ChangeInputButton)
 	{
-		// ChangeInputButton->OnClicked.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInput);
 		ChangeInputButton->OnClicked.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInputPressed);
-		// ChangeInputButton->OnUnhovered.AddDynamic(this, &UOptionsKeyRemapWidget::OnChangeInputReleased);
 	}
 }
 
@@ -69,7 +67,8 @@ FReply UOptionsKeyRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, cons
 		KeyMap.Key = InKeyEvent.GetKey();
 		SetContent(KeyMap);
 		bCanInput = false;
-		Settings->AddActionMapping(KeyMap);
+		Settings->AddActionMapping(KeyMap, true);
+		Settings->SaveKeyMappings();
 		ChangeInputButton->SetIsEnabled(true);
 		
 		Reply = FReply::Handled();
@@ -116,7 +115,8 @@ FReply UOptionsKeyRemapWidget::NativeOnMouseButtonDown(const FGeometry& InGeomet
 		KeyMap.Key = InMouseEvent.GetEffectingButton();
 		SetContent(KeyMap);
 		bCanInput = false;
-		Settings->AddActionMapping(KeyMap);
+		Settings->AddActionMapping(KeyMap, true);
+		Settings->SaveKeyMappings();
 		ChangeInputButton->SetIsEnabled(true);
 
 		Reply = FReply::Handled();

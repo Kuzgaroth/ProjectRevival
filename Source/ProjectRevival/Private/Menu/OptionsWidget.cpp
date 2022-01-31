@@ -2,7 +2,10 @@
 
 
 #include "Menu/OptionsWidget.h"
+
+#include "PauseWidget.h"
 #include "Components/Button.h"
+#include "PRGameInstance.h"
 #include "Menu/OptionsControlsWidget.h"
 #include "Menu/OptionsGraphicsWidget.h"
 #include "Menu/OptionsSoundWidget.h"
@@ -49,12 +52,27 @@ void UOptionsWidget::NativeOnInitialized()
 
 void UOptionsWidget::OnBack()
 {
-	if (MenuWidgetClass)
+	UWorld* MyWorld = GetWorld();
+	FString CurrentMapName = MyWorld->GetMapName();
+	if (CurrentMapName.Equals("MenuLevel"))
 	{
-		RemoveFromParent();
-		UMenuWidget* MenuWidget = CreateWidget<UMenuWidget>(GetWorld(), MenuWidgetClass);
-		MenuWidget->AddToViewport();
+		if (MenuWidgetClass)
+		{
+			RemoveFromParent();
+			UMenuWidget* MenuWidget = CreateWidget<UMenuWidget>(GetWorld(), MenuWidgetClass);
+			MenuWidget->AddToViewport();
+		}
 	}
+	else
+	{
+		if (PauseMenuWidgetClass)
+		{
+			RemoveFromParent();
+			// UPauseWidget* PauseWidget = CreateWidget<UPauseWidget>(GetWorld(), PauseMenuWidgetClass);
+			// PauseWidget->AddToViewport();
+		}
+	}
+	
 }
 
 void UOptionsWidget::OnControls()
