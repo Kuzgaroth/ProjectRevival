@@ -10,6 +10,8 @@
 
 // Объявление делегата передачи положения игрока
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerPosDelegate, const FVector&, PlayerPosition);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartEnteringCover, const FVector&, CoverPosition);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCover);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
 
@@ -31,8 +33,12 @@ public:
 	void SetPlayerPos(const FVector &NewPlayerPos) { PlayerPos=NewPlayerPos; }
 	bool GetBIsFiring() const { return bIsFiring; }
 	void SetBIsFiring(bool bCond) { bIsFiring = bCond; }
+	bool GetBIsInCover() const { return bIsInCover; }
+	void SetBIsInCover(bool bCond) { bIsInCover = bCond; }
 
 	FPlayerPosDelegate PlayerPosDelegate;
+	FStartEnteringCover StartEnteringCoverDelegate;
+	FStartExitingCover StartExitingCoverDelegate;
 	
 	void StartFiring();
 	// Функция, к которой должен быть привязан делегат класса Character
@@ -59,6 +65,7 @@ protected:
 	EWing BotWing;
 
 	bool bIsFiring;
+	bool bIsInCover;
 	
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaSeconds) override;

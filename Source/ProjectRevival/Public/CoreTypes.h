@@ -215,3 +215,10 @@ struct FLeftSideView
 	UPROPERTY()
     bool Repeat = false;
 };
+
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
+
+struct FBTPlayerCheckDecoratorMemory
+{
+	bool bLastRawResult;
+};

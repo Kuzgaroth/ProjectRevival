@@ -46,6 +46,7 @@ ASoldierAIController::ASoldierAIController()
 	
 	bWantsPlayerState = true;
 	bIsFiring = false;
+	bIsInCover = false;
 
 	BotWing = EWing::Center;
 }
@@ -66,12 +67,6 @@ void ASoldierAIController::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	const auto AimActor = GetFocusOnActor();
 	SetFocus(AimActor);
-	FVector CoverPos = PRPerceptionComponent->GetBestCoverWing(EWing::Left);
-	UE_LOG(LogPRAIController, Log, TEXT("Left Cover pos X: %0.2f, Y: %0.2f, Z: %0.2f"), CoverPos.X, CoverPos.Y, CoverPos.Z);
-	CoverPos = PRPerceptionComponent->GetBestCoverWing(EWing::Center);
-	UE_LOG(LogPRAIController, Log, TEXT("Center Cover pos X: %0.2f, Y: %0.2f, Z: %0.2f"), CoverPos.X, CoverPos.Y, CoverPos.Z);
-	CoverPos = PRPerceptionComponent->GetBestCoverWing(EWing::Right);
-	UE_LOG(LogPRAIController, Log, TEXT("Right Cover pos X: %0.2f, Y: %0.2f, Z: %0.2f"), CoverPos.X, CoverPos.Y, CoverPos.Z);
 }
 
 void ASoldierAIController::BeginPlay()
@@ -88,6 +83,28 @@ void ASoldierAIController::StartFiring()
 void ASoldierAIController::StopFiring()
 {
 	SetBIsFiring(false);
+}
+
+void ASoldierAIController::StartEnteringCover()
+{
+	const FVector CoverPos = PRPerceptionComponent->GetBestCoverWing(BotWing);
+	UE_LOG(LogPRAIController, Log, TEXT("%i Cover pos X: %0.2f, Y: %0.2f, Z: %0.2f"), BotWing, CoverPos.X, CoverPos.Y, CoverPos.Z);
+	StartEnteringCoverDelegate.Broadcast(CoverPos);
+}
+
+void ASoldierAIController::StopEnteringCover()
+{
+	bIsInCover = true;
+}
+
+void ASoldierAIController::StartExitingCover()
+{
+	StartExitingCoverDelegate.Broadcast();
+}
+
+void ASoldierAIController::StopExitingCover()
+{
+	bIsInCover = false;
 }
 
 AActor* ASoldierAIController::GetFocusOnActor()

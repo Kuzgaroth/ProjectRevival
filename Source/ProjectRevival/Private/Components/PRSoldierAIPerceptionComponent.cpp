@@ -98,7 +98,7 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 				float DistToLine = abs(A * CoverPos.X + B * CoverPos.Y + C) / sqrt(A * A + B * B);
 				if (Wing == EWing::Left)
 				{
-					if (LineEquation < 0.0f && DistToLine > 200.0f && BestDist > FVector::Dist(PawnPos, CoverPos))
+					if (LineEquation < 0.0f && DistToLine > 500.0f && BestDist > FVector::Dist(PawnPos, CoverPos))
 					{
 						BestDist = FVector::Dist(PawnPos, CoverPos);
 						BestCoverPos = CoverPos;
@@ -106,7 +106,7 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 				}
 				else if (Wing == EWing::Center && BestDist > FVector::Dist(PawnPos, CoverPos))
 				{
-					if (DistToLine < 200.0f)
+					if (DistToLine <= 500.0f)
 					{
 						BestDist = FVector::Dist(PawnPos, CoverPos);
 						BestCoverPos = CoverPos;
@@ -114,7 +114,7 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 				}
 				else
 				{
-					if (LineEquation > 0.0f && DistToLine > 200.0f && BestDist > FVector::Dist(PawnPos, CoverPos))
+					if (LineEquation > 0.0f && DistToLine > 500.0f && BestDist > FVector::Dist(PawnPos, CoverPos))
 					{
 						BestDist = FVector::Dist(PawnPos, CoverPos);
 						BestCoverPos = CoverPos;

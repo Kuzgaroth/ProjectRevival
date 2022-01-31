@@ -3,21 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BehaviorTree/BTDecorator.h"
 #include "ProjectRevival/Public/CoreTypes.h"
-#include "BTD_IfPlayerInSight.generated.h"
+#include "BehaviorTree/BTDecorator.h"
+#include "BTD_IfBotInCover.generated.h"
 
-/*
+/**
  * 
  */
 UCLASS()
-class PROJECTREVIVAL_API UBTD_IfPlayerInSight : public UBTDecorator
+class PROJECTREVIVAL_API UBTD_IfBotInCover : public UBTDecorator
 {
 	GENERATED_BODY()
 
 	typedef FBTPlayerCheckDecoratorMemory TNodeInstanceMemory;
-	
-	UBTD_IfPlayerInSight();
+
+	UBTD_IfBotInCover();
 
 protected:
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;

@@ -7,7 +7,7 @@
 #include "Components/PRSoldierAIPerceptionComponent.h"
 #include "Soldier/SoldierAIController.h"
 
-DEFINE_LOG_CATEGORY(LogPRAIDecorators);
+//DEFINE_LOG_CATEGORY(LogPRAIDecorators);
 
 UBTD_IfPlayerInSight::UBTD_IfPlayerInSight()
 {
