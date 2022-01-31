@@ -5,10 +5,13 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "Components/PRSoldierAIPerceptionComponent.h"
+#include "Components/RespawnComponent.h"
 #include "SoldierAIController.generated.h"
 
 // Объявление делегата передачи положения игрока
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerPos, const FVector&, PlayerPosition);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerPosDelegate, const FVector&, PlayerPosition);
+
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
 
 class UPRAIPerceptionComponent;
 class URespawnComponent;
@@ -27,13 +30,17 @@ public:
 	FVector GetPlayerPos() const { return PlayerPos; }
 	void SetPlayerPos(const FVector &NewPlayerPos) { PlayerPos=NewPlayerPos; }
 	bool GetBIsFiring() const { return bIsFiring; }
-	void SetBIsFiring(bool bCond) { bIsFiring = false; }
+	void SetBIsFiring(bool bCond) { bIsFiring = bCond; }
 
-	FPlayerPos StartFiringAtPlayerPos;
+	FPlayerPosDelegate PlayerPosDelegate;
 	
 	void StartFiring();
 	// Функция, к которой должен быть привязан делегат класса Character
 	void StopFiring();
+	void StartEnteringCover();
+	void StopEnteringCover();
+	void StartExitingCover();
+	void StopExitingCover();
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
@@ -47,6 +54,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Respawn")
 	URespawnComponent* RespawnComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
+	EWing BotWing;
 
 	bool bIsFiring;
 	
