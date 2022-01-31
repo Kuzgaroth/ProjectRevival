@@ -64,7 +64,6 @@ struct FCoverData
 	TEnumAsByte<ECoverSide> PendingCoverSide;
 	UPROPERTY(BlueprintReadOnly)
 	TEnumAsByte<ECoverPart> PendingCoverPart;
-	
 	bool IsInCover() const;
 	void StartCover(int8 CameraPos, int8 PartPos, ECoverType CType, AActor* CoverActor);
 	void StopCover();
