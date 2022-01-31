@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
-#include "GameFramework/InputSettings.h"
 #include "GameFramework/PlayerInput.h"
 
 #include "OptionsKeyRemapWidget.generated.h"
@@ -51,8 +50,5 @@ private:
 
 	UFUNCTION()
 	void OnChangeInputPressed();
-
-	UFUNCTION()
-	void OnChangeInputReleased();
 	
 };

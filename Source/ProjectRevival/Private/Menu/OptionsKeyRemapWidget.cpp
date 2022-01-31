@@ -143,9 +143,3 @@ void UOptionsKeyRemapWidget::OnChangeInputPressed()
 	SetKeyboardFocus();
 	ChangeInputButton->SetIsEnabled(false);
 }
-
-void UOptionsKeyRemapWidget::OnChangeInputReleased()
-{
-	SetContent(KeyMap);
-	bCanInput = false;
-}
