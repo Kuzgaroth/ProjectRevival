@@ -119,7 +119,7 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 						BestDist = FVector::Dist(PawnPos, CoverPos);
 						BestCoverPos = CoverPos;
 					}
-				}	
+				}
 			}
 		}
 	}

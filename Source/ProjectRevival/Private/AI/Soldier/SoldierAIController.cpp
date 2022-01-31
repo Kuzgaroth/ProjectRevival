@@ -87,9 +87,16 @@ void ASoldierAIController::StopFiring()
 
 void ASoldierAIController::StartEnteringCover()
 {
-	const FVector CoverPos = PRPerceptionComponent->GetBestCoverWing(BotWing);
-	UE_LOG(LogPRAIController, Log, TEXT("%i Cover pos X: %0.2f, Y: %0.2f, Z: %0.2f"), BotWing, CoverPos.X, CoverPos.Y, CoverPos.Z);
+	const auto PawnPos = GetPawn()->GetActorLocation();
+	const auto CoverPos = PRPerceptionComponent->GetBestCoverWing(BotWing);
+	const auto BlackboardComp = GetBlackboardComponent();
+	UE_LOG(LogPRAIController, Log, TEXT("Pawn pos X: %0.2f, Y:%0.2f"), PawnPos.X, PawnPos.Y);
+	UE_LOG(LogPRAIController, Log, TEXT("%i Cover pos X: %0.2f, Y: %0.2f"), BotWing, CoverPos.X, CoverPos.Y);
 	StartEnteringCoverDelegate.Broadcast(CoverPos);
+	if (BlackboardComp)
+	{
+		BlackboardComp->SetValueAsVector(CoverKeyname, CoverPos);
+	}
 }
 
 void ASoldierAIController::StopEnteringCover()
