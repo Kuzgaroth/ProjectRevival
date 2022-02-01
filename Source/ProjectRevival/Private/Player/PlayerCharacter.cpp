@@ -343,6 +343,7 @@ void APlayerCharacter::CameraZoomOut()
 
 void APlayerCharacter::OnCameraMove()
 {
+	if (CoverData.IsInTransition()) return;
 	if (LeftSideView.Block == false && PlayerAimZoom.IsZooming == false && LeftSideView.IsMoving == false)
 	{
 		if (LeftSideView.CamPos == false) LeftSideView.Proverka = SpringArmComponent->SocketOffset.Y;
@@ -356,6 +357,7 @@ void APlayerCharacter::OnCameraMove()
 		LeftSideView.IsMoving = true;
 		LeftSideView.Repeat = false;
 		LeftSideViewCurveTimeline.PlayFromStart();
+		CoverData.TurnStart(-1*FMath::Sign<float>(SpringArmComponent->SocketOffset.Y));
 	}
 }
 
