@@ -87,7 +87,7 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 		{
 			//UE_LOG(LogPRAIPerception, Log, TEXT("Actor Has Cover Tag"))
 			const auto Cover = Cast<ACoverObject>(Actor);
-			if (!Cover->IsCoverTaken())
+			if (Cover && !(Cover->IsCoverTaken()))
 			{
 				float A = PlayerPos.Y - PawnPos.Y;
 				float B = PlayerPos.X - PawnPos.X;
