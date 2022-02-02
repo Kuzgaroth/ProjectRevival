@@ -14,11 +14,13 @@ class PROJECTREVIVAL_API UHealthBarWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void SetHealthPercent(float Percent);
-protected:
-	UPROPERTY(meta=(BindWidget))
-	UProgressBar* HealthProgressBar;
 
+	UFUNCTION()
+	void SetHealthPercent(float Percent);
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(BindWidget))
+	UProgressBar* HealthProgressBar;
+protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	float PercentVisibilityThreshold = 0.8f;
 

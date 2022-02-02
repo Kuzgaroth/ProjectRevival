@@ -24,6 +24,7 @@ public:
 	void ChangeClip();
 	bool CanReload() const;
 	FWeaponUIData GetUIData() const {return UIData;}
+	FAmmoData GetDefaultAmmoData() const {return DefaultAmmo;}
 	FAmmoData GetAmmoData() const {return CurrentAmmo;}
 	bool IsAmmoEmpty() const;
 protected:

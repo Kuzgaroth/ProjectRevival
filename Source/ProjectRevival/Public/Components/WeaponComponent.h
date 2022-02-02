@@ -22,6 +22,10 @@ public:
 	virtual void NextWeapon();
 	void Reload();
 	bool GetCurrentWeaponUIData(FWeaponUIData& UIData) const;
+	int32 GetCurrentWeaponClips() const;
+	int32 GetCurrentWeaponBullets() const;
+	int32 GetMaxWeaponClips() const;
+	int32 GetMaxWeaponBullets() const;
 	bool GetCurrentWeaponAmmoData(FAmmoData& AmmoData) const;
 	bool TryToAddAmmo(TSubclassOf<ABaseWeapon> WeaponType, int32 ClipsAmount);
 	bool CanFire();
