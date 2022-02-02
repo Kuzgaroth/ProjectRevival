@@ -1,7 +1,5 @@
 // Project Revival. All Rights Reserved
 
-#define COVER_TRACE_CHANNEL ECC_GameTraceChannel3
-
 #include "Player/BaseCharacter.h"
 
 #include "DrawDebugHelpers.h"
@@ -206,7 +204,7 @@ ECoverType ABaseCharacter::CoverTrace(FHitResult& CoverHit)
 {
 	const FVector Location = GetActorLocation();
 	FVector HighLocation;
-	HighLocation.Set(Location.X, Location.Y, 200.0f);
+	HighLocation.Set(Location.X, Location.Y, 225.f);
 	const bool HighTraceResult = UKismetSystemLibrary::LineTraceSingle(GetWorld(), HighLocation, GetActorForwardVector()*100.0f+HighLocation,
 		UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, CoverHit, true);
 	//DrawDebugLine(GetWorld(), HighLocation, GetActorRotation().Vector()*25.0f, FColor::Red, false, 2,0, 2);

@@ -37,6 +37,8 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	CameraCollisionComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 
 	PlayerMovementComponent = Cast<UBaseCharacterMovementComponent>(GetCharacterMovement());
+
+	CoverData.SetOwner(this);
 }
 
 
@@ -80,7 +82,7 @@ void APlayerCharacter::MoveRight(float Amount)
 {
 	if (CoverData.IsInCover())
 	{
-		CoverData.TurnStart(Amount);
+		if (!(CoverData.TryMoveInCover(Amount, this))) return;;
 	}
 	if (CoverData.IsInTransition()) return;
 	PlayerMovementComponent->MoveRight(Amount);
@@ -286,8 +288,13 @@ void APlayerCharacter::TimelineLeftSideView(float Value)
 
 void APlayerCharacter::CameraZoomIn()
 {
+	if (CoverData.IsInCover())
+	{
+		CoverData.CoverToAim();
+		return;
+	}
 	if (CoverData.IsInTransition()) return;
-	if (LeftSideView.IsMoving == false || PlayerAimZoom.IsZooming==false)
+	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming==false)
 	{
 		if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump() || PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted) return;
 		bWantsToRun=false;
@@ -318,6 +325,11 @@ void APlayerCharacter::CameraZoomIn()
 
 void APlayerCharacter::CameraZoomOut()
 {
+	if (CoverData.IsInCover())
+	{
+		CoverData.AimToCover();
+		return;
+	}
 	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true)
 	{
 		PlayerMovementComponent->bOrientRotationToMovement = 1;

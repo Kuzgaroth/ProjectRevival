@@ -3,6 +3,8 @@
 
 #include "Interfaces/ICoverable.h"
 
+#include "Kismet/KismetSystemLibrary.h"
+
 bool FCoverData::IsInCover() const
 {
 	return CoverType==None || IsInCoverTransition ? false : true;
@@ -23,9 +25,10 @@ void FCoverData::StopCover()
 	CoverObject = nullptr;
 }
 
-void FCoverData::TurnStart(float Amount)
+bool FCoverData::TurnStart(float Amount)
 {
 	if (Amount>0 && CoverSide==Left || Amount<0 && CoverSide==Right) IsTurning = true;
+	return IsTurning;
 }
 
 void FCoverData::TurnEnd(ECoverSide NewSide)
@@ -67,7 +70,33 @@ bool FCoverData::IsInTransition() const
 
 bool FCoverData::IsFiringInCover() const
 {
-	return IsFiring;
+	return IsFiring || IsInFireTransition;
+}
+
+void FCoverData::CoverToAim()
+{
+	if (CoverPart== Middle && CoverType==High) return;
+}
+
+void FCoverData::AimToCover()
+{
+	
+}
+
+bool FCoverData::TryMoveInCover(float Amount, const AActor* Player)
+{
+	const bool TurnProcess = TurnStart(Amount);
+	if (TurnProcess) return TurnProcess;
+
+	const float ForwardOffset = 100.f;
+	const float RightOffset = CoverType == Low ? 60.f : 45.f;
+	FHitResult HitResut;
+	const auto WingStart = Player->GetActorRightVector()*Amount*RightOffset+Player->GetActorLocation();
+	const auto WingEnd = WingStart+Player->GetActorForwardVector()*ForwardOffset;
+	const bool NotEndOfCover = UKismetSystemLibrary::LineTraceSingle(Player->GetWorld(), WingStart, WingEnd,
+		UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, HitResut, true);
+	CoverPart = NotEndOfCover ? Middle : Edge;
+	return NotEndOfCover;
 }
 
 FCoverData::FCoverData()
@@ -78,6 +107,12 @@ FCoverData::FCoverData()
 	IsTurning = IsFiring = IsSwitchingCoverType = IsInCoverTransition = IsInFireTransition = false;
 	CoverObject = nullptr;
 }
+
+void FCoverData::SetOwner(AActor* PlayerOwner)
+{
+	Owner = PlayerOwner;
+}
+
 
 // Add default functionality here for any IICoverable functions that are not pure virtual.
 ECoverType IICoverable::CheckCover()
