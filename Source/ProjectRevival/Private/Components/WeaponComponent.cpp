@@ -238,3 +238,40 @@ void UWeaponComponent::ChangeClip()
 	ReloadAnimInProgress = true;
 	PlayAnimMontage(CurrentReloadAnimMontage);
 }
+
+
+int32 UWeaponComponent::GetCurrentWeaponClips() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetAmmoData().Clips;
+	}
+	return -1;
+}
+
+int32 UWeaponComponent::GetCurrentWeaponBullets() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetAmmoData().Bullets;
+	}
+	return -1;
+}
+
+int32 UWeaponComponent::GetMaxWeaponClips() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetDefaultAmmoData().Clips;
+	}
+	return -1;
+}
+
+int32 UWeaponComponent::GetMaxWeaponBullets() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetDefaultAmmoData().Bullets;
+	}
+	return -1;
+}
