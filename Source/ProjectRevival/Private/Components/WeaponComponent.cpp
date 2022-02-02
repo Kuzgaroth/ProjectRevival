@@ -121,6 +121,7 @@ void UWeaponComponent::SpawnWeapons()
 		Weapon->SetOwner(Character);
 		Weapons.Add(Weapon);
 		AttachWeaponToSocket(Weapon, Character->GetMesh(), WeaponArmorySocketName);
+		Weapon->OnWeaponShotDelegate.AddUObject(this, &UWeaponComponent::OnShotMade);
 	}
 }
 
@@ -189,6 +190,10 @@ void UWeaponComponent::OnEquipFinished(USkeletalMeshComponent* MeshComponent)
 	EquipAnimInProgress = false;
 }
 
+void UWeaponComponent::OnShotMade()
+{
+	PlayAnimMontage(FireMontage);
+}
 void UWeaponComponent::OnReloadFinished(USkeletalMeshComponent* MeshComponent)
 {
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
@@ -237,5 +242,6 @@ void UWeaponComponent::ChangeClip()
 	CurrentWeapon->StopFire();
 	CurrentWeapon->ChangeClip();
 	ReloadAnimInProgress = true;
+	
 	PlayAnimMontage(CurrentReloadAnimMontage);
 }

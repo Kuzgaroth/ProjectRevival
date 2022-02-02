@@ -41,6 +41,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
 	UAnimMontage* EquipAnimMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category="Animations")
+	UAnimMontage* FireMontage;
 	
 	UPROPERTY()
 	ABaseWeapon* CurrentWeapon=nullptr;
@@ -68,7 +71,7 @@ private:
 	void InitAnimations();
 	void OnEquipFinished(USkeletalMeshComponent* MeshComponent);
 	void OnReloadFinished(USkeletalMeshComponent* MeshComponent);
-
+	void OnShotMade();
 
 	void OnEmptyClip(ABaseWeapon* AmmoEmptyWeapon);
 	void ChangeClip();
