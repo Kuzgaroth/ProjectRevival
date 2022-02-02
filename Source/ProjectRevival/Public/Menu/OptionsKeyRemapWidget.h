@@ -50,8 +50,5 @@ private:
 
 	UFUNCTION()
 	void OnChangeInputPressed();
-
-	UFUNCTION()
-	void OnChangeInputReleased();
 	
 };

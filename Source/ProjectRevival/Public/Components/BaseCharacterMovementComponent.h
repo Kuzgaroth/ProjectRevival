@@ -28,12 +28,13 @@ class PROJECTREVIVAL_API UBaseCharacterMovementComponent : public UCharacterMove
 
 	FPlayerMovementLogic PlayerMovementLogic;
 	
-	void JumpPressEnded();
+	
 	void JumpProcessEnded();
 	void AimStartFinished();
 	void AimEndFininshed();
 	void JumpInMoveStarted();
 protected:
+	virtual void BeginPlay() override;
 	UPROPERTY(EditDefaultsOnly, Category="Jump")
 	UAnimSequence* JumpAnim;
 	
@@ -51,6 +52,7 @@ public:
 	void MoveForward(float Amount);
 	void AimStart();
 	void AimEnd();
+	void JumpPressEnded();
 	UFUNCTION(BlueprintCallable)
 	FPlayerMovementLogic GetPlayerMovementLogic();
 };

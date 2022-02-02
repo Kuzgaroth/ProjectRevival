@@ -126,7 +126,11 @@ bool ASoldierEnemy::StartCover_Internal(FHitResult& CoverHit)
 {
 	const bool Sup = Super::StartCover_Internal(CoverHit);
 	if (!Sup)return false;
-	IsInCover = true;
+	bWantsToRun = false;
+	WeaponComponent->StopFire();
+	PlayerMovementComponent->bOrientRotationToMovement = false;
+	bUseControllerRotationYaw = false;
+	CoverData.StartCover(FMath::Sign(SpringArmComponent->SocketOffset.Y), 0, CheckCover(), CoverHit.GetActor());
 	return true;
 }
 
@@ -136,11 +140,6 @@ bool ASoldierEnemy::StopCover_Internal()
 	if (!Sup)return false;
 	IsInCover = false;
 	return true;
-}
-
-bool ASoldierEnemy::IsCovering() const
-{
-	return IsInCover;
 }
 
 void ASoldierEnemy::TakeCover()

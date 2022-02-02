@@ -21,7 +21,7 @@ enum class HealthStateSoldier: uint8
 };
 
 UCLASS()
-class PROJECTREVIVAL_API ASoldierEnemy : public ABaseCharacter
+class PROJECTREVIVAL_API ASoldierEnemy : public ABaseCharacter, public IICoverable
 {
 	GENERATED_BODY()
 public:
@@ -46,8 +46,11 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void PossessedBy(AController* NewController) override;
 
-	UFUNCTION(BlueprintCallable, Category="Covering")
-	virtual bool IsCovering() const;
+	virtual ECoverType CheckCover() override;
+	virtual void Falling() override;
+	virtual void Landed(const FHitResult& Hit) override;
+	UFUNCTION(BlueprintCallable)
+	FCoverData& GetCoverData();
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UWidgetComponent* HealthWidgetComponent;
@@ -65,5 +68,9 @@ private:
 	void UpdateHStateBlackboardKey(uint8 EnumKey);
 
 	void TakeCover();
-	bool IsInCover=false;
+	bool IsInCover = false;
+
+	//UPROPERTY()
+	FCoverData CoverData;
+	void CoverCrouch();
 };

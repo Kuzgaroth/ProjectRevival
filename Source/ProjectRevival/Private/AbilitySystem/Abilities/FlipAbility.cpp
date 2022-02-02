@@ -2,6 +2,8 @@
 
 
 #include "AbilitySystem/Abilities/FlipAbility.h"
+
+#include "PlayerCharacter.h"
 #include "AbilitySystem/AbilityTasks/FlipTask_FlipToggle.h"
 
 UFlipAbility::UFlipAbility()
@@ -35,6 +37,15 @@ void UFlipAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+bool UFlipAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* GameplayTags,
+	const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	bool SuperResult = Super::CanActivateAbility(Handle, ActorInfo, GameplayTags, TargetTags, OptionalRelevantTags);
+	if (Cast<APlayerCharacter>(ActorInfo->OwnerActor.Get())->GetCoverData().IsInCover()) return false;
+	return SuperResult;
 }
 
 void UFlipAbility::OnFlipBegin()
