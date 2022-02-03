@@ -2,6 +2,8 @@
 
 #pragma once
 
+#define COVER_TRACE_CHANNEL ECC_GameTraceChannel3
+
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "ICoverable.generated.h"
@@ -67,13 +69,21 @@ struct FCoverData
 	bool IsInCover() const;
 	void StartCover(int8 CameraPos, int8 PartPos, ECoverType CType, AActor* CoverActor);
 	void StopCover();
-	void TurnStart(float Amount);
+	bool TurnStart(float Amount);
 	void TurnEnd(ECoverSide NewSide);
 	void TrySwitchCoverType(IICoverable* ICoverablePawn);
 	void OnCoverStatusUpdated(ECoverType CType, ECoverSide CSide, ECoverPart CPart);
 	bool IsInTransition() const;
-	bool IsFiringInCover() const;
+	bool IsReadyToFire() const;
+	void CoverToAim();
+	void AimToCover();
+	bool TryMoveInCover(float Amount, const AActor* Player);
+	void AdjustCameraInCover(IICoverable* CoverableObject);
 	FCoverData();
+	void SetOwner(AActor* PlayerOwner);
+private:
+	UPROPERTY()
+	AActor* Owner = nullptr;
 };
 
 UINTERFACE(MinimalAPI)
@@ -87,4 +97,6 @@ class PROJECTREVIVAL_API IICoverable
 	GENERATED_BODY()
 public:
 	virtual ECoverType CheckCover();
+	virtual void OnTurn();
+	virtual void OnAimInCover();
 };

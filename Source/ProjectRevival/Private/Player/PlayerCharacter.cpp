@@ -40,6 +40,8 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	CameraCollisionComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 
 	PlayerMovementComponent = Cast<UBaseCharacterMovementComponent>(GetCharacterMovement());
+
+	CoverData.SetOwner(this);
 }
 
 
@@ -74,18 +76,20 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::MoveForward(float Amount)
 {
-	if (CoverData.IsInCover() || CoverData.IsInTransition()) return;
+	if (Amount==0.f) return;
+	if (CoverData.IsInCover() || CoverData.IsInTransition() || CoverData.IsFiring) return;
 	IsMovingForward = Amount>0;
 	PlayerMovementComponent->MoveForward(Amount);
 }
 
 void APlayerCharacter::MoveRight(float Amount) 
 {
+	if (Amount==0.f) return;
+	if (CoverData.IsInTransition() || CoverData.IsFiring) return;
 	if (CoverData.IsInCover())
 	{
-		CoverData.TurnStart(Amount);
+		if (!(CoverData.TryMoveInCover(Amount, this))) return;;
 	}
-	if (CoverData.IsInTransition()) return;
 	PlayerMovementComponent->MoveRight(Amount);
 }
 
@@ -103,6 +107,11 @@ void APlayerCharacter::StopRun()
 
 void APlayerCharacter::StartFire()
 {
+	if (CoverData.IsReadyToFire())
+	{
+		WeaponComponent->StartFire();
+		return;
+	}
 	if (!PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted ||
 		PlayerMovementComponent->GetPlayerMovementLogic().IsInJump()) return;
 	WeaponComponent->StartFire();
@@ -214,6 +223,11 @@ ECoverType APlayerCharacter::CheckCover()
 	return CoverTrace(HitResult);
 }
 
+void APlayerCharacter::OnTurn()
+{
+	OnCameraMove();
+}
+
 void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if (OnEnergyValueChangedHandle.IsBound()) OnEnergyValueChangedHandle.Clear();
@@ -296,14 +310,22 @@ void APlayerCharacter::TimelineLeftSideView(float Value)
 
 void APlayerCharacter::CameraZoomIn()
 {
-	if (CoverData.IsInTransition()) return;
-	if (LeftSideView.IsMoving == false || PlayerAimZoom.IsZooming==false)
+	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming==false)
 	{
+		
+		if (CoverData.IsInTransition()) return;
+		if (CoverData.IsInCover() && !CoverData.IsInCoverTransition)
+		{
+			CoverData.CoverToAim();
+		}
 		if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump() || PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted) return;
-		bWantsToRun=false;
-		PlayerMovementComponent->bOrientRotationToMovement = 0;
-		bUseControllerRotationYaw=true;
-		PlayerMovementComponent->AimStart();
+		if (!CoverData.IsInCover())
+		{
+			bWantsToRun=false;
+			PlayerMovementComponent->bOrientRotationToMovement = 0;
+			bUseControllerRotationYaw=true;
+			PlayerMovementComponent->AimStart();
+		}
 		
 		PlayerAimZoomFunctions->CameraZoomIn(SpringArmComponent, LeftSideView, PlayerAimZoom, CameraComponent, PlayerAimZoomFunctions->CurveTimeline);
 	}
@@ -313,9 +335,17 @@ void APlayerCharacter::CameraZoomOut()
 {
 	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true)
 	{
-		PlayerMovementComponent->bOrientRotationToMovement = 1;
-		bUseControllerRotationYaw=false;
-		PlayerMovementComponent->AimEnd();
+		if (CoverData.IsInTransition()) return;
+		if (CoverData.IsInCover() && CoverData.IsFiring)
+		{
+			CoverData.AimToCover();
+		}
+		if (!CoverData.IsInCover())
+		{
+			PlayerMovementComponent->bOrientRotationToMovement = 1;
+			bUseControllerRotationYaw=false;;
+			PlayerMovementComponent->AimEnd();
+		}
 
 		PlayerAimZoomFunctions->CameraZoomOut(SpringArmComponent, PlayerAimZoomFunctions->CurveTimeline, PlayerAimZoom);
 	}
@@ -324,6 +354,7 @@ void APlayerCharacter::CameraZoomOut()
 
 void APlayerCharacter::OnCameraMove()
 {
+	if (CoverData.IsInTransition()) return;
 	if (LeftSideView.Block == false && PlayerAimZoom.IsZooming == false && LeftSideView.IsMoving == false)
 	{
 		LeftSideViewFunctions->OnCameraMove(SpringArmComponent, CameraComponent, LeftSideView, LeftSideViewFunctions->LeftSideViewCurveTimeline);
@@ -352,6 +383,7 @@ bool APlayerCharacter::StartCover_Internal(FHitResult& CoverHit)
 	WeaponComponent->StopFire();
 	PlayerMovementComponent->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = false;
+	AdjustLocationBeforeCover(CoverHit);
 	CoverData.StartCover(FMath::Sign(SpringArmComponent->SocketOffset.Y), 0, CheckCover(), CoverHit.GetActor());
 	return true;
 }

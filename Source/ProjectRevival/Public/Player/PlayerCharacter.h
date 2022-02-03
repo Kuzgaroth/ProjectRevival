@@ -94,6 +94,7 @@ public:
 	
 	virtual bool IsRunning() const override;
 	virtual ECoverType CheckCover() override;
+	virtual void OnTurn() override;
 	virtual void Falling() override;
 	virtual void Landed(const FHitResult& Hit) override;
 	UFUNCTION(BlueprintCallable)

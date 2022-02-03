@@ -21,7 +21,8 @@ public class ProjectRevival : ModuleRules
 			"GameplayAbilities", 
 			"GameplayTags",
 			"RHI",
-			"SlateCore"
+			"SlateCore", 
+			"GameplayCameras"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
