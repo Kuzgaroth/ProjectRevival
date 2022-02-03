@@ -20,7 +20,32 @@ void UOptionsAxisRemapWidget::NativeOnInitialized()
 void UOptionsAxisRemapWidget::SetContent(const FInputAxisKeyMapping KeyMapping)
 {
 	KeyMap = KeyMapping;
-	ActionText->SetText(FText::FromString(KeyMapping.AxisName.ToString()));
+	if (KeyMapping.AxisName.ToString().Equals("MoveForward"))
+	{
+		if (KeyMapping.Scale > 0)
+		{
+			ActionText->SetText(FText::FromString("MoveForward"));
+		}
+		else
+		{
+			ActionText->SetText(FText::FromString("MoveBack"));
+		}
+	}
+	else if (KeyMapping.AxisName.ToString().Equals("MoveRight"))
+	{
+		if (KeyMapping.Scale > 0)
+		{
+			ActionText->SetText(FText::FromString("MoveRight"));
+		}
+		else
+		{
+			ActionText->SetText(FText::FromString("MoveLeft"));
+		}
+	}
+	else
+	{
+		ActionText->SetText(FText::FromString(KeyMapping.AxisName.ToString()));	
+	}
 	KeyText->SetText(FText::FromString(KeyMapping.Key.ToString()));
 	TipText->SetText(FText::FromString(""));
 }
@@ -35,6 +60,7 @@ FReply UOptionsAxisRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, con
 	{
 		SetContent(KeyMap);
 		bCanInput = false;
+		ChangeInputButton->SetIsEnabled(true);
 		Reply = FReply::Handled();
 		
 		return Reply;
@@ -67,7 +93,9 @@ FReply UOptionsAxisRemapWidget::NativeOnKeyDown(const FGeometry& InGeometry, con
 		KeyMap.Key = InKeyEvent.GetKey();
 		SetContent(KeyMap);
 		bCanInput = false;
-		Settings->AddAxisMapping(KeyMap);
+		Settings->AddAxisMapping(KeyMap, true);
+		Settings->SaveKeyMappings();
+		ChangeInputButton->SetIsEnabled(true);
 
 		Reply = FReply::Handled();
 	}
@@ -112,7 +140,9 @@ FReply UOptionsAxisRemapWidget::NativeOnMouseButtonDown(const FGeometry& InGeome
 		KeyMap.Key = InMouseEvent.GetEffectingButton();
 		SetContent(KeyMap);
 		bCanInput = false;
-		Settings->AddAxisMapping(KeyMap);
+		Settings->AddAxisMapping(KeyMap, true);
+		Settings->SaveKeyMappings();
+		ChangeInputButton->SetIsEnabled(true);
 
 		Reply = FReply::Handled();
 	}
@@ -130,11 +160,5 @@ void UOptionsAxisRemapWidget::OnChangeInputPressed()
 	TipText->SetText(FText::FromString("Press desired key"));
 	bCanInput = true;
 	SetKeyboardFocus();
+	ChangeInputButton->SetIsEnabled(false);
 }
-
-void UOptionsAxisRemapWidget::OnChangeInputReleased()
-{
-	KeyText->SetText(FText::FromString(KeyMap.Key.ToString()));
-}
-
-

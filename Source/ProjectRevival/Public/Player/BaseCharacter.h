@@ -9,20 +9,14 @@
 #include "AbilitySystem/PRAttributeSet.h"
 #include "AbilitySystem/Abilities/PRGameplayAbility.h"
 #include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
+#include "ProjectRevival/Public/CoreTypes.h"
+#include "Interfaces/ICoverable.h"
 #include "ProjectRevival/Public/AbilitySystem/PRAbilityTypes.h"
 #include "BaseCharacter.generated.h"
 
 class UHealthComponent;
 class UWeaponComponent;
 class USoundCue;
-
-UENUM()
-enum ECoverType
-{
-	High,
-	Low,
-	None
-};
 
 UCLASS()
 class PROJECTREVIVAL_API ABaseCharacter : public ACharacter,  public IAbilitySystemInterface, public IIDynMaterialsFromMesh
@@ -102,6 +96,8 @@ public:
 	bool StartCover(AActor* InstigatorObj);
 	UFUNCTION()
 	bool StopCover(AActor* InstigatorObj);
+
+
 private:
 	UPROPERTY()
 	TArray<UMaterialInstanceDynamic*> DynamicMaterials;

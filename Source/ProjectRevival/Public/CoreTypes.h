@@ -239,7 +239,6 @@ struct FLeftSideViewBlueprint
     bool Repeat = false;
 };
 
-
 UCLASS()
 class PROJECTREVIVAL_API ULeftSideViewFunctions : public UObject
 {
@@ -342,3 +341,10 @@ inline void ULeftSideViewFunctions::OnCameraMove(USpringArmComponent*& SpringArm
 	LocalLeftSideViewBlueprint.Repeat = false;
 	LocalLeftSideViewCurveTimeline.PlayFromStart();
 } 
+
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
+
+struct FBTPlayerCheckDecoratorMemory
+{
+	bool bLastRawResult;
+};
