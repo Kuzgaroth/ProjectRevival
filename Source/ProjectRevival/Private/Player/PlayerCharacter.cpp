@@ -23,9 +23,12 @@
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	CameraSocket = CreateDefaultSubobject<USceneComponent>("CameraSocket");
+	CameraSocket->SetupAttachment(RootComponent);
 	
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("SpringArmComponent");
-	SpringArmComponent->SetupAttachment(RootComponent);
+	SpringArmComponent->SetupAttachment(CameraSocket);
 	SpringArmComponent->bUsePawnControlRotation = true;
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
@@ -207,67 +210,57 @@ void APlayerCharacter::BeginPlay()
 	check(GetCharacterMovement());
 	CameraCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionBeginOverlap);
 	CameraCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionEndOverlap);
-	
+
+	PlayerAimZoomFunctions = NewObject<UPlayerAimZoomFunctions>(this);
+	LeftSideViewFunctions = NewObject<ULeftSideViewFunctions>(this);
+
+	FOnTimelineVector TimelineProgress;
+	FOnTimelineFloat TimelineFieldOfView;
+	TimelineProgress.BindUFunction(this, FName("TimelineProgress"));
+	TimelineFieldOfView.BindUFunction(this, FName("TimelineFieldOfView"));
+	PlayerAimZoomFunctions->CurveTimeline.AddInterpVector(PlayerAimZoom.CurveVector, TimelineProgress);
+	PlayerAimZoomFunctions->CurveTimeline.AddInterpFloat(PlayerAimZoom.CurveFloat, TimelineFieldOfView);
+
+	FOnTimelineFloat TimelineLeftSideView;
+	TimelineLeftSideView.BindUFunction(this, FName("TimelineLeftSideView"));
+	LeftSideViewFunctions->LeftSideViewCurveTimeline.AddInterpFloat(PlayerAimZoom.CurveFloat, TimelineLeftSideView);
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	CurveTimeline.TickTimeline(DeltaTime);
-	LeftSideViewCurveTimeline.TickTimeline(DeltaTime);
+	PlayerAimZoomFunctions->CurveTimeline.TickTimeline(DeltaTime);
+	LeftSideViewFunctions->LeftSideViewCurveTimeline.TickTimeline(DeltaTime);
 }
 
 
 void APlayerCharacter::TimelineProgress(float Value)
 {
-	FVector NewLocation = FMath::Lerp(PlayerAimZoom.StartLoc, PlayerAimZoom.EndLoc, Value);
-	SpringArmComponent->SocketOffset = NewLocation;
+	PlayerAimZoomFunctions->TimelineProgress(Value, PlayerAimZoom);
 }
 
 
 void APlayerCharacter::TimelineFieldOfView(float Value)
 {
-	float NewFieldOfView = FMath::Lerp(CameraComponent->FieldOfView, PlayerAimZoom.CurrentFieldOfView, Value);
-	CameraComponent->FieldOfView = NewFieldOfView;
-	if (CameraComponent->FieldOfView >= PlayerAimZoom.CurrentFieldOfView && PlayerAimZoom.CurrentFieldOfView == 90.0) PlayerAimZoom.IsZooming = false;
+	PlayerAimZoomFunctions->TimelineFieldOfView(Value, PlayerAimZoom);
 }
 
 void APlayerCharacter::TimelineLeftSideView(float Value)
 {
-	float NewView = FMath::Lerp(LeftSideView.StartPos, LeftSideView.EndPos, Value);
-	SpringArmComponent->SocketOffset.Y = NewView;
-	if ((SpringArmComponent->SocketOffset.Y >= LeftSideView.EndPos && LeftSideView.CamPos == true || SpringArmComponent->SocketOffset.Y <= LeftSideView.EndPos && LeftSideView.CamPos == false) && LeftSideView.Repeat == false) { CameraStop(); LeftSideView.Repeat = true; }
-	
+	LeftSideViewFunctions->TimelineLeftSideView(Value, LeftSideView, PlayerAimZoom);
 }
 
 void APlayerCharacter::CameraZoomIn()
 {
-	if (LeftSideView.IsMoving == false || PlayerAimZoom.IsZooming==false)
+	if (LeftSideView.IsMoving == false || PlayerAimZoom.IsZooming == false)
 	{
 		if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump() || PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted) return;
 		bWantsToRun=false;
 		PlayerMovementComponent->bOrientRotationToMovement = 0;
 		bUseControllerRotationYaw=true;
 		PlayerMovementComponent->AimStart();
-
 		
-		if (PlayerAimZoom.StartStartPos == FVector(0.0, 0.0, 0.0)) PlayerAimZoom.StartStartPos = SpringArmComponent->SocketOffset;
-		SpringArmComponent->SocketOffset = PlayerAimZoom.StartStartPos;
-		FOnTimelineVector TimelineProgress;
-		FOnTimelineFloat TimelineFieldOfView;
-		TimelineProgress.BindUFunction(this, FName("TimelineProgress"));
-		TimelineFieldOfView.BindUFunction(this, FName("TimelineFieldOfView"));
-		CurveTimeline.AddInterpVector(PlayerAimZoom.CurveVector, TimelineProgress);
-		CurveTimeline.AddInterpFloat(PlayerAimZoom.CurveFloat, TimelineFieldOfView);
-
-		PlayerAimZoom.StartLoc = SpringArmComponent->SocketOffset;
-		PlayerAimZoom.EndLoc = FVector(SpringArmComponent->SocketOffset.X + PlayerAimZoom.Offset.X, SpringArmComponent->SocketOffset.Y, SpringArmComponent->SocketOffset.Z + PlayerAimZoom.Offset.Z);
-		if (LeftSideView.CamPos == false) PlayerAimZoom.EndLoc.Y -= PlayerAimZoom.Offset.Y; else PlayerAimZoom.EndLoc.Y += PlayerAimZoom.Offset.Y / 2.0;
-		PlayerAimZoom.CurrentFieldOfView = PlayerAimZoom.FieldOfView;
-
-		PlayerAimZoom.IsZooming = true;
-		CurveTimeline.PlayFromStart();
-		
+		PlayerAimZoomFunctions->CameraZoomIn(SpringArmComponent, LeftSideView, PlayerAimZoom, CameraComponent, PlayerAimZoomFunctions->CurveTimeline);
 	}
 }
 
@@ -276,22 +269,10 @@ void APlayerCharacter::CameraZoomOut()
 	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true)
 	{
 		PlayerMovementComponent->bOrientRotationToMovement = 1;
-		bUseControllerRotationYaw=false;;
+		bUseControllerRotationYaw=false;
 		PlayerMovementComponent->AimEnd();
-		
-		FOnTimelineVector TimelineProgress;
-		FOnTimelineFloat TimelineFieldOfView;
-		TimelineProgress.BindUFunction(this, FName("TimelineProgress"));
-		TimelineFieldOfView.BindUFunction(this, FName("TimelineFieldOfView"));
-		CurveTimeline.AddInterpVector(PlayerAimZoom.CurveVector, TimelineProgress);
-		CurveTimeline.AddInterpFloat(PlayerAimZoom.CurveFloat, TimelineFieldOfView);
-	
-		PlayerAimZoom.EndLoc = PlayerAimZoom.StartLoc;
-		PlayerAimZoom.StartLoc = SpringArmComponent->SocketOffset;
-		PlayerAimZoom.CurrentFieldOfView = 90.0;
 
-		PlayerAimZoom.IsZooming = false;
-		CurveTimeline.PlayFromStart();
+		PlayerAimZoomFunctions->CameraZoomOut(SpringArmComponent, PlayerAimZoomFunctions->CurveTimeline, PlayerAimZoom);
 	}
 }
 
@@ -300,40 +281,8 @@ void APlayerCharacter::OnCameraMove()
 {
 	if (LeftSideView.Block == false && PlayerAimZoom.IsZooming == false && LeftSideView.IsMoving == false)
 	{
-		if (LeftSideView.CamPos == false) LeftSideView.Proverka = SpringArmComponent->SocketOffset.Y;
-		FOnTimelineFloat TimelineLeftSideView;
-		TimelineLeftSideView.BindUFunction(this, FName("TimelineLeftSideView"));
-		LeftSideViewCurveTimeline.AddInterpFloat(PlayerAimZoom.CurveFloat, TimelineLeftSideView);
-
-		LeftSideView.StartPos = SpringArmComponent->SocketOffset.Y;
-		LeftSideView.EndPos = LeftSideView.StartPos - (SpringArmComponent->SocketOffset.Y + tan(CameraComponent->GetRelativeRotation().Yaw * PI / 180) * SpringArmComponent->TargetArmLength) * 2.f;
-		LeftSideView.Block = true;
-		LeftSideView.IsMoving = true;
-		LeftSideView.Repeat = false;
-		LeftSideViewCurveTimeline.PlayFromStart();
+		LeftSideViewFunctions->OnCameraMove(SpringArmComponent, CameraComponent, LeftSideView, LeftSideViewFunctions->LeftSideViewCurveTimeline);
 	}
-}
-
-
-void APlayerCharacter::CameraStop()
-{
-	FTimerHandle TimerCameraBlock;
-	LeftSideView.IsMoving = false;
-	GetWorld()->GetTimerManager().SetTimer(TimerCameraBlock, this, &APlayerCharacter::CameraBlock, 0.5, false);
-	if (LeftSideView.CamPos == true)
-	{
-		LeftSideView.CamPos = false;
-		SpringArmComponent->SocketOffset.Y = LeftSideView.Proverka;
-	}
-	else LeftSideView.CamPos = true;
-	PlayerAimZoom.StartStartPos = SpringArmComponent->SocketOffset;
-}
-
-
-
-void APlayerCharacter::CameraBlock()
-{
-	LeftSideView.Block = false;
 }
 
 
@@ -346,9 +295,6 @@ void APlayerCharacter::OnWorldChanged()
 	{
 		Cast<AChangeWorld>(OutActors[EveryActor])->Changing();
 	}
-	/*AStaticObjectToNothing StaticObjectToNothing;
-	AChangeWorld *ChangeWorld = &StaticObjectToNothing;
-	ChangeWorld->Changing();*/
 }
 
 

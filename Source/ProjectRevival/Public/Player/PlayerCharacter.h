@@ -32,13 +32,16 @@ public:
 	void TimelineLeftSideView(float Value);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
-	FPlayerAimZoom PlayerAimZoom;
+	FPlayerAimZoomBlueprint PlayerAimZoom;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
-	FLeftSideView LeftSideView;
-	
-	FTimeline CurveTimeline;
-	FTimeline LeftSideViewCurveTimeline;
+	FLeftSideViewBlueprint LeftSideView;
+
+	UPROPERTY()
+	UPlayerAimZoomFunctions* PlayerAimZoomFunctions;
+
+	UPROPERTY()
+	ULeftSideViewFunctions* LeftSideViewFunctions;
 	
 	USpringArmComponent* GetPlayerSpringArmComponent(){return SpringArmComponent;}
 protected:
@@ -50,6 +53,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	USphereComponent* CameraCollisionComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
+	USceneComponent* CameraSocket;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data) override;
@@ -59,8 +65,6 @@ protected:
 	virtual void BeginPlay() override;
 	
 	void OnCameraMove();
-	void CameraStop();
-	void CameraBlock();
 	
 	void CameraZoomIn();
 	void CameraZoomOut();
