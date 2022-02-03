@@ -37,6 +37,9 @@ protected:
 	TSubclassOf<UUserWidget> MenuWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
+	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> OptionsControlsWidgetClass;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
