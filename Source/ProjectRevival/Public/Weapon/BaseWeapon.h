@@ -28,6 +28,7 @@ public:
 	bool CanReload() const;
 	FWeaponUIData GetUIData() const {return UIData;}
 	FAmmoData GetAmmoData() const {return CurrentAmmo;}
+	FAmmoData GetDefaultAmmoData() const {return DefaultAmmo;}
 	bool IsAmmoEmpty() const;
 
 	FOnWeaponShotSignature OnWeaponShotDelegate;
