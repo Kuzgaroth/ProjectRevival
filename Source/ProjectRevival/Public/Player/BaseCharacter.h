@@ -11,6 +11,8 @@
 #include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "Interfaces/ICoverable.h"
+#include "Components/InterpToMovementComponent.h"
+#include "GameFramework/RotatingMovementComponent.h"
 #include "ProjectRevival/Public/AbilitySystem/PRAbilityTypes.h"
 #include "BaseCharacter.generated.h"
 
@@ -33,6 +35,9 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Components")
+	UInterpToMovementComponent* InterpToMovementComponent;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UHealthComponent* HealthComponent;
 	
@@ -53,8 +58,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Sound")
 	USoundCue* DeathSound;
-
-	/** Компонент для управления способностями */
+	
+	/* Компонент для управления способностями */
 	UPROPERTY()
 	UPRAbilitySystemComponent* AbilitySystemComponent;
 
@@ -65,6 +70,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Abilities)
 	TMap<EGASInputActions, TSubclassOf<UPRGameplayAbility>> GameplayAbilities;
 
+	//Смещение анимации относительно капсулы
+	UPROPERTY(EditDefaultsOnly, Category="Cover")
+	float RootDelta = 100.f;
+	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void AddStartupGameplayAbilities();
 	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data);
@@ -77,6 +86,7 @@ protected:
 	virtual bool StartCover_Internal(FHitResult& CoverHit);
 	virtual bool StopCover_Internal();
 	virtual ECoverType CoverTrace(FHitResult& CoverHit);
+	virtual void AdjustLocationBeforeCover(FHitResult& CoverHit);
 public:	
 	virtual void Tick(float DeltaTime) override;
 	
@@ -104,7 +114,7 @@ private:
 	
 	UFUNCTION()
 	void OnGroundLanded(const FHitResult& HitResult);
-
+	void StopAdjustingMovement(const FHitResult& ImpactResult, float Time );
 	friend UPRAttributeSet;
 
 	
