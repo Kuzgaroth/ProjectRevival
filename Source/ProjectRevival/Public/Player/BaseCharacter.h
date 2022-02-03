@@ -11,6 +11,7 @@
 #include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "Interfaces/ICoverable.h"
+#include "Components/InterpToMovementComponent.h"
 #include "ProjectRevival/Public/AbilitySystem/PRAbilityTypes.h"
 #include "BaseCharacter.generated.h"
 
@@ -33,6 +34,9 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Components")
+	UInterpToMovementComponent* InterpToMovementComponent;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UHealthComponent* HealthComponent;
 	
@@ -77,6 +81,7 @@ protected:
 	virtual bool StartCover_Internal(FHitResult& CoverHit);
 	virtual bool StopCover_Internal();
 	virtual ECoverType CoverTrace(FHitResult& CoverHit);
+	virtual void AdjustLocationBeforeCover();
 public:	
 	virtual void Tick(float DeltaTime) override;
 	

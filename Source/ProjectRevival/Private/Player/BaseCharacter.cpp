@@ -217,6 +217,11 @@ ECoverType ABaseCharacter::CoverTrace(FHitResult& CoverHit)
 	return ECoverType::None;
 }
 
+void ABaseCharacter::AdjustLocationBeforeCover()
+{
+	
+}
+
 void ABaseCharacter::OnGroundLanded(const FHitResult& HitResult)
 {
 	const auto FallVelocity = -GetCharacterMovement()->Velocity.Z;

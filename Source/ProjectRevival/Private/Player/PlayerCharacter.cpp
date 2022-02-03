@@ -420,6 +420,7 @@ bool APlayerCharacter::StartCover_Internal(FHitResult& CoverHit)
 	WeaponComponent->StopFire();
 	PlayerMovementComponent->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = false;
+	AdjustLocationBeforeCover();
 	CoverData.StartCover(FMath::Sign(SpringArmComponent->SocketOffset.Y), 0, CheckCover(), CoverHit.GetActor());
 	return true;
 }
