@@ -73,18 +73,20 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::MoveForward(float Amount)
 {
-	if (CoverData.IsInCover() || CoverData.IsInTransition()) return;
+	if (Amount==0.f) return;
+	if (CoverData.IsInCover() || CoverData.IsInTransition() || CoverData.IsFiring) return;
 	IsMovingForward = Amount>0;
 	PlayerMovementComponent->MoveForward(Amount);
 }
 
 void APlayerCharacter::MoveRight(float Amount) 
 {
+	if (Amount==0.f) return;
+	if (CoverData.IsInTransition() || CoverData.IsFiring) return;
 	if (CoverData.IsInCover())
 	{
 		if (!(CoverData.TryMoveInCover(Amount, this))) return;;
 	}
-	if (CoverData.IsInTransition()) return;
 	PlayerMovementComponent->MoveRight(Amount);
 }
 
@@ -102,6 +104,11 @@ void APlayerCharacter::StopRun()
 
 void APlayerCharacter::StartFire()
 {
+	if (CoverData.IsReadyToFire())
+	{
+		WeaponComponent->StartFire();
+		return;
+	}
 	if (!PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted ||
 		PlayerMovementComponent->GetPlayerMovementLogic().IsInJump()) return;
 	WeaponComponent->StartFire();
@@ -213,6 +220,11 @@ ECoverType APlayerCharacter::CheckCover()
 	return CoverTrace(HitResult);
 }
 
+void APlayerCharacter::OnTurn()
+{
+	OnCameraMove();
+}
+
 void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if (OnEnergyValueChangedHandle.IsBound()) OnEnergyValueChangedHandle.Clear();
@@ -288,20 +300,22 @@ void APlayerCharacter::TimelineLeftSideView(float Value)
 
 void APlayerCharacter::CameraZoomIn()
 {
-	if (CoverData.IsInCover())
-	{
-		CoverData.CoverToAim();
-		return;
-	}
-	if (CoverData.IsInTransition()) return;
 	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming==false)
 	{
+		
+		if (CoverData.IsInTransition()) return;
+		if (CoverData.IsInCover() && !CoverData.IsInCoverTransition)
+		{
+			CoverData.CoverToAim();
+		}
 		if (PlayerMovementComponent->GetPlayerMovementLogic().IsInJump() || PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted) return;
-		bWantsToRun=false;
-		PlayerMovementComponent->bOrientRotationToMovement = 0;
-		bUseControllerRotationYaw=true;
-		PlayerMovementComponent->AimStart();
-
+		if (!CoverData.IsInCover())
+		{
+			bWantsToRun=false;
+			PlayerMovementComponent->bOrientRotationToMovement = 0;
+			bUseControllerRotationYaw=true;
+			PlayerMovementComponent->AimStart();
+		}
 		
 		if (PlayerAimZoom.StartStartPos == FVector(0.0, 0.0, 0.0)) PlayerAimZoom.StartStartPos = SpringArmComponent->SocketOffset;
 		SpringArmComponent->SocketOffset = PlayerAimZoom.StartStartPos;
@@ -325,16 +339,19 @@ void APlayerCharacter::CameraZoomIn()
 
 void APlayerCharacter::CameraZoomOut()
 {
-	if (CoverData.IsInCover())
-	{
-		CoverData.AimToCover();
-		return;
-	}
 	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true)
 	{
-		PlayerMovementComponent->bOrientRotationToMovement = 1;
-		bUseControllerRotationYaw=false;;
-		PlayerMovementComponent->AimEnd();
+		if (CoverData.IsInTransition()) return;
+		if (CoverData.IsInCover() && CoverData.IsFiring)
+		{
+			CoverData.AimToCover();
+		}
+		if (!CoverData.IsInCover())
+		{
+			PlayerMovementComponent->bOrientRotationToMovement = 1;
+			bUseControllerRotationYaw=false;;
+			PlayerMovementComponent->AimEnd();
+		}
 		
 		FOnTimelineVector TimelineProgress;
 		FOnTimelineFloat TimelineFieldOfView;
@@ -420,7 +437,7 @@ bool APlayerCharacter::StartCover_Internal(FHitResult& CoverHit)
 	WeaponComponent->StopFire();
 	PlayerMovementComponent->bOrientRotationToMovement = false;
 	bUseControllerRotationYaw = false;
-	AdjustLocationBeforeCover();
+	AdjustLocationBeforeCover(CoverHit);
 	CoverData.StartCover(FMath::Sign(SpringArmComponent->SocketOffset.Y), 0, CheckCover(), CoverHit.GetActor());
 	return true;
 }

@@ -17,6 +17,8 @@ void FCoverData::StartCover(int8 CameraPos, int8 PartPos, ECoverType CType, AAct
 	CoverSide = CameraPos>0 ? Right : Left;
 	CoverPart = PartPos==0 ? Middle : Edge;
 	CoverObject = CoverActor;
+
+	TryMoveInCover(CameraPos,Owner);
 }
 
 void FCoverData::StopCover()
@@ -27,7 +29,19 @@ void FCoverData::StopCover()
 
 bool FCoverData::TurnStart(float Amount)
 {
-	if (Amount>0 && CoverSide==Left || Amount<0 && CoverSide==Right) IsTurning = true;
+	if (IsTurning) return true;
+	if (Amount>0 && CoverSide==Left || Amount<0 && CoverSide==Right)
+	{
+		if (Owner)
+		{
+			auto Coverable = Cast<IICoverable>(Owner);
+			if (Coverable)
+			{
+				Coverable->OnTurn();	
+			}
+		}
+		IsTurning = true;
+	}
 	return IsTurning;
 }
 
@@ -68,26 +82,25 @@ bool FCoverData::IsInTransition() const
 	return IsInFireTransition || IsInCoverTransition || IsTurning || IsSwitchingCoverType;
 }
 
-bool FCoverData::IsFiringInCover() const
+bool FCoverData::IsReadyToFire() const
 {
-	return IsFiring || IsInFireTransition;
+	return IsFiring && IsInCover();
 }
 
 void FCoverData::CoverToAim()
 {
 	if (CoverPart== Middle && CoverType==High) return;
+	IsInFireTransition = true;
 }
 
 void FCoverData::AimToCover()
 {
-	
+	IsInFireTransition = true;
 }
 
 bool FCoverData::TryMoveInCover(float Amount, const AActor* Player)
 {
 	const bool TurnProcess = TurnStart(Amount);
-	if (TurnProcess) return TurnProcess;
-
 	const float ForwardOffset = 100.f;
 	const float RightOffset = CoverType == Low ? 60.f : 45.f;
 	FHitResult HitResut;
@@ -96,6 +109,10 @@ bool FCoverData::TryMoveInCover(float Amount, const AActor* Player)
 	const bool NotEndOfCover = UKismetSystemLibrary::LineTraceSingle(Player->GetWorld(), WingStart, WingEnd,
 		UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, HitResut, true);
 	CoverPart = NotEndOfCover ? Middle : Edge;
+	if (TurnProcess)
+	{
+		return TurnProcess;
+	}
 	return NotEndOfCover;
 }
 
@@ -113,9 +130,17 @@ void FCoverData::SetOwner(AActor* PlayerOwner)
 	Owner = PlayerOwner;
 }
 
+void FCoverData::AdjustCameraInCover(IICoverable* CoverableObject)
+{
+	
+}
 
 // Add default functionality here for any IICoverable functions that are not pure virtual.
 ECoverType IICoverable::CheckCover()
 {
 	return None;
 }
+
+void IICoverable::OnTurn() {}
+
+void IICoverable::OnAimInCover() {}

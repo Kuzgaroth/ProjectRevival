@@ -74,10 +74,11 @@ struct FCoverData
 	void TrySwitchCoverType(IICoverable* ICoverablePawn);
 	void OnCoverStatusUpdated(ECoverType CType, ECoverSide CSide, ECoverPart CPart);
 	bool IsInTransition() const;
-	bool IsFiringInCover() const;
+	bool IsReadyToFire() const;
 	void CoverToAim();
 	void AimToCover();
 	bool TryMoveInCover(float Amount, const AActor* Player);
+	void AdjustCameraInCover(IICoverable* CoverableObject);
 	FCoverData();
 	void SetOwner(AActor* PlayerOwner);
 private:
@@ -96,4 +97,6 @@ class PROJECTREVIVAL_API IICoverable
 	GENERATED_BODY()
 public:
 	virtual ECoverType CheckCover();
+	virtual void OnTurn();
+	virtual void OnAimInCover();
 };
