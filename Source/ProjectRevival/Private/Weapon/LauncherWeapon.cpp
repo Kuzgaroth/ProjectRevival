@@ -43,6 +43,7 @@ void ALauncherWeapon::MakeShot()
 	{
 		SpawnMuzzleFXCascade();
 	}
+	
 
 	UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzelSocketName);
 }
