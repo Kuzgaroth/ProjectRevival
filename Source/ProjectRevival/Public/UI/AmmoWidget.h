@@ -18,7 +18,7 @@ class PROJECTREVIVAL_API UAmmoWidget : public UUserWidget
 public:
 	virtual void NativeOnInitialized() override;
 
-	void SetAmmoAmount(float NewAmmoAmount);
+	void SetAmmoAmount(int NewAmmoAmount);
 
 protected:
 	UPROPERTY(meta=(BindWidget))

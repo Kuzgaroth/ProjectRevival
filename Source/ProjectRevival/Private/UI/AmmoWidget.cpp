@@ -11,10 +11,30 @@ void UAmmoWidget::NativeOnInitialized()
 	}
 }
 
-void UAmmoWidget::SetAmmoAmount(float NewAmmoAmount)
+void UAmmoWidget::SetAmmoAmount(int NewAmmoAmount)
 {
-	if (AmmoPB)
+	if (NewAmmoAmount >= 4)
 	{
-		AmmoPB->SetPercent(NewAmmoAmount);
+		AmmoPB->SetPercent(1);
 	}
+	else if(NewAmmoAmount == 3)
+	{
+		AmmoPB->SetPercent(0.75);
+	}
+	else if(NewAmmoAmount == 2)
+	{
+		AmmoPB->SetPercent(0.5);
+	}
+	else if(NewAmmoAmount == 1)
+	{
+		AmmoPB->SetPercent(0.25);
+	}
+	else
+	{
+		AmmoPB->SetPercent(0);
+	}
+	// if (AmmoPB)
+	// {
+	// 	AmmoPB->SetPercent(NewAmmoAmount);
+	// }
 }

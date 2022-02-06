@@ -2,6 +2,8 @@
 
 
 #include "AmmoCrate.h"
+
+#include "AmmoWidget.h"
 #include "PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
@@ -86,6 +88,7 @@ bool AAmmoCrate::GivePickUpTo(APawn* PlayerPawn)
 		{
 			CurrentClipsAmount = CurrentClipsAmount - TempClipsNeeded;
 		}
+		UpdateWidgetPercent();
 		return (WeaponComponent->TryToAddAmmo(WeaponType, TempClipsNeeded));
 	}
 	else
@@ -114,6 +117,6 @@ void AAmmoCrate::UpdateWidgetVisibility()
 
 void AAmmoCrate::UpdateWidgetPercent()
 {
-	//const auto AmmoWidget = Cast<UHealthBarWidget>(WidgetComponent->GetUserWidgetObject());
-	//AmmoWidget->SetHealthPercent(GetAmmoCratePercent());
+	const auto AmmoWidget = Cast<UAmmoWidget>(WidgetComponent->GetUserWidgetObject());
+	AmmoWidget->SetAmmoAmount(CurrentClipsAmount);
 }
