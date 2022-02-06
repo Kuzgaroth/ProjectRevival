@@ -1,5 +1,8 @@
 // Project Revival. All Rights Reserved
 
+#define COVER_TRACE_CHANNEL ECC_GameTraceChannel3
+
+
 #include "AI/SoldierEnemy.h"
 #include "BaseAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -12,6 +15,7 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Soldier/SoldierAIController.h"
 
 ASoldierEnemy::ASoldierEnemy(const FObjectInitializer& ObjectInitializer) :Super(
 	ObjectInitializer.SetDefaultSubobjectClass<UAIWeaponComponent>("WeaponComponent"))
@@ -30,6 +34,8 @@ ASoldierEnemy::ASoldierEnemy(const FObjectInitializer& ObjectInitializer) :Super
 	HealthWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
 	HealthWidgetComponent->SetDrawAtDesiredSize(true);
 
+	SideMoveAmount = 0;
+	
 	HState = HealthStateSoldier::FULL_HEALTH;
 }
 
@@ -37,7 +43,7 @@ void ASoldierEnemy::OnDeath()
 {
 	Super::OnDeath();
 
-	const auto PRController = Cast<ABaseAIController>(GetController());
+	const auto PRController = Cast<ASoldierAIController>(GetController());
 	if (PRController && PRController->BrainComponent)
 	{
 		PRController->BrainComponent->Cleanup();
@@ -52,7 +58,7 @@ void ASoldierEnemy::Tick(float DeltaSeconds)
 void ASoldierEnemy::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	AICon = Cast<ABaseAIController>(GetController());
+	AICon = Cast<ASoldierAIController>(GetController());
 	UE_LOG(LogTemp, Log, TEXT("After AICon cast"));
 	if (AICon)
 	{
@@ -67,6 +73,14 @@ void ASoldierEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 	check(HealthWidgetComponent);
+	CoverData.IsTurning = false;
+	CoverData.IsInCoverTransition = false;
+	CoverData.IsInFireTransition = false;
+	CoverData.IsSwitchingCoverType = false;
+	CoverData.IsFiring = false;
+	Cast<ASoldierAIController>(GetController())->StartEnteringCoverDelegate.AddDynamic(this, &ASoldierEnemy::StartCoverSoldier);
+	Cast<ASoldierAIController>(GetController())->StartExitingCoverDelegate.AddDynamic(this, &ASoldierEnemy::StopCoverSoldier);
+	Cast<ASoldierAIController>(GetController())->StartCoverSideMovingDelegate.AddDynamic(this, &ASoldierEnemy::ChangeCoverSide);
 }
 
 void ASoldierEnemy::OnHealthChanged(float CurrentHealth, float HealthDelta)
@@ -122,27 +136,143 @@ void ASoldierEnemy::UpdateHealthWidgetVisibility()
 	HealthWidgetComponent->SetVisibility(Distance<HealthVisibilityDistance, true);
 }
 
-bool ASoldierEnemy::StartCover_Internal(FHitResult& CoverHit)
+void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos)
 {
-	const bool Sup = Super::StartCover_Internal(CoverHit);
-	if (!Sup)return false;
-	bWantsToRun = false;
+	TArray<FHitResult> Hits;
+	const bool TraceResult = UKismetSystemLibrary::LineTraceMulti(GetWorld(), GetActorLocation(),
+		FVector(CoverPos.X, CoverPos.Y, CoverPos.Z + 1.0), UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),
+		false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, Hits, true);
+	if (!TraceResult)
+	{
+		StopEnteringCoverDelegate.Broadcast();
+		return;
+	}
+	
+	FHitResult CoverHit = Hits.Last();
+	CoverData.CoverObject = CoverHit.GetActor();
+	if (!CoverData.CoverObject)
+	{
+		StopEnteringCoverDelegate.Broadcast();
+		return;
+	}
+	
+	const auto AISoldierController = Cast<ASoldierAIController>(GetController());
+	if (!AISoldierController)
+	{
+		StopEnteringCoverDelegate.Broadcast();
+		return;
+	}
+	
 	WeaponComponent->StopFire();
-	PlayerMovementComponent->bOrientRotationToMovement = false;
-	bUseControllerRotationYaw = false;
-	CoverData.StartCover(FMath::Sign(SpringArmComponent->SocketOffset.Y), 0, CheckCover(), CoverHit.GetActor());
-	return true;
+	AISoldierController->MoveToActor(CoverData.CoverObject);
+
+	CoverData.CoverObject->ActorHasTag(FName(TEXT("High"))) ? CoverData.CoverType = High : CoverData.CoverType = Low;
+	CoverData.CoverSide = CheckSideByNormal(GetActorForwardVector(), CoverHit.Normal);
+	CoverData.CoverPart = GetCoverPart(0);
+	CoverData.IsInCoverTransition = true;
+	
+	const bool Sup = Super::StartCover_Internal(CoverHit);
+	if (!Sup)
+	{
+		StopEnteringCoverDelegate.Broadcast();
+		return;
+	}
+	bUseControllerRotationYaw = false; //We can delete this line cause this parameter is already set permanently in constructor
 }
 
-bool ASoldierEnemy::StopCover_Internal()
+void ASoldierEnemy::StartCoverSoldierFinish()
+{
+	CoverData.IsInCoverTransition = false;
+	StopEnteringCoverDelegate.Broadcast();
+}
+
+void ASoldierEnemy::StopCoverSoldier()
 {
 	const bool Sup = Super::StopCover_Internal();
-	if (!Sup)return false;
-	IsInCover = false;
-	return true;
+	if (!Sup)
+	{
+		StopExitingCoverDelegate.Broadcast();
+		return;
+	}
+	CoverData.StopCover();
+	CoverData.CoverType = ECoverType::None;
+	CoverData.CoverSide = ECoverSide::CSNone;
+	CoverData.CoverPart = ECoverPart::CPNone;
+	bUseControllerRotationYaw = false;
 }
 
-void ASoldierEnemy::TakeCover()
+void ASoldierEnemy::StopCoverSoldierFinish()
 {
-	
+	CoverData.IsInCoverTransition = false;
+	StopExitingCoverDelegate.Broadcast();
+}
+
+void ASoldierEnemy::ChangeCoverSide(const float Amount)
+{
+	if (GetController() && (Amount != 0.0f) )
+	{
+		if (CoverData.IsInTransition()) {
+			StopCoverSideMovingDelegate.Broadcast();
+			return;
+		}
+		if (CoverData.IsInCover())
+		{
+			CoverData.TurnStart(Amount);
+			if (!CoverData.IsTurning)
+			{
+				StopCoverSideMovingDelegate.Broadcast();
+				/*If CoverData.IsTurning == true and we've started "Turn" animation then we will execute following lines
+				triggering function "ChangeCoverSideAfterAnim" from AnimBP*/
+				const FRotator YawRotation(0, GetControlRotation().Yaw, 0);
+				const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+				this->AddMovementInput(Direction, Amount);
+				
+			}
+		}
+	}
+}
+
+void ASoldierEnemy::ChangeCoverSideFinish()
+{
+	CoverData.IsTurning = false;
+	StopCoverSideMovingDelegate.Broadcast();
+	const FRotator YawRotation(0, GetControlRotation().Yaw, 0);
+	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	this->AddMovementInput(Direction, SideMoveAmount);
+}
+
+ECoverType ASoldierEnemy::CheckCover()
+{
+	FHitResult HitResult;
+	return Super::CoverTrace(HitResult);
+}
+
+TEnumAsByte<ECoverSide> ASoldierEnemy::CheckSideByNormal(FVector Forward, FVector Normal)
+{
+	Forward.Normalize();
+	Normal = - Normal;
+	float CosNormal = Normal.CosineAngle2D(FVector(0, 1, 0));
+	float CosForward = Forward.CosineAngle2D(FVector(0, 1, 0));
+	if (CosNormal >= CosForward) return Left;
+	else return Right;
+}
+
+TEnumAsByte<ECoverPart> ASoldierEnemy::GetCoverPart(int8 PartPos)
+{
+	return PartPos == 0 ? Middle : Edge;
+}
+
+void ASoldierEnemy::CoverCrouch()
+{
+	CoverData.TrySwitchCoverType(this);
+}
+
+FCoverData& ASoldierEnemy::GetCoverData()
+{
+	return CoverData;
+}
+
+bool ASoldierEnemy::IsInCover()
+{
+	return CoverData.IsInCover() && !CoverData.IsInTransition();
 }
