@@ -12,17 +12,7 @@ class PROJECTREVIVAL_API AAssassinEnemy : public AAICharacter
 {
 	GENERATED_BODY()
 public:
-	//AAssassinEnemy(const FObjectInitializer& ObjectInitializer);
-	
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
-	//ABaseAIController* AICon;
-
-	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
-	//UWeaponComponent* WeaponComponent;
-	
-	virtual void PossessedBy(AController* NewController) override;
-
-	bool IsAttacking();
+	bool IsAttacking() const;
 protected:
 	virtual void BeginPlay() override;
 

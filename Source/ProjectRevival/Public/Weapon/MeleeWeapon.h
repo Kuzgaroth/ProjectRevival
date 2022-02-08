@@ -15,12 +15,16 @@ class PROJECTREVIVAL_API AMeleeWeapon : public ABaseWeapon
 	GENERATED_BODY()
 public:
 	AMeleeWeapon();
-	virtual void MakeShot() override;
 	void AddNewBeam(FVector Point1, FVector Point2);
+	
+	virtual void StartFire() override;
+	virtual void StopFire() override;
+	
+	FOnClipEmptySignature OnClipEmpty;
+	//bool CanReload() const;
+	//bool IsAmmoEmpty() const;
+	
 protected:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	USkeletalMesh* Blade;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Collision, meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* BladeCollisionBox;
 	
@@ -33,4 +37,6 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UParticleSystem* BeamFX;
+
+	//virtual void MakeShot() override;
 };
