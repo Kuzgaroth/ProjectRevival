@@ -25,8 +25,24 @@ void UMeleeAttackAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	AttackTask->OnAttackFinished.BindUFunction(this, "AttackFinished");
 	DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, AttackDuration);
 	DelayTask->OnFinish.AddDynamic(this, &UMeleeAttackAbility::OnAttackBegin);
-	MeleeAttackMontage = FName(Montage->GetName());
-	AttackTask->Activate(AttackDuration, AttackCurve, MeleeAttackMontage);
+	
+	const int MontageIndex = rand() % 3;
+	switch(MontageIndex)
+	{
+	case 0:
+		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("AttackMontage1"));
+		AttackTask->Activate(AttackDuration, AttackCurve, AttackMontage1);
+		break;
+	case 1:
+		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("AttackMontage2"));
+		AttackTask->Activate(AttackDuration, AttackCurve, AttackMontage2);
+		break;
+	case 2:
+		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("AttackMontage3"));
+		AttackTask->Activate(AttackDuration, AttackCurve, AttackMontage3);
+		break;
+	}
+	
 	K2_EndAbility();
 }
 

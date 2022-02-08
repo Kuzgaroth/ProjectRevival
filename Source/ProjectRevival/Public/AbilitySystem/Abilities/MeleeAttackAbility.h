@@ -15,20 +15,24 @@ class PROJECTREVIVAL_API UMeleeAttackAbility : public UPRGameplayAbility
 public:
 	UMeleeAttackAbility();
 	
-	UPROPERTY(EditDefaultsOnly, Category="Melee Attack Visual")
+	UPROPERTY(EditDefaultsOnly, Category="Constants")
 	UCurveFloat* AttackCurve;
     
-	UPROPERTY(EditDefaultsOnly, Category="Melee Attack Duration")
+	UPROPERTY(EditDefaultsOnly, Category="Constants")
 	float AttackDuration;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Melee Attack Damage")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Constants")
 	float AttackDamage = 10.0;
+		
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Animations")
+	UAnimMontage* AttackMontage1;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Animations")
+	UAnimMontage* AttackMontage2;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Animations")
+	UAnimMontage* AttackMontage3;
 	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Melee Attack Animation")
-	UAnimMontage* Montage;
-	
-	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Melee Attack Animation")
-	FName MeleeAttackMontage;
 protected:	
 	virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;

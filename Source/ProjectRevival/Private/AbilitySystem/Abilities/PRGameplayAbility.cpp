@@ -23,18 +23,19 @@ void UPRGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, 
 		UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Cooldown is %f seconds"), CooldownMagnitude);
 	}
 	//Вызов старта кулдауна способности
-	auto PlayerHUDWidget = Cast<UPlayerHUDWidget>(Cast<ABasePlayerController>(ActorInfo->PlayerController.Get())->GetHUD<AGameHUD>()->GetPlayerHUDWidget());
-	if (PlayerHUDWidget)
-	{
-		AbilityWidget = PlayerHUDWidget->GetWidgetByAction(AbilityAction);
+	if(ActorInfo->PlayerController.Get()->GetHUD()) {
+		auto PlayerHUDWidget = Cast<UPlayerHUDWidget>(Cast<ABasePlayerController>(ActorInfo->PlayerController.Get())->GetHUD<AGameHUD>()->GetPlayerHUDWidget());
+		if (PlayerHUDWidget)
+		{
+			AbilityWidget = PlayerHUDWidget->GetWidgetByAction(AbilityAction);
+		}
+		
+		if (!AbilityWidget) UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Widget have not found. Check Blueprint version on AbilityAction parameter or widget method directly"));
+		if (AbilityWidget)
+		{
+			AbilityWidget->StartCooldown(CooldownMagnitude);	
+		}
 	}
-	
-	if (!AbilityWidget) UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Widget have not found. Check Blueprint version on AbilityAction parameter or widget method directly"));
-	if (AbilityWidget)
-	{
-		AbilityWidget->StartCooldown(CooldownMagnitude);	
-	}
-	
 	//K2_EndAbility();
 }
 

@@ -15,23 +15,12 @@ class PROJECTREVIVAL_API UMeleeAttackTask_Hit : public UAbilityTask
 	GENERATED_BODY()
 public:
 	virtual void Activate() override;
-	void Activate(float Duration, UCurveFloat* Curve, FName MeleeAttackMontage);
-
-	UAnimMontage* AttackMontage;
-	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Animations")
-	UAnimMontage* AttackMontage1;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Animations")
-	UAnimMontage* AttackMontage2;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Animations")
-	UAnimMontage* AttackMontage3;
+	void Activate(float Duration, UCurveFloat* Curve, UAnimMontage* MeleeAttackMontage);
 	
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility"))
 	static UMeleeAttackTask_Hit* AttackInit(UGameplayAbility* OwningAbility, UCurveFloat* AttackCurve);
 	
-	void AttackStarted(float Duration, UCurveFloat* Curve, FName MeleeAttackMontage);
+	void AttackStarted(float Duration, UCurveFloat* Curve, UAnimMontage* MeleeAttackMontage);
 	void AttackFinished();
 	FOnTimelineEvent OnAttackStarted;
 	FOnTimelineEvent OnAttackFinished;
