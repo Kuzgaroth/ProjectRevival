@@ -12,6 +12,7 @@ AMeleeWeapon::AMeleeWeapon()
 	BeamComp->bAutoActivate = false;
 	
 	BladeCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Component"));
+	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AMeleeWeapon::AddNewBeam(FVector Point1, FVector Point2)
@@ -20,52 +21,36 @@ void AMeleeWeapon::AddNewBeam(FVector Point1, FVector Point2)
 	BeamComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamFX, Point1, FRotator::ZeroRotator, true);
 	BeamArray.Add(BeamComp);
  	BeamComp->SetBeamSourcePoint(0, Point1, 0);
-	//BeamComp->SetBeamTargetPoint(0, Point2, 0);
+	BeamComp->SetBeamTargetPoint(0, Point2, 0);
 }
 
 void AMeleeWeapon::StartFire()
 {
+	MakeShot();
 }
 
 void AMeleeWeapon::StopFire()
 {
 }
 
-/*
 void AMeleeWeapon::MakeShot()
 {
-	if (!GetWorld()) return;
-
-	
-	FVector TraceStart;
-	FVector TraceEnd;
-	if (!GetTraceData(TraceStart, TraceEnd)) return;
-
-	FHitResult HitResult;
-	MakeHit(HitResult,TraceStart, TraceEnd);
-
-	FVector EndPoint = HitResult.bBlockingHit ? HitResult.ImpactPoint : TraceEnd;
-	const FVector Direction = (EndPoint-GetMuzzleWorldLocation()).GetSafeNormal();
-	
-	const FTransform SpawnTransform(FRotator::ZeroRotator, WeaponMesh->GetSocketTransform(MuzzelSocketName).GetLocation());
-	auto Projectile = GetWorld()->SpawnActorDeferred<ABaseProjectile>(ProjectileClass, SpawnTransform);
-	
-	if (Projectile)
+	BladeCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AMeleeWeapon::OnOverlapBegin);
+	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	FVector TraceStart = WeaponMesh->GetSocketLocation("TraceStart");
+	FVector TraceEnd = WeaponMesh->GetSocketLocation("TraceEnd");
+	if (BeamComp)
 	{
-		Projectile->SetShotDirection(Direction);
-		Projectile->SetOwner(GetOwner());
-		Projectile->FinishSpawning(SpawnTransform);
+		AddNewBeam(TraceStart, TraceEnd);
 	}
-	DecreaseAmmo();
-	if (bUseNiagaraMuzzleEffect == true)
-	{
-		SpawnMuzzleFXNiagara();
-	}
-	else
-	{
-		SpawnMuzzleFXCascade();
-	}
-
-	UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzelSocketName);
 }
-*/
+
+void AMeleeWeapon::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && (OtherActor != this) && OtherComp)
+	{
+		UE_LOG(LogCore, Warning, TEXT("Hit done"));
+	}
+	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}

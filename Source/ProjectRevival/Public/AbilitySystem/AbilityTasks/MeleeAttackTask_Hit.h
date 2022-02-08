@@ -14,7 +14,7 @@ class PROJECTREVIVAL_API UMeleeAttackTask_Hit : public UAbilityTask
 {
 	GENERATED_BODY()
 public:
-	virtual void Activate() override;
+	void Activate() override;
 	void Activate(float Duration, UCurveFloat* Curve, UAnimMontage* MeleeAttackMontage);
 	
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility"))

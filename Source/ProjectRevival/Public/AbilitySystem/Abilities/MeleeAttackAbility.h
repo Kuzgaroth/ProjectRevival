@@ -19,10 +19,10 @@ public:
 	UCurveFloat* AttackCurve;
     
 	UPROPERTY(EditDefaultsOnly, Category="Constants")
-	float AttackDuration;
+	float AttackDuration = 3.0;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Constants")
-	float AttackDamage = 10.0;
+	float AttackDamage = 50.0;
 		
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Animations")
 	UAnimMontage* AttackMontage1;

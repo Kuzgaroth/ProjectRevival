@@ -4,6 +4,8 @@
 #include "AbilitySystem/Abilities/MeleeAttackAbility.h"
 #include "AssassinEnemy.h"
 #include "GameplayTask.h"
+#include "WeaponComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 UMeleeAttackAbility::UMeleeAttackAbility()
 {
@@ -42,7 +44,6 @@ void UMeleeAttackAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 		AttackTask->Activate(AttackDuration, AttackCurve, AttackMontage3);
 		break;
 	}
-	
 	K2_EndAbility();
 }
 
@@ -60,6 +61,9 @@ void UMeleeAttackAbility::OnAttackBegin()
 
 void UMeleeAttackAbility::OnAttackEnd()
 {
+	//AActor* OwningActor = GetOwningActorFromActorInfo();
+	//AAssassinEnemy* OwningCharacter = Cast<AAssassinEnemy>(OwningActor);
+	//OwningCharacter->GetMovementComponent()->
 	AttackTask->OnAttackFinished.Unbind();
 	AttackTask->EndTask();
 	K2_EndAbility();

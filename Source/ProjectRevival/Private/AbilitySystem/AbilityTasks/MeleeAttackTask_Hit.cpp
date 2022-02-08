@@ -6,12 +6,24 @@
 #include "AbilitySystem/PRAbilityTypes.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "PlayerCharacter.h"
 #include "Player/BaseCharacter.h"
 
-void UMeleeAttackTask_Hit::Activate()
+void UMeleeAttackTask_Hit::TickTimeline(float Delta)
 {
+	if (Timeline.IsPlaying()) Timeline.TickTimeline(Delta);
 }
+
+UMeleeAttackTask_Hit* UMeleeAttackTask_Hit::AttackInit(UGameplayAbility* OwningAbility,
+	UCurveFloat* AttackCurve)
+{
+	const auto AbilityTask = NewAbilityTask<UMeleeAttackTask_Hit>(OwningAbility, FName("AttackTask"));
+	AbilityTask->CurveFloat = AttackCurve;
+	AbilityTask->bTickingTask = 1;
+	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("AttackInit"));
+	return AbilityTask;
+}
+
+void UMeleeAttackTask_Hit::Activate() {}
 
 void UMeleeAttackTask_Hit::Activate(float Duration, UCurveFloat* Curve, UAnimMontage* MeleeAttackMontage)
 {
@@ -27,21 +39,6 @@ void UMeleeAttackTask_Hit::Activate(float Duration, UCurveFloat* Curve, UAnimMon
 	}
 }
 
-UMeleeAttackTask_Hit* UMeleeAttackTask_Hit::AttackInit(UGameplayAbility* OwningAbility,
-	UCurveFloat* AttackCurve)
-{
-	const auto AbilityTask = NewAbilityTask<UMeleeAttackTask_Hit>(OwningAbility, FName("AttackTask"));
-	AbilityTask->CurveFloat = AttackCurve;
-	AbilityTask->bTickingTask = 1;
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("AttackInit"));
-	return AbilityTask;
-}
-
-void UMeleeAttackTask_Hit::TickTimeline(float Delta)
-{
-	if (Timeline.IsPlaying()) Timeline.TickTimeline(Delta);
-}
-
 void UMeleeAttackTask_Hit::AttackStarted(float Duration, UCurveFloat* Curve, UAnimMontage* MeleeAttackMontage)
 {
 	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("AttackStarted"));
@@ -54,15 +51,21 @@ void UMeleeAttackTask_Hit::AttackStarted(float Duration, UCurveFloat* Curve, UAn
 	else
 	{
 		UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Melee attack has started"));
-		Timeline.SetTimelineFinishedFunc(OnAttackStarted);
-		Timeline.PlayFromStart();
-		
 		if(MeleeAttackMontage != nullptr)
 		{	
 			UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
 			if(AnimInstance != nullptr)
 			{
-				MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(Ability, NAME_None, MeleeAttackMontage, true, NAME_None, true);
+			
+				//AnimInstance->Montage_Play(MeleeAttackMontage, 0.f);
+                        		
+				//Character->PlayAnimMontage(MeleeAttackMontage, 1, NAME_None);
+				Character->GetMesh()->PlayAnimation(MeleeAttackMontage, false);
+				Timeline.SetTimelineFinishedFunc(OnAttackStarted);
+				Timeline.PlayFromStart();
+				//MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(Ability, NAME_None, MeleeAttackMontage,
+				//	1.f, NAME_None, true, 1.f, 0.f);
+				//MontageTask->Activate();
 				UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("UAbilityTask_PlayMontageAndWait"));
 			}
 		}
@@ -71,19 +74,6 @@ void UMeleeAttackTask_Hit::AttackStarted(float Duration, UCurveFloat* Curve, UAn
 			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("No montage founded"));
 		}
 		
-		//if(CurrentWeapon == nullptr)
-		//	return;
-	
-		/*	UStaticMeshComponent * WeaponMesh = CurrentWeapon->GetMesh();
-	 
-			FVector TraceStart = WeaponMesh->GetSocketLocation("TraceStart");
-			FVector TraceEnd = WeaponMesh->GetSocketLocation("TraceEnd");
-	 
-			if(GetWorld()->LineTrace(TraceStart, TraceEnd, HitResult))
-			{
-				if(HitResult.Actor->IsA<ACharacter>())
-					UGameplayStatics::ApplyPointDamage(Damage, HitResult.Actor);
-			}*/
 		AttackFinished();
 	}
 }
