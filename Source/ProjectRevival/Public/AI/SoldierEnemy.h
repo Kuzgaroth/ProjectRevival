@@ -9,6 +9,9 @@
 #include "Soldier/SoldierAIController.h"
 #include "SoldierEnemy.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartEnteringCoverForAnim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCoverForAnim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCoverSideMovingForAnim);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopEnteringCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopExitingCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopCoverSideMoving);
@@ -50,9 +53,18 @@ public:
 	virtual void OnDeath() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void PossessedBy(AController* NewController) override;
-
+	
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FStartEnteringCoverForAnim StartEnteringCoverForAnimDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FStartExitingCoverForAnim StartExitingCoverForAnimDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FStartCoverSideMovingForAnim StartCoverSideMovingForAnimDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FStopEnteringCover StopEnteringCoverDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FStopExitingCover StopExitingCoverDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FStopCoverSideMoving StopCoverSideMovingDelegate;
 
 	virtual ECoverType CheckCover() override;
@@ -78,8 +90,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ChangeCoverSideFinish();
 
-	UFUNCTION(BlueprintCallable)
-	bool IsInCover(); 
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsInCoverBP; 
 	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
