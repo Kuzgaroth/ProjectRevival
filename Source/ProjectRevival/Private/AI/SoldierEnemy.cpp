@@ -67,6 +67,9 @@ void ASoldierEnemy::PossessedBy(AController* NewController)
 	}
 	UpdateHStateBlackboardKey(3);
 	UE_LOG(LogTemp, Log, TEXT("SPECIAL"));
+	Cast<ASoldierAIController>(GetController())->StartEnteringCoverDelegate.AddDynamic(this, &ASoldierEnemy::StartCoverSoldier);
+	Cast<ASoldierAIController>(GetController())->StartExitingCoverDelegate.AddDynamic(this, &ASoldierEnemy::StopCoverSoldier);
+	Cast<ASoldierAIController>(GetController())->StartCoverSideMovingDelegate.AddDynamic(this, &ASoldierEnemy::ChangeCoverSide);
 }
 
 void ASoldierEnemy::BeginPlay()
@@ -79,9 +82,6 @@ void ASoldierEnemy::BeginPlay()
 	CoverData.IsSwitchingCoverType = false;
 	CoverData.IsFiring = false;
 	bIsInCoverBP = false;
-	Cast<ASoldierAIController>(GetController())->StartEnteringCoverDelegate.AddDynamic(this, &ASoldierEnemy::StartCoverSoldier);
-	Cast<ASoldierAIController>(GetController())->StartExitingCoverDelegate.AddDynamic(this, &ASoldierEnemy::StopCoverSoldier);
-	Cast<ASoldierAIController>(GetController())->StartCoverSideMovingDelegate.AddDynamic(this, &ASoldierEnemy::ChangeCoverSide);
 }
 
 void ASoldierEnemy::OnHealthChanged(float CurrentHealth, float HealthDelta)

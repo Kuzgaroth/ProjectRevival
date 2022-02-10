@@ -64,6 +64,9 @@ void ASoldierAIController::OnPossess(APawn* InPawn)
 	if (AISoldier)
 	{
 		RunBehaviorTree(AISoldier->BehaviorTreeAsset);
+		Cast<ASoldierEnemy>(GetPawn())->StopEnteringCoverDelegate.AddDynamic(this, &ASoldierAIController::StopEnteringCover);
+		Cast<ASoldierEnemy>(GetPawn())->StopExitingCoverDelegate.AddDynamic(this, &ASoldierAIController::StopExitingCover);
+		Cast<ASoldierEnemy>(GetPawn())->StopCoverSideMovingDelegate.AddDynamic(this, &ASoldierAIController::StopCoverSideMoving);
 	}
 }
 
@@ -77,9 +80,6 @@ void ASoldierAIController::Tick(float DeltaSeconds)
 void ASoldierAIController::BeginPlay()
 {
 	Super::BeginPlay();
-	Cast<ASoldierEnemy>(GetPawn())->StopEnteringCoverDelegate.AddDynamic(this, &ASoldierAIController::StopEnteringCover);
-	Cast<ASoldierEnemy>(GetPawn())->StopExitingCoverDelegate.AddDynamic(this, &ASoldierAIController::StopExitingCover);
-	Cast<ASoldierEnemy>(GetPawn())->StopCoverSideMovingDelegate.AddDynamic(this, &ASoldierAIController::StopCoverSideMoving);
 }
 
 void ASoldierAIController::StartFiring()
