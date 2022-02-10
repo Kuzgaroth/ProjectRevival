@@ -21,12 +21,16 @@ public:
 	void StopFire();
 	virtual void NextWeapon();
 	void Reload();
+	
+	ABaseWeapon* GetCurrentWeapon() const;
 	bool GetCurrentWeaponUIData(FWeaponUIData& UIData) const;
 	int32 GetCurrentWeaponClips() const;
 	int32 GetCurrentWeaponBullets() const;
+	bool GetCurrentWeaponAmmoData(FAmmoData& AmmoData) const;
+	
 	int32 GetMaxWeaponClips() const;
 	int32 GetMaxWeaponBullets() const;
-	bool GetCurrentWeaponAmmoData(FAmmoData& AmmoData) const;
+		
 	bool TryToAddAmmo(TSubclassOf<ABaseWeapon> WeaponType, int32 ClipsAmount);
 	bool CanFire();
 	bool CanEquip();

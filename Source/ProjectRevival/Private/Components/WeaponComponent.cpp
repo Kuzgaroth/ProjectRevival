@@ -52,6 +52,15 @@ void UWeaponComponent::Reload()
 	ChangeClip();
 }
 
+ABaseWeapon* UWeaponComponent::GetCurrentWeapon() const
+{
+	if (CurrentWeapon)
+	{
+		return CurrentWeapon;
+	}
+	return nullptr;
+}
+
 bool UWeaponComponent::GetCurrentWeaponUIData(FWeaponUIData& UIData) const
 {
 	if (CurrentWeapon)

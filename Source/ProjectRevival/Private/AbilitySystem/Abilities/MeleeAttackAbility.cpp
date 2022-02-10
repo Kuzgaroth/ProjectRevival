@@ -2,10 +2,7 @@
 
 
 #include "AbilitySystem/Abilities/MeleeAttackAbility.h"
-#include "AssassinEnemy.h"
 #include "GameplayTask.h"
-#include "WeaponComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
 
 UMeleeAttackAbility::UMeleeAttackAbility()
 {
@@ -22,28 +19,32 @@ void UMeleeAttackAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Unable to get Owner Actor"))
 		K2_EndAbility();
 	}
-	AttackTask = UMeleeAttackTask_Hit::AttackInit(this, AttackCurve);
-	AttackTask->OnAttackStarted.BindUFunction(this, "AttackStarted");
-	AttackTask->OnAttackFinished.BindUFunction(this, "AttackFinished");
-	DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, AttackDuration);
-	DelayTask->OnFinish.AddDynamic(this, &UMeleeAttackAbility::OnAttackBegin);
 	
 	const int MontageIndex = rand() % 3;
 	switch(MontageIndex)
 	{
 	case 0:
 		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("AttackMontage1"));
-		AttackTask->Activate(AttackDuration, AttackCurve, AttackMontage1);
+		AttackMontage = AttackMontage1;
 		break;
 	case 1:
 		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("AttackMontage2"));
-		AttackTask->Activate(AttackDuration, AttackCurve, AttackMontage2);
+		AttackMontage = AttackMontage2;
 		break;
 	case 2:
 		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("AttackMontage3"));
-		AttackTask->Activate(AttackDuration, AttackCurve, AttackMontage3);
+		AttackMontage = AttackMontage3;
 		break;
 	}
+	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Before init"));
+	AttackTask = UMeleeAttackTask_Hit::AttackInit(this, AttackCurve, AttackMontage);
+	AttackTask->OnAttackStarted.BindUFunction(this, "AttackStarted");
+	AttackTask->OnAttackFinished.BindUFunction(this, "AttackFinished");
+	DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, AttackDuration);
+	DelayTask->OnFinish.AddDynamic(this, &UMeleeAttackAbility::OnAttackBegin);
+	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("AttackTask->Activate();"));	
+	AttackTask->Activate();
+	
 	K2_EndAbility();
 }
 
@@ -61,9 +62,6 @@ void UMeleeAttackAbility::OnAttackBegin()
 
 void UMeleeAttackAbility::OnAttackEnd()
 {
-	//AActor* OwningActor = GetOwningActorFromActorInfo();
-	//AAssassinEnemy* OwningCharacter = Cast<AAssassinEnemy>(OwningActor);
-	//OwningCharacter->GetMovementComponent()->
 	AttackTask->OnAttackFinished.Unbind();
 	AttackTask->EndTask();
 	K2_EndAbility();

@@ -7,6 +7,8 @@
 #include "AbilitySystem/Abilities/PRGameplayAbility.h"
 #include "Components/TimelineComponent.h"
 #include "CoreMinimal.h"
+#include "AssassinEnemy.h"
+#include "MeleeWeapon.h"
 #include "MeleeAttackTask_Hit.generated.h"
 
 UCLASS()
@@ -14,14 +16,13 @@ class PROJECTREVIVAL_API UMeleeAttackTask_Hit : public UAbilityTask
 {
 	GENERATED_BODY()
 public:
-	void Activate() override;
-	void Activate(float Duration, UCurveFloat* Curve, UAnimMontage* MeleeAttackMontage);
+	virtual void Activate() override;
 	
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility"))
-	static UMeleeAttackTask_Hit* AttackInit(UGameplayAbility* OwningAbility, UCurveFloat* AttackCurve);
+	static UMeleeAttackTask_Hit* AttackInit(UGameplayAbility* OwningAbility, UCurveFloat* AttackCurve, UAnimMontage* Montage);
 	
-	void AttackStarted(float Duration, UCurveFloat* Curve, UAnimMontage* MeleeAttackMontage);
-	void AttackFinished();
+	void AttackStarted();
+	void AttackFinished(AAssassinEnemy* Character, AMeleeWeapon* Weapon);
 	FOnTimelineEvent OnAttackStarted;
 	FOnTimelineEvent OnAttackFinished;
 	
@@ -29,6 +30,12 @@ public:
 	void TickTimeline(float Delta);
 private:
 	virtual void OnDestroy(bool AbilityEnded) override;
+
+	UPROPERTY(EditDefaultsOnly)
+	float PlayRate = 2.0;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UAnimMontage* MeleeAttackMontage;
 	
 	UPROPERTY(EditDefaultsOnly)
 	UCurveFloat* CurveFloat;
