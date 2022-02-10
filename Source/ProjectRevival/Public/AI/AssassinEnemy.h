@@ -13,6 +13,9 @@ class PROJECTREVIVAL_API AAssassinEnemy : public AAICharacter
 	GENERATED_BODY()
 public:
 	bool IsAttacking() const;
+	void SetIsAttacking(bool const Status) { bIsAttacking = Status; };
+	void SetMovementMode(EMovementMode Mode);
+	
 protected:
 	virtual void BeginPlay() override;
 

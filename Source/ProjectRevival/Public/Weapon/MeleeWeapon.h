@@ -15,10 +15,12 @@ class PROJECTREVIVAL_API AMeleeWeapon : public ABaseWeapon
 	GENERATED_BODY()
 public:
 	AMeleeWeapon();
-	void AddNewBeam(FVector Point1, FVector Point2);
-	
-	virtual void StartFire() override;
-	virtual void StopFire() override;
+	void AddNewBeam(const FVector Point1, const FVector Point2);
+
+	void ToggleCollisionOn();
+	void ToggleCollisionOff() const;
+	bool IsHitDone() const { return bIsHitDone; };
+	void ResetHitStatus() { bIsHitDone = false; };
 	
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -36,7 +38,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UParticleSystem* BeamFX;
 protected:
-	
-	
-	virtual void MakeShot() override;
+	virtual void StartFire() override { MakeShot(); };
+	virtual void StopFire() override {};
+	virtual void MakeShot() override {};
+	bool bIsHitDone = false;
 };

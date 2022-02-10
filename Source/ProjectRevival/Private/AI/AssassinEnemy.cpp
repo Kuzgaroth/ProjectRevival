@@ -73,6 +73,11 @@ void AAssassinEnemy::BeginPlay()
 	check(HealthWidgetComponent);
 }
 
+void AAssassinEnemy::SetMovementMode(EMovementMode Mode)
+{
+	AssassinMovementComponent->SetMovementMode(Mode);
+}
+
 void AAssassinEnemy::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);

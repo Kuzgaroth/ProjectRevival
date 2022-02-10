@@ -1,6 +1,7 @@
 // Project Revival. All Rights Reserved
 
 #include "Weapon/MeleeWeapon.h"
+#include "AssassinEnemy.h"
 #include "Weapon/Projectile/BaseProjectile.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/BoxComponent.h"
@@ -13,36 +14,32 @@ AMeleeWeapon::AMeleeWeapon()
 	
 	BladeCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Component"));
 	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	BladeCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AMeleeWeapon::OnOverlapBegin);
 }
 
-void AMeleeWeapon::AddNewBeam(FVector Point1, FVector Point2)
+void AMeleeWeapon::AddNewBeam(const FVector Point1, const FVector Point2)
 {
-     
 	BeamComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamFX, Point1, FRotator::ZeroRotator, true);
 	BeamArray.Add(BeamComp);
  	BeamComp->SetBeamSourcePoint(0, Point1, 0);
 	BeamComp->SetBeamTargetPoint(0, Point2, 0);
 }
 
-void AMeleeWeapon::StartFire()
+void AMeleeWeapon::ToggleCollisionOn()
 {
-	MakeShot();
-}
-
-void AMeleeWeapon::StopFire()
-{
-}
-
-void AMeleeWeapon::MakeShot()
-{
-	BladeCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AMeleeWeapon::OnOverlapBegin);
-	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	FVector TraceStart = WeaponMesh->GetSocketLocation("TraceStart");
-	FVector TraceEnd = WeaponMesh->GetSocketLocation("TraceEnd");
+ 	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	const FVector TraceStart = WeaponMesh->GetSocketLocation("TraceStart");
+	const FVector TraceEnd = WeaponMesh->GetSocketLocation("TraceEnd");
 	if (BeamComp)
 	{
 		AddNewBeam(TraceStart, TraceEnd);
 	}
+}
+
+void AMeleeWeapon::ToggleCollisionOff() const
+{
+	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AMeleeWeapon::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
@@ -50,7 +47,7 @@ void AMeleeWeapon::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, cla
 {
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
-		UE_LOG(LogCore, Warning, TEXT("Hit done"));
+		bIsHitDone = true;
 	}
 	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
