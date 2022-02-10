@@ -35,8 +35,10 @@ void UMeleeAttackAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("AttackMontage3"));
 		AttackMontage = AttackMontage3;
 		break;
+	default:
+		break;
 	}
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Before init"));
+	UE_LOG(LogPRAbilitySystemBase, Error, TEXT("!!!"));
 	AttackTask = UMeleeAttackTask_Hit::AttackInit(this, AttackCurve, AttackMontage);
 	AttackTask->OnAttackStarted.BindUFunction(this, "AttackStarted");
 	AttackTask->OnAttackFinished.BindUFunction(this, "AttackFinished");
@@ -44,8 +46,6 @@ void UMeleeAttackAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	DelayTask->OnFinish.AddDynamic(this, &UMeleeAttackAbility::OnAttackBegin);
 	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("AttackTask->Activate();"));	
 	AttackTask->Activate();
-	
-	K2_EndAbility();
 }
 
 void UMeleeAttackAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

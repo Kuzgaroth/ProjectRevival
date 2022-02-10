@@ -53,15 +53,16 @@ void UMeleeAttackTask_Hit::AttackStarted()
 	}
 	else
 	{
-		UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
-		if(MeleeAttackMontage != nullptr && AnimInstance != nullptr)
+		//UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+		//if(MeleeAttackMontage != nullptr && AnimInstance != nullptr)
+		if(MeleeAttackMontage != nullptr)
 		{	
 			Character->SetIsAttacking(true);
 			Weapon->ToggleCollisionOn();
+			MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(Ability, NAME_None, MeleeAttackMontage,
+				PlayRate, NAME_None, true, 1.f, 0.f);
 			Timeline.SetTimelineFinishedFunc(OnAttackStarted);
 			Timeline.PlayFromStart();
-			MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(Ability, NAME_None, MeleeAttackMontage,
-					PlayRate, NAME_None, true, 1.f, 0.f);
 		}
 		else
 		{
@@ -80,7 +81,6 @@ void UMeleeAttackTask_Hit::AttackFinished(AAssassinEnemy* Character, AMeleeWeapo
 		Weapon->ResetHitStatus();
 		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Damage done!"));
 	}
-	
 	Weapon->ToggleCollisionOff();
 	Character->SetIsAttacking(false);
 	
