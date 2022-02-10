@@ -6,7 +6,15 @@
 #include "BaseAIController.h"
 #include "EnvironmentQuery/EQSTestingPawn.h"
 #include "Player/BaseCharacter.h"
+#include "Soldier/SoldierAIController.h"
 #include "SoldierEnemy.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartEnteringCoverForAnim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCoverForAnim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCoverSideMovingForAnim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopEnteringCover);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopExitingCover);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopCoverSideMoving);
 
 class UBehaviorTree;
 class UWidgetComponent;
@@ -21,7 +29,7 @@ enum class HealthStateSoldier: uint8
 };
 
 UCLASS()
-class PROJECTREVIVAL_API ASoldierEnemy : public ABaseCharacter
+class PROJECTREVIVAL_API ASoldierEnemy : public ABaseCharacter, public IICoverable
 {
 	GENERATED_BODY()
 public:
@@ -34,7 +42,7 @@ public:
 	UBehaviorTree* BehaviorTreeAsset;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
-	ABaseAIController* AICon;
+	ASoldierAIController* AICon;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AI")
 	UBlackboardComponent* BBComp;
@@ -45,9 +53,46 @@ public:
 	virtual void OnDeath() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void PossessedBy(AController* NewController) override;
+	
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FStartEnteringCoverForAnim StartEnteringCoverForAnimDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FStartExitingCoverForAnim StartExitingCoverForAnimDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FStartCoverSideMovingForAnim StartCoverSideMovingForAnimDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FStopEnteringCover StopEnteringCoverDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FStopExitingCover StopExitingCoverDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FStopCoverSideMoving StopCoverSideMovingDelegate;
 
-	UFUNCTION(BlueprintCallable, Category="Covering")
-	virtual bool IsCovering() const;
+	virtual ECoverType CheckCover() override;
+	
+	UFUNCTION(BlueprintCallable)
+	FCoverData& GetCoverData();
+
+	UFUNCTION()
+	void StartCoverSoldier(const FVector& CoverPos);
+
+	UFUNCTION(BlueprintCallable)
+	void StartCoverSoldierFinish();
+
+	UFUNCTION()
+	void StopCoverSoldier();
+
+	UFUNCTION(BlueprintCallable)
+	void StopCoverSoldierFinish();
+
+	UFUNCTION()
+	void ChangeCoverSide(float Amount);
+
+	UFUNCTION(BlueprintCallable)
+	void ChangeCoverSideFinish();
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsInCoverBP; 
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UWidgetComponent* HealthWidgetComponent;
@@ -58,12 +103,16 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void OnHealthChanged(float CurrentHealth, float HealthDelta) override;
 
-	virtual bool StartCover_Internal(FHitResult& CoverHit) override;
-	virtual bool StopCover_Internal() override;
+	virtual TEnumAsByte<ECoverSide> CheckSideByNormal(FVector Forward, FVector Normal);
+	virtual TEnumAsByte<ECoverPart> GetCoverPart(int8 PartPos);
+
+	float SideMoveAmount;
+
 private:
 	void UpdateHealthWidgetVisibility();
 	void UpdateHStateBlackboardKey(uint8 EnumKey);
 
-	void TakeCover();
-	bool IsInCover=false;
+	//UPROPERTY()
+	FCoverData CoverData;
+	void CoverCrouch();
 };

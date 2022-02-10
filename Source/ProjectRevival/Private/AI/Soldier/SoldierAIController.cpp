@@ -7,6 +7,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "RespawnComponent.h"
+#include "SoldierEnemy.h"
+#include "GameFeature/CoverObject.h"
 #include "Perception/AISenseConfig_Hearing.h"
 #include "Perception/AISenseConfig_Sight.h"
 
@@ -40,13 +42,16 @@ ASoldierAIController::ASoldierAIController()
 	RespawnComponent = CreateDefaultSubobject<URespawnComponent>("RespawnController");
 
 	/*
-	const auto Character = Cast<AAICharacter>(GetCharacter());
-	PlayerPosDelegate.AddDynamic(AAICharacter::StaticClass(), AAICharacter::StartFiring(PlayerPos));
+	const auto Character = Cast<ASoldierEnemy>(GetCharacter());
+	PlayerPosDelegate.AddDynamic(ASoldierEnemy::StaticClass(), ASoldierEnemy::StartFiring(PlayerPos));
 	*/
+
+	SideMovementAmount = 0;
 	
 	bWantsPlayerState = true;
 	bIsFiring = false;
 	bIsInCover = false;
+	bIsSideTurning = false;
 
 	BotWing = EWing::Center;
 }
@@ -54,11 +59,11 @@ ASoldierAIController::ASoldierAIController()
 void ASoldierAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	const auto AICharacter = Cast<AAICharacter>(InPawn);
+	const auto AISoldier = Cast<ASoldierEnemy>(InPawn);
 	UE_LOG(LogPRAIController, Log, TEXT("Character Possessed"))
-	if (AICharacter)
+	if (AISoldier)
 	{
-		RunBehaviorTree(AICharacter->BehaviorTreeAsset);
+		RunBehaviorTree(AISoldier->BehaviorTreeAsset);
 	}
 }
 
@@ -72,6 +77,9 @@ void ASoldierAIController::Tick(float DeltaSeconds)
 void ASoldierAIController::BeginPlay()
 {
 	Super::BeginPlay();
+	Cast<ASoldierEnemy>(GetPawn())->StopEnteringCoverDelegate.AddDynamic(this, &ASoldierAIController::StopEnteringCover);
+	Cast<ASoldierEnemy>(GetPawn())->StopExitingCoverDelegate.AddDynamic(this, &ASoldierAIController::StopExitingCover);
+	Cast<ASoldierEnemy>(GetPawn())->StopCoverSideMovingDelegate.AddDynamic(this, &ASoldierAIController::StopCoverSideMoving);
 }
 
 void ASoldierAIController::StartFiring()
@@ -88,15 +96,15 @@ void ASoldierAIController::StopFiring()
 void ASoldierAIController::StartEnteringCover()
 {
 	const auto PawnPos = GetPawn()->GetActorLocation();
-	const auto CoverPos = PRPerceptionComponent->GetBestCoverWing(BotWing);
-	const auto BlackboardComp = GetBlackboardComponent();
+	CoverPos = PRPerceptionComponent->GetBestCoverWing(BotWing);
+	/*const auto BlackboardComp = GetBlackboardComponent();*/
 	UE_LOG(LogPRAIController, Log, TEXT("Pawn pos X: %0.2f, Y:%0.2f"), PawnPos.X, PawnPos.Y);
 	UE_LOG(LogPRAIController, Log, TEXT("%i Cover pos X: %0.2f, Y: %0.2f"), BotWing, CoverPos.X, CoverPos.Y);
 	StartEnteringCoverDelegate.Broadcast(CoverPos);
-	if (BlackboardComp)
+	/*if (BlackboardComp)
 	{
 		BlackboardComp->SetValueAsVector(CoverKeyname, CoverPos);
-	}
+	}*/
 }
 
 void ASoldierAIController::StopEnteringCover()
@@ -112,6 +120,18 @@ void ASoldierAIController::StartExitingCover()
 void ASoldierAIController::StopExitingCover()
 {
 	bIsInCover = false;
+}
+
+void ASoldierAIController::StartCoverSideMoving()
+{
+	bIsSideTurning = true;
+	//SideMovementAmount defines the desired movement distance while in cover
+	StartCoverSideMovingDelegate.Broadcast(SideMovementAmount);
+}
+
+void ASoldierAIController::StopCoverSideMoving()
+{
+	bIsSideTurning = false;
 }
 
 AActor* ASoldierAIController::GetFocusOnActor()

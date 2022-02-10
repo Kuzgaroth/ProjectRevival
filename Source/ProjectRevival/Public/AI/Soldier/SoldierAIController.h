@@ -12,6 +12,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerPosDelegate, const FVector&, PlayerPosition);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartEnteringCover, const FVector&, CoverPosition);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCover);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartCoverSideMoving, float, SideMovementAmount);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
 
@@ -39,6 +40,7 @@ public:
 	FPlayerPosDelegate PlayerPosDelegate;
 	FStartEnteringCover StartEnteringCoverDelegate;
 	FStartExitingCover StartExitingCoverDelegate;
+	FStartCoverSideMoving StartCoverSideMovingDelegate;
 	
 	void StartFiring();
 	// Функция, к которой должен быть привязан делегат класса Character
@@ -47,6 +49,8 @@ public:
 	void StopEnteringCover();
 	void StartExitingCover();
 	void StopExitingCover();
+	void StartCoverSideMoving();
+	void StopCoverSideMoving();
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
@@ -54,6 +58,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
 	FVector PlayerPos;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	FVector CoverPos;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	float SideMovementAmount;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
 	FName FocusOnKeyName = "EnemyActor";
@@ -69,6 +79,7 @@ protected:
 
 	bool bIsFiring;
 	bool bIsInCover;
+	bool bIsSideTurning;
 	
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaSeconds) override;
