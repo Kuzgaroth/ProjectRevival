@@ -38,7 +38,7 @@ void UMeleeAttackAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	default:
 		break;
 	}
-	UE_LOG(LogPRAbilitySystemBase, Error, TEXT("!!!"));
+	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("!!!"));
 	AttackTask = UMeleeAttackTask_Hit::AttackInit(this, AttackCurve, AttackMontage);
 	AttackTask->OnAttackStarted.BindUFunction(this, "AttackStarted");
 	AttackTask->OnAttackFinished.BindUFunction(this, "AttackFinished");
