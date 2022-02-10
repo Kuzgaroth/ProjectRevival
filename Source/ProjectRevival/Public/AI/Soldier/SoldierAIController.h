@@ -54,6 +54,7 @@ public:
 	void StopExitingCover();
 	void StartCoverSideMoving();
 	void StopCoverSideMoving();
+	void FindNewCover();
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
