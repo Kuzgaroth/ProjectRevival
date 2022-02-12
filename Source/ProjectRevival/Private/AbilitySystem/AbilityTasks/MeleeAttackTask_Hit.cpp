@@ -21,7 +21,6 @@ UMeleeAttackTask_Hit* UMeleeAttackTask_Hit::AttackInit(UGameplayAbility* OwningA
 	AbilityTask->CurveFloat = AttackCurve;
 	AbilityTask->bTickingTask = 1;
 	AbilityTask->MeleeAttackMontage = Montage;
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Task initialized"));
 	return AbilityTask;
 }
 
@@ -36,6 +35,10 @@ void UMeleeAttackTask_Hit::Activate()
 		Timeline.AddInterpFloat(CurveFloat,TimeLineProgress);
 		Timeline.SetLooping(false);
 		AttackStarted();
+	}
+	else
+	{
+		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Curve not found"));
 	}
 }
 
@@ -53,28 +56,31 @@ void UMeleeAttackTask_Hit::AttackStarted()
 	}
 	else
 	{
-		//UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
-		//if(MeleeAttackMontage != nullptr && AnimInstance != nullptr)
-		if(MeleeAttackMontage != nullptr)
+		UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+		if(MeleeAttackMontage != nullptr && AnimInstance != nullptr)
 		{	
 			Character->SetIsAttacking(true);
-			Weapon->ToggleCollisionOn();
 			MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(Ability, NAME_None, MeleeAttackMontage,
 				PlayRate, NAME_None, true, 1.f, 0.f);
 			Timeline.SetTimelineFinishedFunc(OnAttackStarted);
 			Timeline.PlayFromStart();
+			MontageTask->OnBlendOut.AddDynamic(this, &UMeleeAttackTask_Hit::AttackFinished);
+			MontageTask->ReadyForActivation();
 		}
 		else
 		{
 			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("No montage founded"));
 		}
-		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("CreatePlayMontageAndWaitProxy"));	
-		AttackFinished(Character, Weapon);
+		AttackFinished();
 	}
 }
 
-void UMeleeAttackTask_Hit::AttackFinished(AAssassinEnemy* Character, AMeleeWeapon* Weapon)
+void UMeleeAttackTask_Hit::AttackFinished()
 {
+	AAssassinEnemy* Character = Cast<AAssassinEnemy>(GetAvatarActor());
+	const UWeaponComponent* WeaponComponent = Cast<UWeaponComponent>(Character->GetWeaponComponent());
+	AMeleeWeapon* Weapon = Cast<AMeleeWeapon>(WeaponComponent->GetCurrentWeapon());
+	
 	if(Weapon->IsHitDone())
 	{
 		//DO DAMAGE
@@ -86,7 +92,8 @@ void UMeleeAttackTask_Hit::AttackFinished(AAssassinEnemy* Character, AMeleeWeapo
 	
 	Timeline.SetTimelineFinishedFunc(OnAttackFinished);
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("AttackFinished"));
+	MontageTask->EndTask();
+	this->EndTask();
 }
 
 void UMeleeAttackTask_Hit::OnDestroy(bool bAbilityEnded)

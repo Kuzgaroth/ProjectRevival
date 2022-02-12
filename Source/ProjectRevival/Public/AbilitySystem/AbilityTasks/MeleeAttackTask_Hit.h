@@ -22,7 +22,7 @@ public:
 	static UMeleeAttackTask_Hit* AttackInit(UGameplayAbility* OwningAbility, UCurveFloat* AttackCurve, UAnimMontage* Montage);
 	
 	void AttackStarted();
-	void AttackFinished(AAssassinEnemy* Character, AMeleeWeapon* Weapon);
+	void AttackFinished();
 	FOnTimelineEvent OnAttackStarted;
 	FOnTimelineEvent OnAttackFinished;
 	

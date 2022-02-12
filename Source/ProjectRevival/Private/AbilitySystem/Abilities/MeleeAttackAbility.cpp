@@ -3,6 +3,7 @@
 
 #include "AbilitySystem/Abilities/MeleeAttackAbility.h"
 #include "GameplayTask.h"
+#include "Runtime/Engine/Public/EngineGlobals.h"
 
 UMeleeAttackAbility::UMeleeAttackAbility()
 {
@@ -38,14 +39,13 @@ void UMeleeAttackAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	default:
 		break;
 	}
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("!!!"));
 	AttackTask = UMeleeAttackTask_Hit::AttackInit(this, AttackCurve, AttackMontage);
-	AttackTask->OnAttackStarted.BindUFunction(this, "AttackStarted");
-	AttackTask->OnAttackFinished.BindUFunction(this, "AttackFinished");
+	AttackTask->OnAttackStarted.BindUFunction(this, "OnAttackBegin");
+	AttackTask->OnAttackFinished.BindUFunction(this, "OnAttackEnd");
 	DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, AttackDuration);
 	DelayTask->OnFinish.AddDynamic(this, &UMeleeAttackAbility::OnAttackBegin);
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("AttackTask->Activate();"));	
 	AttackTask->Activate();
+	AttackTask->EndTask();
 }
 
 void UMeleeAttackAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
