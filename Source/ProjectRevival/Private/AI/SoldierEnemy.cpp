@@ -29,6 +29,10 @@ void ASoldierEnemy::BeginPlay()
 	bIsInCoverBP = false;
 }
 
+/*Чтобы протестить бота, нужно раскомментить следующие функции вплоть до IsRunning(),
+ *также раскомментить подряд идущие строки ближе к концу .h файла
+ *и в блюпринте core/BP_PRGameModeBase поменять параметр Default Pawn Class с BP_PlayerCharacter на BP_SoldierEnemyCharacter*/
+
 // void ASoldierEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 // {
 // 	Super::SetupPlayerInputComponent(PlayerInputComponent);
