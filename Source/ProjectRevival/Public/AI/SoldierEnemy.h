@@ -77,9 +77,18 @@ protected:
 
 	float SideMoveAmount;
 	
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
 	void UpdateHealthWidgetVisibility();
 	void UpdateHStateBlackboardKey(uint8 EnumKey);
 	void CoverCrouch();
+
+	// void MoveForward(float Amount);
+	// void MoveRight(float Amount);
+	// void StartRun();
+	// void StopRun();
+	// virtual bool IsRunning() const override;
+	// bool bWantsToRun = false;
+	// bool IsMovingForward = false;
 };
