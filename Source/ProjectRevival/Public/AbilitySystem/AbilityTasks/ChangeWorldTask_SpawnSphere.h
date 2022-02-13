@@ -16,9 +16,14 @@ UCLASS()
 class PROJECTREVIVAL_API UChangeWorldTask_SpawnSphere : public UAbilityTask
 {
 	GENERATED_BODY()
+public:
+	void Activate(AActor& OwnerLocation);
+	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility"))
+    	static UChangeWorldTask_SpawnSphere* ChangeWorldInit(UGameplayAbility* OwningAbility,TSubclassOf<AActor> ChangeWorldSphere,float TraceDistance);
 private:
 	UPROPERTY()
 	TSubclassOf<AActor> ChangeWorldSphere;
-public:
-	virtual void Activate() override;
+	UPROPERTY()
+	float SpawnSphereDistance;
+
 };

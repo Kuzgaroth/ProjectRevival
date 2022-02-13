@@ -20,5 +20,9 @@ class PROJECTREVIVAL_API UChangeWorldAbility : public UPRGameplayAbility
 	private:
 	UPROPERTY()
 	UChangeWorldTask_SpawnSphere* ChangeWorldTask;
+	UPROPERTY()
+	TSubclassOf<AActor> ChangeWorldShere;
+	UPROPERTY()
+	float TraceSpawnDistance=1500.0f;
 	
 };
