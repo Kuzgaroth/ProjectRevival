@@ -18,7 +18,12 @@ UCLASS()
 class PROJECTREVIVAL_API UMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
+public:
+	UFUNCTION(BlueprintImplementableEvent, Category="UI")
+	void OnStartGameHovered();
+	
+	UFUNCTION(BlueprintImplementableEvent, Category="UI")
+	void OnStartGameUnhovered();
 protected:
 	UPROPERTY(meta=(BindWidget))
 	UButton* StartGameButton;

@@ -19,6 +19,8 @@ void UMenuWidget::NativeOnInitialized()
 	if (StartGameButton)
 	{
 		StartGameButton->OnClicked.AddDynamic(this, &UMenuWidget::OnStartGame);
+		StartGameButton->OnHovered.AddDynamic(this, &UMenuWidget::OnStartGameHovered);
+		StartGameButton->OnUnhovered.AddDynamic(this, &UMenuWidget::OnStartGameUnhovered);
 	}
 	
 	if (ContinueGameButton)

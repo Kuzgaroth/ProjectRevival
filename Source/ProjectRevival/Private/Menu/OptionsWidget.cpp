@@ -21,14 +21,17 @@ void UOptionsWidget::NativeOnInitialized()
 	}
 	if (ControlsButton)
 	{
+		ControlsButton->SetBackgroundColor(FLinearColor(1, 1, 1, 0));
 		ControlsButton->OnClicked.AddDynamic(this, &UOptionsWidget::OnControls);
 	}
 	if (GraphicsButton)
 	{
+		GraphicsButton->SetBackgroundColor(FLinearColor(1, 1, 1, 1));
 		GraphicsButton->OnClicked.AddDynamic(this, &UOptionsWidget::OnGraphics);
 	}
 	if (SoundButton)
 	{
+		SoundButton->SetBackgroundColor(FLinearColor(1, 1, 1, 0));
 		SoundButton->OnClicked.AddDynamic(this, &UOptionsWidget::OnSound);
 	}
 	if (OptionsGraphicsWidgetClass)
