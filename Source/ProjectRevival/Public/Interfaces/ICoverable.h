@@ -41,30 +41,30 @@ struct FCoverData
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="CoverData")
 	TEnumAsByte<ECoverType> CoverType;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="CoverData")
 	TEnumAsByte<ECoverPart> CoverPart;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="CoverData")
 	TEnumAsByte<ECoverSide> CoverSide;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="CoverData")
 	bool IsTurning;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="CoverData")
 	bool IsFiring;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="CoverData")
 	bool IsSwitchingCoverType;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="CoverData")
 	bool IsInCoverTransition;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="CoverData")
 	bool IsInFireTransition;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="CoverData")
 	AActor* CoverObject;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="CoverData")
 	TEnumAsByte<ECoverType> PendingCoverType;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="CoverData")
 	TEnumAsByte<ECoverSide> PendingCoverSide;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="CoverData")
 	TEnumAsByte<ECoverPart> PendingCoverPart;
 	bool IsInCover() const;
 	void StartCover(int8 CameraPos, int8 PartPos, ECoverType CType, AActor* CoverActor);
