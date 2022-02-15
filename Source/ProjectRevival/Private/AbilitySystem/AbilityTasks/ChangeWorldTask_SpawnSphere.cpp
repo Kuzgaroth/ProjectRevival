@@ -4,6 +4,7 @@
 #include "AbilitySystem/AbilityTasks/ChangeWorldTask_SpawnSphere.h"
 
 #include "DrawDebugHelpers.h"
+#include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 
 void UChangeWorldTask_SpawnSphere::Activate(AActor& OwnerActor)
 {
@@ -18,8 +19,13 @@ void UChangeWorldTask_SpawnSphere::Activate(AActor& OwnerActor)
 	GetWorld()->LineTraceSingleByChannel(HitResult,TraceStart,TraceEnd,ECollisionChannel::ECC_Visibility,CollisionParams);
 	if(HitResult.bBlockingHit)
 	{
-		DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
-		DrawDebugSphere(GetWorld(),HitResult.ImpactPoint,10.0f,24,FColor::Red,false,5.0f);
+		//DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
+		//DrawDebugSphere(GetWorld(),HitResult.ImpactPoint,10.0f,24,FColor::Red,false,5.0f);
+		FActorSpawnParameters SpawnParams;
+		if(ChangeWorldSphere)
+		{
+			GetWorld()->SpawnActor<AChangeWorldSphereActor>(ChangeWorldSphere,HitResult.ImpactPoint,FRotator::ZeroRotator,SpawnParams);
+		}
 	}
 	
 }
