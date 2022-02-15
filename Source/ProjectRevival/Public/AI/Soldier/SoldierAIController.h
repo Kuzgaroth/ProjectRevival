@@ -38,8 +38,11 @@ public:
 	void SetBIsInCover(bool bCond) { bIsInCover = bCond; }
 
 	FPlayerPosDelegate PlayerPosDelegate;
+	UPROPERTY(BlueprintAssignable)
 	FStartEnteringCover StartEnteringCoverDelegate;
+	UPROPERTY(BlueprintAssignable)
 	FStartExitingCover StartExitingCoverDelegate;
+	UPROPERTY(BlueprintAssignable)
 	FStartCoverSideMoving StartCoverSideMovingDelegate;
 	
 	void StartFiring();
@@ -51,6 +54,7 @@ public:
 	void StopExitingCover();
 	void StartCoverSideMoving();
 	void StopCoverSideMoving();
+	void FindNewCover();
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")

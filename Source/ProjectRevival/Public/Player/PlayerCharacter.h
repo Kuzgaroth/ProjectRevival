@@ -30,15 +30,33 @@ public:
 
 	UFUNCTION()
 	void TimelineLeftSideView(float Value);
+
+	UFUNCTION()
+	void TimelineCover(float Value);
+
+	UFUNCTION()
+	void TimelineCoverFieldOfView(float Value);
+
+	UFUNCTION()
+	void TimelineCoverYShift(float Value);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
-	FPlayerAimZoom PlayerAimZoom;
+	FPlayerAimZoomBlueprint PlayerAimZoom;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
-	FLeftSideView LeftSideView;
-	
-	FTimeline CurveTimeline;
-	FTimeline LeftSideViewCurveTimeline;
+	FLeftSideViewBlueprint LeftSideView;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Cover")
+	FCameraCover CameraCover;
+
+	UPROPERTY()
+	UPlayerAimZoomFunctions* PlayerAimZoomFunctions;
+
+	UPROPERTY()
+	ULeftSideViewFunctions* LeftSideViewFunctions;
+
+	UPROPERTY()
+	UCameraCoverFunctions* CameraCoverFunctions;
 	
 	USpringArmComponent* GetPlayerSpringArmComponent(){return SpringArmComponent;}
 protected:
@@ -50,6 +68,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	USphereComponent* CameraCollisionComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
+	USceneComponent* CameraSocket;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data) override;
@@ -59,8 +80,6 @@ protected:
 	virtual void BeginPlay() override;
 	
 	void OnCameraMove();
-	void CameraStop();
-	void CameraBlock();
 	
 	void CameraZoomIn();
 	void CameraZoomOut();
@@ -90,6 +109,7 @@ public:
 	
 	virtual bool IsRunning() const override;
 	virtual ECoverType CheckCover() override;
+	virtual void OnTurn() override;
 	virtual void Falling() override;
 	virtual void Landed(const FHitResult& Hit) override;
 	UFUNCTION(BlueprintCallable)

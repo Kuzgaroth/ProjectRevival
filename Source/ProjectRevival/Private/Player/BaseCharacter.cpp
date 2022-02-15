@@ -1,7 +1,5 @@
 // Project Revival. All Rights Reserved
 
-#define COVER_TRACE_CHANNEL ECC_GameTraceChannel3
-
 #include "Player/BaseCharacter.h"
 
 #include "DrawDebugHelpers.h"
@@ -32,6 +30,9 @@ ABaseCharacter::ABaseCharacter(const FObjectInitializer& ObjectInitializer) :Sup
 	
 	AbilitySystemComponent = CreateDefaultSubobject<UPRAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AttributeSet = CreateDefaultSubobject<UPRAttributeSet>(TEXT("AttributeSet"));
+	InterpToMovementComponent = CreateDefaultSubobject<UInterpToMovementComponent>("AdjustMovementComponent");
+	InterpToMovementComponent->BehaviourType = EInterpToBehaviourType::OneShot;
+	
 }
 
 void ABaseCharacter::PossessedBy(AController* NewController)
@@ -206,17 +207,33 @@ ECoverType ABaseCharacter::CoverTrace(FHitResult& CoverHit)
 {
 	const FVector Location = GetActorLocation();
 	FVector HighLocation;
-	HighLocation.Set(Location.X, Location.Y, 200.0f);
-	const bool HighTraceResult = UKismetSystemLibrary::LineTraceSingle(GetWorld(), HighLocation, GetActorForwardVector()*100.0f+HighLocation,
+	HighLocation.Set(Location.X, Location.Y, 225.f);
+	const bool HighTraceResult = UKismetSystemLibrary::LineTraceSingle(GetWorld(), HighLocation, GetActorForwardVector()*RootDelta+HighLocation,
 		UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, CoverHit, true);
 	//DrawDebugLine(GetWorld(), HighLocation, GetActorRotation().Vector()*25.0f, FColor::Red, false, 2,0, 2);
 	if (HighTraceResult) return ECoverType::High;
 
-	const bool LowTraceResult = UKismetSystemLibrary::LineTraceSingle(GetWorld(), Location, GetActorForwardVector()*100.0f+Location,
+	const bool LowTraceResult = UKismetSystemLibrary::LineTraceSingle(GetWorld(), Location, GetActorForwardVector()*RootDelta+Location,
 		UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, CoverHit, true);
 	//DrawDebugLine(GetWorld(), Location, GetActorRotation().Vector()*25.0f, FColor::Red, false, 2,0, 2);
 	if (LowTraceResult) return ECoverType::Low;
 	return ECoverType::None;
+}
+
+void ABaseCharacter::AdjustLocationBeforeCover(FHitResult& CoverHit)
+{
+	/*InterpToMovementComponent->ControlPoints.Empty();
+	auto PlayerLocation = GetActorLocation();
+	GetCharacterMovement()->DisableMovement();
+	
+	
+	FHitResult NormalHit = CoverHit;
+	while (!FVector::Coincident(GetActorForwardVector(), CoverHit.ImpactNormal*(-1.f)))
+	{
+		
+	}
+	const bool LowTraceResult = UKismetSystemLibrary::LineTraceSingle(GetWorld(), CoverHit.ImpactPoint, CoverHit.ImpactNormal*RootDelta+CoverHit.ImpactPoint,
+		UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, NormalHit, true);*/
 }
 
 void ABaseCharacter::OnGroundLanded(const FHitResult& HitResult)
@@ -225,4 +242,11 @@ void ABaseCharacter::OnGroundLanded(const FHitResult& HitResult)
 	if (FallVelocity<LandedDamageVelocity.X) return;
 	const auto FinalDamage = FMath::GetMappedRangeValueClamped(LandedDamageVelocity,LandedDamage, FallVelocity);
 	TakeDamage(FinalDamage,FDamageEvent{}, nullptr, nullptr);
+}
+
+void ABaseCharacter::StopAdjustingMovement(const FHitResult& ImpactResult, float Time)
+{
+	
+	InterpToMovementComponent->ControlPoints.Empty();
+	GetCharacterMovement()->MovementMode = MOVE_Walking;
 }

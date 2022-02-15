@@ -15,7 +15,7 @@ void UPRGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, 
 {
 	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
 	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("%s has started"), *GetName());
-	float CooldownMagnitude;
+	float CooldownMagnitude=0.f;
 	UGameplayEffect* CooldownEffect = GetCooldownGameplayEffect(); 
 	if (CooldownEffect)
 	{

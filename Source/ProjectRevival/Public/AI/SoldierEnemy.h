@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AICharacter.h"
 #include "EnvironmentQuery/EQSTestingPawn.h"
+#include "Player/BaseCharacter.h"
 #include "Soldier/SoldierAIController.h"
 #include "SoldierEnemy.generated.h"
 
