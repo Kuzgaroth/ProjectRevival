@@ -7,6 +7,7 @@
 #include "NiagaraComponent.h"
 #include "ComponentVisualizer.h"
 #include "DrawDebugHelpers.h"
+
 // Sets default values
 AChangeWorldSphereActor::AChangeWorldSphereActor()
 {
@@ -15,7 +16,9 @@ AChangeWorldSphereActor::AChangeWorldSphereActor()
 	SphereComponent=CreateDefaultSubobject<USphereComponent>(TEXT("ChangeWorldSphere"));
 	RootComponent=SphereComponent;
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this,&AChangeWorldSphereActor::OnSphereComponentCollision);
-	SphereComponent->SetSphereRadius(StartRadius,true);
+	CurrentRadius=StartRadius;
+	SphereComponent->SetSphereRadius(CurrentRadius,true);
+	
 }
 
 // Called when the game starts or when spawned
@@ -37,10 +40,13 @@ void AChangeWorldSphereActor::Tick(float DeltaTime)
 	if(SphereComponent)
 	{
 		if(SphereComponent->GetScaledSphereRadius()>EndRadius)
+		{
+			AbilityEnded.Broadcast();
 			Destroy();
-		StartRadius+=ExpantionSpeed*DeltaTime;
-		SphereComponent->SetSphereRadius(StartRadius,true);
-		DrawDebugSphere(GetWorld(),GetActorLocation(),StartRadius,24,FColor::Blue,false,0.2f);
+		}
+		CurrentRadius+=ExpantionSpeed*DeltaTime;
+		SphereComponent->SetSphereRadius(CurrentRadius,true);
+		DrawDebugSphere(GetWorld(),GetActorLocation(),CurrentRadius,24,FColor::Blue,false,0.1f);
 		
 	}
 

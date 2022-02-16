@@ -10,6 +10,7 @@
 /**
  * 
  */
+
 UCLASS()
 class PROJECTREVIVAL_API UChangeWorldAbility : public UPRGameplayAbility
 {
@@ -24,5 +25,5 @@ class PROJECTREVIVAL_API UChangeWorldAbility : public UPRGameplayAbility
 	TSubclassOf<AActor> ChangeWorldShere;
 	UPROPERTY(EditAnywhere,Category="Trace Params")
 	float TraceSpawnDistance=1500.0f;
-	
+	void FinishAbility();
 };

@@ -9,6 +9,8 @@
 
 class UNiagaraSystem;
 class UNiagaraComponent;
+
+DECLARE_MULTICAST_DELEGATE(FOnEndAbitity)
 UCLASS()
 class PROJECTREVIVAL_API AChangeWorldSphereActor : public AActor
 {
@@ -17,6 +19,7 @@ class PROJECTREVIVAL_API AChangeWorldSphereActor : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AChangeWorldSphereActor();
+
 	
 private:
 	UPROPERTY()
@@ -27,6 +30,8 @@ private:
 	UNiagaraComponent* ChangeWorldFXComponent;
 	UPROPERTY(EditAnywhere,Category="Sphere params")
 	float StartRadius=10.0f;
+	UPROPERTY(EditAnywhere,Category="Sphere params")
+	float CurrentRadius;
 	UPROPERTY(EditAnywhere,Category="Sphere params")
 	float EndRadius=1000.0f;
 	UPROPERTY(EditAnywhere,Category="Sphere params")
@@ -39,7 +44,7 @@ private:
 					  bool bFromSweep, 
 					  const FHitResult &SweepResult);
 	UNiagaraComponent* SpawnChangeWorldEffect();
-	
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -48,7 +53,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	FOnEndAbitity AbilityEnded;
 	
 
 };
