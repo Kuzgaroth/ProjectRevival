@@ -19,6 +19,8 @@ void UMenuWidget::NativeOnInitialized()
 	if (StartGameButton)
 	{
 		StartGameButton->OnClicked.AddDynamic(this, &UMenuWidget::OnStartGame);
+		StartGameButton->OnHovered.AddDynamic(this, &UMenuWidget::OnStartGameHovered);
+		StartGameButton->OnUnhovered.AddDynamic(this, &UMenuWidget::OnStartGameUnhovered);
 	}
 	
 	if (ContinueGameButton)
@@ -74,9 +76,8 @@ void UMenuWidget::OnOptions()
 {
 	if (OptionsWidgetClass)
 	{
-		RemoveFromParent();
-		UOptionsWidget* OptionsWidget = CreateWidget<UOptionsWidget>(GetWorld(), OptionsWidgetClass);
-		OptionsWidget->AddToViewport();
+		LeaveEvent();
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UMenuWidget::OpenOptions, 1.0f, false, 0.125f);
 	}
 }
 
@@ -91,6 +92,28 @@ void UMenuWidget::OnQuitGame()
 
 void UMenuWidget::OnCredits()
 {
+	if (CreditsWidgetClass)
+	{
+		LeaveEvent();
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UMenuWidget::OpenCredits, 1.0f, false, 0.125f);
+	}
+}
+
+void UMenuWidget::OpenOptions()
+{
+	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+	if (OptionsWidgetClass)
+	{
+		RemoveFromParent();
+		UOptionsWidget* OptionsWidget = CreateWidget<UOptionsWidget>(GetWorld(), OptionsWidgetClass);
+		OptionsWidget->AddToViewport();
+	}
+}
+
+void UMenuWidget::OpenCredits()
+{
+	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+
 	if (CreditsWidgetClass)
 	{
 		RemoveFromParent();
