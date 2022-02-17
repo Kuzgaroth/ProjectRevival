@@ -41,6 +41,11 @@ ASoldierAIController::ASoldierAIController()
 
 	RespawnComponent = CreateDefaultSubobject<URespawnComponent>("RespawnController");
 
+	/*
+	const auto Character = Cast<ASoldierEnemy>(GetCharacter());
+	PlayerPosDelegate.AddDynamic(ASoldierEnemy::StaticClass(), ASoldierEnemy::StartFiring(PlayerPos));
+	*/
+	
 	SideMovementAmount = 0;
 	bWantsPlayerState = true;
 	bIsFiring = false;
@@ -61,6 +66,8 @@ void ASoldierAIController::OnPossess(APawn* InPawn)
 		//Cast<ASoldierEnemy>(GetPawn())->StopEnteringCoverDelegate.AddDynamic(this, &ASoldierAIController::StopEnteringCover);
 		//Cast<ASoldierEnemy>(GetPawn())->StopExitingCoverDelegate.AddDynamic(this, &ASoldierAIController::StopExitingCover);
 		//Cast<ASoldierEnemy>(GetPawn())->StopCoverSideMovingDelegate.AddDynamic(this, &ASoldierAIController::StopCoverSideMoving);
+		//Cast<ASoldierEnemy>(GetPawn())->StartFireDelegate.AddDynamic(this, &ASoldierAIController::StartFiring);
+		//Cast<ASoldierEnemy>(GetPawn())->StopFireDelegate.AddDynamic(this, &ASoldierAIController::StopFiring);
 	}
 }
 

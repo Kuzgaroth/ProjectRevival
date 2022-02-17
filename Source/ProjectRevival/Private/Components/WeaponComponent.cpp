@@ -282,3 +282,8 @@ int32 UWeaponComponent::GetMaxWeaponBullets() const
 	}
 	return -1;
 }
+
+ABaseWeapon* UWeaponComponent::GetCurrentWeapon()
+{
+	return CurrentWeapon;
+}
