@@ -116,6 +116,7 @@ void ASoldierEnemy::PossessedBy(AController* NewController)
 	Cast<ASoldierAIController>(GetController())->StartEnteringCoverDelegate.AddDynamic(this, &ASoldierEnemy::StartCoverSoldier);
 	Cast<ASoldierAIController>(GetController())->StartExitingCoverDelegate.AddDynamic(this, &ASoldierEnemy::StopCoverSoldier);
 	Cast<ASoldierAIController>(GetController())->StartCoverSideMovingDelegate.AddDynamic(this, &ASoldierEnemy::ChangeCoverSide);
+	Cast<ASoldierAIController>(GetController())->PlayerPosDelegate.AddDynamic(this, &ASoldierEnemy::StartFiring);
 }
 
 void ASoldierEnemy::OnHealthChanged(float CurrentHealth, float HealthDelta)
@@ -155,12 +156,14 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos)
 	CoverData.CoverObject = CoverHit.GetActor();
 	if (!CoverData.CoverObject)
 	{
+		CleanCoverData();
 		return;
 	}
 	
 	const auto AISoldierController = Cast<ASoldierAIController>(GetController());
 	if (!AISoldierController)
 	{
+		CleanCoverData();
 		return;
 	}
 	
@@ -175,10 +178,11 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos)
 	const bool Sup = Super::StartCover_Internal(CoverHit);
 	if (!Sup)
 	{
+		CleanCoverData();
 		return;
 	}
 	bUseControllerRotationYaw = false; //We can delete this line cause this parameter is already set permanently in constructor
-	StartEnteringCoverForAnimDelegate.Broadcast();
+	// StartEnteringCoverForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StartCoverSoldierFinish()
@@ -198,35 +202,26 @@ void ASoldierEnemy::StopCoverSoldier()
 	CoverData.StopCover();
 	bUseControllerRotationYaw = false;
 	CoverData.IsInCoverTransition = true;
-	StartExitingCoverForAnimDelegate.Broadcast();
+	// StartExitingCoverForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StopCoverSoldierFinish()
 {
-	CoverData.IsInCoverTransition = false;
-	CoverData.CoverType = ECoverType::None;
-	CoverData.CoverSide = ECoverSide::CSNone;
-	CoverData.CoverPart = ECoverPart::CPNone;
+	CleanCoverData();
 	bIsInCoverBP = false;
 	StopExitingCoverDelegate.Broadcast();
 }
 
 void ASoldierEnemy::ChangeCoverSide(const float Amount)
 {
-	if (GetController())
+	
+	if (CoverData.IsInTransition()) {return;}
+	if (!CoverData.IsInCover()){return;}
+		CoverData.TurnStart(Amount);
+	if (CoverData.IsTurning)
 	{
-		if (CoverData.IsInTransition()) {
-			return;
-		}
-		if (CoverData.IsInCover())
-		{
-			CoverData.TurnStart(Amount);
-			if (CoverData.IsTurning)
-			{
-				SideMoveAmount = Amount;
-				StartCoverSideMovingForAnimDelegate.Broadcast();
-			}
-		}
+		SideMoveAmount = Amount;
+		// StartCoverSideMovingForAnimDelegate.Broadcast();
 	}
 }
 
@@ -235,19 +230,90 @@ void ASoldierEnemy::ChangeCoverSideFinish()
 	CoverData.IsTurning = false;
 	switch (CoverData.CoverSide)
 	{
-		case Left:
-			CoverData.CoverSide = Right;
-			break;
-		case Right:
-			CoverData.CoverSide = Left;
-			break;
-		default:
-			CoverData.CoverSide = CSNone;
+	case Left:
+		CoverData.CoverSide = Right;
+		break;
+	case Right:
+		CoverData.CoverSide = Left;
+		break;
+	default:
+		CoverData.CoverSide = CSNone;
 	}
 	const FRotator YawRotation(0, GetControlRotation().Yaw, 0);
 	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 	this->AddMovementInput(Direction, SideMoveAmount);
 	StopCoverSideMovingDelegate.Broadcast();
+}
+
+void ASoldierEnemy::StartCoverToFire()
+{
+	if (CoverData.IsInTransition()) {return;}
+	if (!CoverData.IsInCover()) {return;}
+	CoverData.IsInFireTransition = true;
+	//StartCoverToFireForAnimDelegate.Broadcast();
+}
+
+void ASoldierEnemy::StartCoverToFireFinish()
+{
+	CoverData.IsInFireTransition = false;
+	CoverData.IsFiring = true;
+	StartFiring(PlayerPosition);
+}
+
+void ASoldierEnemy::StartCoverFromFire()
+{
+	// if (CoverData.IsReadyToFire())
+	// {
+	// 	WeaponComponent->StartFire();
+	// 	return;
+	// }
+	// if (!PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted ||
+	// 	PlayerMovementComponent->GetPlayerMovementLogic().IsInJump()) return;
+	// WeaponComponent->StartFire();
+}
+
+void ASoldierEnemy::StartCoverFromFireFinish()
+{	
+	//AddControllerPitchInput(Amount);
+}
+
+void ASoldierEnemy::StartFiring(const FVector& PlayerPos)
+{
+	PlayerPosition = PlayerPos;
+	if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring)
+	{
+		StartCoverToFire();
+		return;
+	}
+	else if (CoverData.IsInCover() && bIsInCoverBP && CoverData.IsFiring)
+	{
+		WeaponComponent->StartFire();
+		return;
+	}
+	else if (!CoverData.IsInCover() && !bIsInCoverBP)
+	{
+		WeaponComponent->StartFire();
+		return;
+	}
+}
+
+void ASoldierEnemy::StopFiring()
+{
+	if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring)
+	{
+		StartCoverToFire();
+		return;
+	}
+	else if (CoverData.IsInCover() && bIsInCoverBP && CoverData.IsFiring)
+	{
+		WeaponComponent->StartFire();
+		return;
+	}
+	else if (!CoverData.IsInCover() && !bIsInCoverBP)
+	{
+		WeaponComponent->StartFire();
+		return;
+	}
 }
 
 ECoverType ASoldierEnemy::CheckCover()
@@ -280,6 +346,16 @@ FCoverData& ASoldierEnemy::GetCoverData()
 {
 	return CoverData;
 }
+
+void ASoldierEnemy::CleanCoverData()
+{
+	CoverData.CoverType = CoverData.PendingCoverType = None;
+	CoverData.CoverPart = CoverData.PendingCoverPart = CPNone;
+	CoverData.CoverSide = CoverData.PendingCoverSide = CSNone;
+	CoverData.IsTurning = CoverData.IsFiring = CoverData.IsSwitchingCoverType = CoverData.IsInCoverTransition = CoverData.IsInFireTransition = false;
+	CoverData.CoverObject = nullptr;
+}
+
 
 // bool ASoldierEnemy::IsInCover()
 // {
