@@ -21,8 +21,8 @@ public:
 	AChangeWorldSphereActor();
 
 	
-private:
-	UPROPERTY()
+protected:
+	UPROPERTY(EditDefaultsOnly)
 	USphereComponent* SphereComponent;
 	UPROPERTY(EditAnywhere,Category="Sphere params")
 	UNiagaraSystem* ChangeWorldFX;
