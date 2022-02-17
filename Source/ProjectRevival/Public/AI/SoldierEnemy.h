@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "AICharacter.h"
+#include "AIWeaponComponent.h"
+#include "SoldierRifleWeapon.h"
 #include "EnvironmentQuery/EQSTestingPawn.h"
 #include "Player/BaseCharacter.h"
 #include "Soldier/SoldierAIController.h"
@@ -17,8 +19,8 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopEnteringCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopExitingCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopCoverSideMoving);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopCoverToFire);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopCoverFromFire);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartFire);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopFire);
 
 UCLASS()
 class PROJECTREVIVAL_API ASoldierEnemy : public AAICharacter, public IICoverable
@@ -47,9 +49,9 @@ public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FStopCoverSideMoving StopCoverSideMovingDelegate;
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FStopCoverToFire StopCoverToFireDelegate;
+	FStartFire StartFireDelegate;
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FStopCoverToFire StopCoverFromFireDelegate;
+	FStopFire StopFireDelegate;
 
 	virtual ECoverType CheckCover() override;
 	
@@ -74,6 +76,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ChangeCoverSideFinish();
 
+	UFUNCTION(BlueprintCallable)
+	void ChangeCoverTypeFinish();
+
 	UFUNCTION()
 	void StartCoverToFire();
 
@@ -90,22 +95,16 @@ public:
 	bool bIsInCoverBP;
 
 	UPROPERTY(BlueprintReadOnly)
+	bool bIsFiringBP;
+
+	UPROPERTY(BlueprintReadOnly)
 	FCoverData CoverData;
 	
 	UFUNCTION()
 	virtual void StartFiring(const FVector& PlayerPos) override;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	virtual void StopFiring();
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Fire")
-	int32 SeriesFireClips;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Fire")
-	int32 SeriesFireBullets;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Fire")
-	float SeriesFireClipsDelay;
 	
 protected:
 	
@@ -117,6 +116,9 @@ protected:
 	virtual void CleanCoverData();
 
 	float SideMoveAmount;
+
+	UPROPERTY()
+	ASoldierRifleWeapon* RifleRef=nullptr;
 	
 	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 

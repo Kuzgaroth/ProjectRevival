@@ -10,6 +10,7 @@
 #include "BrainComponent.h"
 #include "HealthBarWidget.h"
 #include "HealthComponent.h"
+#include "SoldierRifleWeapon.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
@@ -27,6 +28,7 @@ void ASoldierEnemy::BeginPlay()
 	CoverData.IsSwitchingCoverType = false;
 	CoverData.IsFiring = false;
 	bIsInCoverBP = false;
+	bIsFiringBP = false;
 }
 
 /*Чтобы протестить бота, нужно раскомментить следующие функции вплоть до IsRunning(),
@@ -242,6 +244,30 @@ void ASoldierEnemy::ChangeCoverSideFinish()
 	const FRotator YawRotation(0, GetControlRotation().Yaw, 0);
 	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 	this->AddMovementInput(Direction, SideMoveAmount);
+	FHitResult HitResult;
+	Super::CoverTrace(HitResult);
+	if (HitResult.GetActor()->ActorHasTag(FName(TEXT("High"))) && CoverData.CoverType == Low) {CoverData.IsSwitchingCoverType=true;}
+	if (HitResult.GetActor()->ActorHasTag(FName(TEXT("Low"))) && CoverData.CoverType == High) {CoverData.IsSwitchingCoverType=true;}
+	if (!CoverData.IsSwitchingCoverType)
+	{
+		StopCoverSideMovingDelegate.Broadcast();
+	}
+}
+
+void ASoldierEnemy::ChangeCoverTypeFinish()
+{
+	CoverData.IsSwitchingCoverType = false;
+	switch (CoverData.CoverType)
+	{
+	case High:
+		CoverData.CoverType = Low;
+		break;
+	case Low:
+		CoverData.CoverType = High;
+		break;
+	default:
+		CoverData.CoverType = None;
+	}
 	StopCoverSideMovingDelegate.Broadcast();
 }
 
@@ -262,56 +288,80 @@ void ASoldierEnemy::StartCoverToFireFinish()
 
 void ASoldierEnemy::StartCoverFromFire()
 {
-	// if (CoverData.IsReadyToFire())
-	// {
-	// 	WeaponComponent->StartFire();
-	// 	return;
-	// }
-	// if (!PlayerMovementComponent->GetPlayerMovementLogic().IsPivotTargeted ||
-	// 	PlayerMovementComponent->GetPlayerMovementLogic().IsInJump()) return;
-	// WeaponComponent->StartFire();
+	if (CoverData.IsInTransition()) {return;}
+	if (!CoverData.IsInCover()) {return;}
+	CoverData.IsFiring = false;
+	CoverData.IsInFireTransition = true;
+	//StartCoverFromFireForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StartCoverFromFireFinish()
 {	
-	//AddControllerPitchInput(Amount);
+	CoverData.IsInFireTransition = false;
+	StopFiring();
 }
 
 void ASoldierEnemy::StartFiring(const FVector& PlayerPos)
 {
 	PlayerPosition = PlayerPos;
-	if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring)
+	if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring && !bIsFiringBP)
 	{
 		StartCoverToFire();
 		return;
 	}
-	else if (CoverData.IsInCover() && bIsInCoverBP && CoverData.IsFiring)
+	else if (CoverData.IsInCover() && bIsInCoverBP && CoverData.IsFiring && !bIsFiringBP)
 	{
 		WeaponComponent->StartFire();
+		bIsFiringBP = true;
+		StartFireDelegate.Broadcast();
+		RifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
+		if (RifleRef)
+		{
+			RifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
+		}
 		return;
 	}
-	else if (!CoverData.IsInCover() && !bIsInCoverBP)
+	else if (!CoverData.IsInCover() && !bIsInCoverBP && !bIsFiringBP)
 	{
 		WeaponComponent->StartFire();
+		bIsFiringBP = true;
+		StartFireDelegate.Broadcast();
+		RifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
+		if (RifleRef)
+		{
+			RifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
+		}
 		return;
 	}
 }
 
 void ASoldierEnemy::StopFiring()
 {
-	if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring)
+	if (CoverData.IsInCover() && bIsInCoverBP && CoverData.IsFiring && bIsFiringBP)
 	{
-		StartCoverToFire();
+		StartCoverFromFire();
 		return;
 	}
-	else if (CoverData.IsInCover() && bIsInCoverBP && CoverData.IsFiring)
+	else if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring && bIsFiringBP)
 	{
-		WeaponComponent->StartFire();
+		bIsFiringBP = false;
+		if (RifleRef)
+		{
+			RifleRef->StoppedFireInWeaponDelegate.RemoveDynamic(this, &ASoldierEnemy::StopFiring);
+			RifleRef = nullptr;
+		}
+		StopFireDelegate.Broadcast();
 		return;
 	}
-	else if (!CoverData.IsInCover() && !bIsInCoverBP)
+	else if (!CoverData.IsInCover() && !bIsInCoverBP && bIsFiringBP)
 	{
-		WeaponComponent->StartFire();
+		bIsFiringBP = false;
+		if (RifleRef)
+		{
+			RifleRef->StoppedFireInWeaponDelegate.RemoveDynamic(this, &ASoldierEnemy::StopFiring);
+			RifleRef = nullptr;
+		}
+		StopFireDelegate.Broadcast();
 		return;
 	}
 }
@@ -355,9 +405,3 @@ void ASoldierEnemy::CleanCoverData()
 	CoverData.IsTurning = CoverData.IsFiring = CoverData.IsSwitchingCoverType = CoverData.IsInCoverTransition = CoverData.IsInFireTransition = false;
 	CoverData.CoverObject = nullptr;
 }
-
-
-// bool ASoldierEnemy::IsInCover()
-// {
-// 	return CoverData.IsInCover() && !CoverData.IsInTransition();
-// }
