@@ -14,7 +14,11 @@ UCLASS()
 class PROJECTREVIVAL_API UCreditsWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
+	
+public:
+	UFUNCTION(BlueprintImplementableEvent, Category="UI")
+    void LeaveEvent();
+	
 protected:
 	UPROPERTY(meta=(BindWidget))
 	UButton* BackButton;
@@ -27,4 +31,9 @@ protected:
 private:
 	UFUNCTION()
 	void OnBack();
+
+	UFUNCTION()
+	void OpenMenu();
+
+	FTimerHandle TimerHandle;
 };

@@ -45,7 +45,6 @@ void UPauseWidget::OnOptions()
 {
 	if (OptionsWidgetClass)
 	{
-		// RemoveFromParent();
 		UOptionsWidget* OptionsWidget = CreateWidget<UOptionsWidget>(GetWorld(), OptionsWidgetClass);
 		OptionsWidget->AddToViewport();
 	}

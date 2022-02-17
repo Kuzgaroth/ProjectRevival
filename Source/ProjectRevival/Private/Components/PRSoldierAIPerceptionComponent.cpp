@@ -93,12 +93,14 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 				float B = PlayerPos.X - PawnPos.X;
 				float C = PlayerPos.Y * B - PawnPos.X * A;
 				const auto CoverPos = Cover->GetActorLocation();
-				//UE_LOG(LogPRAIPerception, Log, TEXT("Cover pos X: %0.2f, Y: %0.2f, Z: %0.2f"), CoverPos.X, CoverPos.Y, CoverPos.Z)
+				UE_LOG(LogPRAIPerception, Log, TEXT("Cover pos X: %0.2f, Y: %0.2f"), CoverPos.X, CoverPos.Y)
 				float LineEquation = A * CoverPos.X + B * CoverPos.Y + C;
 				float DistToLine = abs(A * CoverPos.X + B * CoverPos.Y + C) / sqrt(A * A + B * B);
+				UE_LOG(LogPRAIPerception, Log, TEXT("Dist to Line: %0.2f"), DistToLine)
+				UE_LOG(LogPRAIPerception, Log, TEXT("Line Equation: %0.2f"), LineEquation)
 				if (Wing == EWing::Left)
 				{
-					if (LineEquation < 0.0f && DistToLine > 500.0f && BestDist > FVector::Dist(PawnPos, CoverPos))
+					if (LineEquation > 0.0f && DistToLine > 300.0f && BestDist > FVector::Dist(PawnPos, CoverPos))
 					{
 						BestDist = FVector::Dist(PawnPos, CoverPos);
 						BestCoverPos = CoverPos;
@@ -106,15 +108,15 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 				}
 				else if (Wing == EWing::Center && BestDist > FVector::Dist(PawnPos, CoverPos))
 				{
-					if (DistToLine <= 500.0f)
+					if (DistToLine <= 300.0f)
 					{
 						BestDist = FVector::Dist(PawnPos, CoverPos);
 						BestCoverPos = CoverPos;
 					}
 				}
-				else
+				else if (Wing == EWing::Right && BestDist > FVector::Dist(PawnPos, CoverPos))
 				{
-					if (LineEquation > 0.0f && DistToLine > 500.0f && BestDist > FVector::Dist(PawnPos, CoverPos))
+					if (LineEquation < 0.0f && DistToLine > 300.0f && BestDist > FVector::Dist(PawnPos, CoverPos))
 					{
 						BestDist = FVector::Dist(PawnPos, CoverPos);
 						BestCoverPos = CoverPos;
