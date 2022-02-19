@@ -20,11 +20,14 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility"))
 	static UMeleeAttackTask_Hit* AttackInit(UGameplayAbility* OwningAbility, UCurveFloat* AttackCurve, UAnimMontage* Montage);
-	
+
+	UFUNCTION()
 	void AttackStarted();
+	UFUNCTION()
 	void AttackFinished();
-	FOnTimelineEvent OnAttackStarted;
-	FOnTimelineEvent OnAttackFinished;
+	
+	//FOnTimelineEvent OnAttackStarted;
+	//FOnTimelineEvent OnAttackFinished;
 	
 	UFUNCTION()
 	void TickTimeline(float Delta);

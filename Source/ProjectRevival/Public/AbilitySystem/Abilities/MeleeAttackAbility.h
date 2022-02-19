@@ -38,12 +38,14 @@ public:
 protected:	
 	virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
-	
+
+	UFUNCTION()
+	void OnDelayEnd();
+	/*
 	UFUNCTION()
 	void OnAttackBegin();
-	UFUNCTION()
-	void OnAttackEnd();
 	
+	*/
 private:
 	UPROPERTY()
 	UMeleeAttackTask_Hit* AttackTask;

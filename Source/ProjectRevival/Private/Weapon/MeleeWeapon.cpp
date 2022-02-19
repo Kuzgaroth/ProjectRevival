@@ -48,6 +48,8 @@ void AMeleeWeapon::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, cla
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
 		bIsHitDone = true;
+		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Damage done yaaay"));
 	}
+	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("OnOverlapBegin"));
 	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
