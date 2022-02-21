@@ -1,0 +1,13 @@
+Begin Object Class=/Script/Engine.MaterialInstanceConstant Name="M_Dissolve2_Inst"
+   Begin Object Class=/Script/UnrealEd.SceneThumbnailInfoWithPrimitive Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   Begin Object Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   ParameterStateId=F3A0A830A742E8EF55D7B7BF87AC0A20
+   Parent=Material'"/Game/Dissolve/M_Dissolve2.M_Dissolve2"'
+   BasePropertyOverrides=(TwoSided=True,BlendMode=BLEND_Masked,OpacityMaskClipValue=0.333300)
+   ReferencedTextureGuids(0)=00000000000000000000000000000000
+   CachedReferencedTextures(0)=Texture2D'"/Engine/EngineResources/DefaultTexture.DefaultTexture"'
+   ThumbnailInfo=SceneThumbnailInfoWithPrimitive'"SceneThumbnailInfoWithPrimitive_0"'
+   LightingGuid=9A8B715ED640C350336C068380D4B5C3
+End Object

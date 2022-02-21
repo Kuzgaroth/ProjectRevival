@@ -24,7 +24,18 @@ void AChangeWorld::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
+void AChangeWorld::TimelineProgress(float Value)
+{
+	//for (const auto Material : MeshesMaterials)
+	//{
+	//	Material->SetScalarParameterValue("Amount",Value);
+	//}
+	GLog->Log("Progressing");
+}
+void AChangeWorld::OnTimeLineFinished()
+{
+	
+}
 void AChangeWorld::Changing()
 {
 	
