@@ -26,6 +26,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
+	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
 
@@ -35,11 +38,11 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	UStaticMeshComponent* SuperMesh2;
 	
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
-	UBoxComponent* CollisionComponent1 = nullptr;
-
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
-	UBoxComponent* CollisionComponent2 = nullptr;
+//	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+//	UBoxComponent* CollisionComponent1 = nullptr;
+//
+//	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+//	UBoxComponent* CollisionComponent2 = nullptr;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* SceneComponent;

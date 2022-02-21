@@ -5,8 +5,10 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraComponent.h"
-#include "ComponentVisualizer.h"
 #include "DrawDebugHelpers.h"
+#include "GameFeature/ChangeWorld.h"
+#include "GameFeature/StaticObjectToNothing.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 // Sets default values
 AChangeWorldSphereActor::AChangeWorldSphereActor()
@@ -65,6 +67,10 @@ void AChangeWorldSphereActor::OnSphereComponentCollision(UPrimitiveComponent* Ov
 					  bool bFromSweep, 
 					  const FHitResult &SweepResult)
 {
+	auto obj =Cast<AChangeWorld>(OtherActor);
+	if(obj)
+		obj->Changing();
+	//auto ChangingObj=cast
 	//UE_LOG(LogTemp,Warning,TEXT("Collision with: %s"),*OtherActor->GetName());
 }
 

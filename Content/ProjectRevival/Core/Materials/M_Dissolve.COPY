@@ -1,0 +1,218 @@
+Begin Object Class=/Script/Engine.Material Name="M_Dissolve"
+   Begin Object Class=/Script/Engine.MaterialExpressionCollectionParameter Name="MaterialExpressionCollectionParameter_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionCollectionParameter Name="MaterialExpressionCollectionParameter_2"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionCollectionParameter Name="MaterialExpressionCollectionParameter_3"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionConstant3Vector Name="MaterialExpressionConstant3Vector_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionConstant3Vector Name="MaterialExpressionConstant3Vector_2"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionMaterialFunctionCall Name="MaterialExpressionMaterialFunctionCall_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionMultiply Name="MaterialExpressionMultiply_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionPanner Name="MaterialExpressionPanner_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionScalarParameter Name="MaterialExpressionScalarParameter_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionScalarParameter Name="MaterialExpressionScalarParameter_1"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionScalarParameter Name="MaterialExpressionScalarParameter_2"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionScalarParameter Name="MaterialExpressionScalarParameter_3"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionScalarParameter Name="MaterialExpressionScalarParameter_4"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionScalarParameter Name="MaterialExpressionScalarParameter_5"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionTextureSampleParameter2D Name="MaterialExpressionTextureSampleParameter2D_0"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionVectorParameter Name="MaterialExpressionVectorParameter_0"
+   End Object
+   Begin Object Class=/Script/UnrealEd.SceneThumbnailInfoWithPrimitive Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   Begin Object Name="MaterialExpressionCollectionParameter_0"
+      Collection=MaterialParameterCollection'"/Game/Dissolve/Angle.Angle"'
+      ParameterName="Angle"
+      ParameterId=DB8DE8280249CE115F33ABBC3A363E2E
+      MaterialExpressionEditorX=-512
+      MaterialExpressionEditorY=-368
+      MaterialExpressionGuid=363ADDF3224F9FECAAB48EA01ABE464C
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="MaterialExpressionCollectionParameter_2"
+      Collection=MaterialParameterCollection'"/Game/Dissolve/Dissolve.Dissolve"'
+      ParameterId=F217EDFFF5496CBC0EB964BFF832A1F0
+      MaterialExpressionEditorX=-1088
+      MaterialExpressionEditorY=-272
+      MaterialExpressionGuid=AE52755B2D4215F168534CB8E7BEFDF0
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="MaterialExpressionCollectionParameter_3"
+      Collection=MaterialParameterCollection'"/Game/Dissolve/Dissolve.Dissolve"'
+      ParameterName="Amount"
+      ParameterId=141CCDEB5C4275A524398BA979537E03
+      MaterialExpressionEditorX=-832
+      MaterialExpressionEditorY=352
+      MaterialExpressionGuid=22B6A71FA143EBBC3C93F1A3510FE698
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="MaterialExpressionConstant3Vector_0"
+      Constant=(R=0.000000,G=0.000000,B=1.000000,A=0.000000)
+      MaterialExpressionEditorX=160
+      MaterialExpressionEditorY=-752
+      MaterialExpressionGuid=5ADEF2A1BC461107C4353E90853ACAD1
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="MaterialExpressionConstant3Vector_2"
+      Constant=(R=1.000000,G=0.000000,B=0.000000,A=0.000000)
+      MaterialExpressionEditorX=128
+      MaterialExpressionEditorY=-384
+      MaterialExpressionGuid=C4CB31AACB4BA1F326A4CAB94224A2F7
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="MaterialExpressionMaterialFunctionCall_0"
+      MaterialFunction=MaterialFunction'"/Game/Dissolve/MF_Dissolve.MF_Dissolve"'
+      FunctionInputs(0)=(ExpressionInputId=4B8C95BDE342938BE09B05A7DE6311BA,Input=(Expression=MaterialExpressionCollectionParameter'"M_Dissolve:MaterialExpressionCollectionParameter_0"',InputName="Plane"))
+      FunctionInputs(1)=(ExpressionInputId=54E23806AB44E1BAFF86658067A27265,Input=(Expression=MaterialExpressionScalarParameter'"M_Dissolve:MaterialExpressionScalarParameter_0"',InputName="Lenght"))
+      FunctionInputs(2)=(ExpressionInputId=CC9E8581B64ED8EAF85FCE8744CE47DB,Input=(Expression=MaterialExpressionTextureSampleParameter2D'"M_Dissolve:MaterialExpressionTextureSampleParameter2D_0"',OutputIndex=1,InputName="Texture",Mask=1,MaskR=1))
+      FunctionInputs(3)=(ExpressionInputId=512053A89846902635155CA62C6F978D,Input=(Expression=MaterialExpressionScalarParameter'"M_Dissolve:MaterialExpressionScalarParameter_1"',InputName="Texture Fade"))
+      FunctionInputs(4)=(ExpressionInputId=F62891E9CD4752697DC312B3C47662F0,Input=(Expression=MaterialExpressionScalarParameter'"M_Dissolve:MaterialExpressionScalarParameter_2"',InputName="Dissolve Amount"))
+      FunctionInputs(5)=(ExpressionInputId=256B56BABC4DD96DFF282EB3E5760F6F,Input=(Expression=MaterialExpressionScalarParameter'"M_Dissolve:MaterialExpressionScalarParameter_4"',InputName="Fringe Amount"))
+      FunctionInputs(6)=(ExpressionInputId=F59A19334D40C3A85CB2D9857E9E9017,Input=(Expression=MaterialExpressionScalarParameter'"M_Dissolve:MaterialExpressionScalarParameter_3"',InputName="Power"))
+      FunctionInputs(7)=(ExpressionInputId=9AC9BF0BD34F268D9C311EAA457CA596,Input=(Expression=MaterialExpressionVectorParameter'"M_Dissolve:MaterialExpressionVectorParameter_0"',InputName="Fringe Color",Mask=1,MaskR=1,MaskG=1,MaskB=1))
+      FunctionOutputs(0)=(ExpressionOutputId=B80510A25840CCE5578705B80BC21BE2,Output=(OutputName="Emissive"))
+      FunctionOutputs(1)=(ExpressionOutputId=0975A282C74B825300980AA30827696D,Output=(OutputName="Opaciti Mask"))
+      MaterialExpressionEditorX=-192
+      MaterialExpressionEditorY=-96
+      MaterialExpressionGuid=74260DCF974463263970708FEF32394E
+      Material=Material'"M_Dissolve"'
+      Outputs(0)=(OutputName="Emissive")
+      Outputs(1)=(OutputName="Opaciti Mask")
+   End Object
+   Begin Object Name="MaterialExpressionMultiply_0"
+      A=(Expression=MaterialExpressionScalarParameter'"M_Dissolve:MaterialExpressionScalarParameter_5"')
+      B=(Expression=MaterialExpressionMaterialFunctionCall'"M_Dissolve:MaterialExpressionMaterialFunctionCall_0"')
+      MaterialExpressionEditorX=80
+      MaterialExpressionEditorY=-144
+      MaterialExpressionGuid=D420558750460872ED72DAB912B81B18
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="MaterialExpressionPanner_0"
+      SpeedY=0.010000
+      MaterialExpressionEditorX=-773
+      MaterialExpressionEditorY=74
+      MaterialExpressionGuid=755BB910AA4EA10E2FB53B84B0E3BDE4
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="MaterialExpressionScalarParameter_0"
+      ParameterName="Length"
+      ExpressionGUID=0C8B88885849F18FF02CF3959BA4C74C
+      MaterialExpressionEditorX=-736
+      MaterialExpressionEditorY=-240
+      MaterialExpressionGuid=E5A1FF43B6414BCB7C8E16A4B3C1CDA3
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="MaterialExpressionScalarParameter_1"
+      ParameterName="Texture Fade"
+      ExpressionGUID=5E30A63F644AB296D16E459E227A6136
+      MaterialExpressionEditorX=-496
+      MaterialExpressionEditorY=144
+      MaterialExpressionGuid=201B956D6544AA0CA2D8DBB1C3C519AD
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="MaterialExpressionScalarParameter_2"
+      ParameterName="Amount"
+      ExpressionGUID=3D3C2987AC4C807CC7FB2B8FC5FF09B2
+      MaterialExpressionEditorX=-496
+      MaterialExpressionEditorY=240
+      MaterialExpressionGuid=0AF6B5BEAF4E87B15AFF11802F1A975D
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="MaterialExpressionScalarParameter_3"
+      ParameterName="Power"
+      ExpressionGUID=C6B758C3FC423B1E6055F4880BDA2279
+      MaterialExpressionEditorX=-368
+      MaterialExpressionEditorY=352
+      MaterialExpressionGuid=A2F1117BFE46BE82421073AE3DBAB935
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="MaterialExpressionScalarParameter_4"
+      ParameterName="Fringe Amount"
+      ExpressionGUID=702117F1D34F5B69601EEE9493CEF558
+      MaterialExpressionEditorX=-528
+      MaterialExpressionEditorY=336
+      MaterialExpressionGuid=CBCE11D1044F7836E66FB9A0221F148D
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="MaterialExpressionScalarParameter_5"
+      DefaultValue=1.000000
+      ParameterName="Boost"
+      ExpressionGUID=D4583B428844CB35C096869DCF6235AC
+      MaterialExpressionEditorX=-96
+      MaterialExpressionEditorY=-208
+      MaterialExpressionGuid=8A15A18D594AD7AA9BF6309C693F2351
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="MaterialExpressionTextureSampleParameter2D_0"
+      ParameterName="Texture"
+      ExpressionGUID=BC2F3BA7F2461F1C0E72778170D364FE
+      Coordinates=(Expression=MaterialExpressionPanner'"M_Dissolve:MaterialExpressionPanner_0"')
+      MaterialExpressionEditorX=-544
+      MaterialExpressionEditorY=-80
+      MaterialExpressionGuid=79E19A577341D5134B0A42ABB79C5891
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="MaterialExpressionVectorParameter_0"
+      ParameterName="Color"
+      ExpressionGUID=09692975A9455D9F8662E39856F810C1
+      MaterialExpressionEditorX=-192
+      MaterialExpressionEditorY=304
+      MaterialExpressionGuid=65F65D100C451E5B26404E9937F157A1
+      Material=Material'"M_Dissolve"'
+   End Object
+   Begin Object Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   BaseColor=(Expression=MaterialExpressionConstant3Vector'"MaterialExpressionConstant3Vector_2"')
+   EmissiveColor=(Expression=MaterialExpressionMultiply'"MaterialExpressionMultiply_0"')
+   OpacityMask=(Expression=MaterialExpressionMaterialFunctionCall'"MaterialExpressionMaterialFunctionCall_0"',OutputIndex=1)
+   BlendMode=BLEND_Masked
+   TwoSided=True
+   bUsedWithStaticLighting=True
+   EditorX=240
+   EditorY=-128
+   Expressions(0)=MaterialExpressionConstant3Vector'"MaterialExpressionConstant3Vector_2"'
+   Expressions(1)=MaterialExpressionMultiply'"MaterialExpressionMultiply_0"'
+   Expressions(2)=MaterialExpressionMaterialFunctionCall'"MaterialExpressionMaterialFunctionCall_0"'
+   Expressions(3)=MaterialExpressionConstant3Vector'"MaterialExpressionConstant3Vector_0"'
+   Expressions(4)=MaterialExpressionScalarParameter'"MaterialExpressionScalarParameter_0"'
+   Expressions(5)=MaterialExpressionTextureSampleParameter2D'"MaterialExpressionTextureSampleParameter2D_0"'
+   Expressions(6)=MaterialExpressionScalarParameter'"MaterialExpressionScalarParameter_1"'
+   Expressions(7)=MaterialExpressionScalarParameter'"MaterialExpressionScalarParameter_2"'
+   Expressions(8)=MaterialExpressionScalarParameter'"MaterialExpressionScalarParameter_3"'
+   Expressions(9)=MaterialExpressionScalarParameter'"MaterialExpressionScalarParameter_4"'
+   Expressions(10)=MaterialExpressionVectorParameter'"MaterialExpressionVectorParameter_0"'
+   Expressions(11)=MaterialExpressionScalarParameter'"MaterialExpressionScalarParameter_5"'
+   Expressions(12)=MaterialExpressionPanner'"MaterialExpressionPanner_0"'
+   Expressions(13)=MaterialExpressionCollectionParameter'"MaterialExpressionCollectionParameter_0"'
+   Expressions(14)=MaterialExpressionCollectionParameter'"MaterialExpressionCollectionParameter_2"'
+   Expressions(15)=MaterialExpressionCollectionParameter'"MaterialExpressionCollectionParameter_3"'
+   ParameterGroupData(0)=(GroupName="None")
+   ParameterGroupData(1)=(GroupName="None")
+   ParameterGroupData(2)=(GroupName="None")
+   ParameterGroupData(3)=(GroupName="None")
+   ParameterGroupData(4)=(GroupName="None")
+   ParameterGroupData(5)=(GroupName="None")
+   ParameterGroupData(6)=(GroupName="None")
+   ParameterGroupData(7)=(GroupName="None")
+   StateId=E835A06AB54D2A9FCC73A3BBEEA6B898
+   CachedExpressionData=(Parameters=(RuntimeEntries[0]=(NameHashes=(1305672155589555388,1453651776067917343,8373881615859872484,9500408413390981196,14395478350767625660,14761465516576202421),ParameterInfos=((Name="Fringe Amount"),(Name="Boost"),(Name="Power"),(Name="Amount"),(Name="Length"),(Name="Texture Fade")),ExpressionGuids=(702117F1D34F5B69601EEE9493CEF558,D4583B428844CB35C096869DCF6235AC,C6B758C3FC423B1E6055F4880BDA2279,3D3C2987AC4C807CC7FB2B8FC5FF09B2,0C8B88885849F18FF02CF3959BA4C74C,5E30A63F644AB296D16E459E227A6136)),RuntimeEntries[1]=(NameHashes=(12279385124011487613),ParameterInfos=((Name="Color")),ExpressionGuids=(09692975A9455D9F8662E39856F810C1)),RuntimeEntries[2]=(NameHashes=(8370121904344411576),ParameterInfos=((Name="Texture")),ExpressionGuids=(BC2F3BA7F2461F1C0E72778170D364FE)),ScalarValues=(0.000000,1.000000,0.000000,0.000000,0.000000,0.000000),VectorValues=((R=0.000000,G=0.000000,B=0.000000,A=0.000000)),TextureValues=(Texture2D'"/Engine/EngineResources/DefaultTexture.DefaultTexture"'),ScalarMinMaxValues=((X=0.000000,Y=0.000000),(X=0.000000,Y=0.000000),(X=0.000000,Y=0.000000),(X=0.000000,Y=0.000000),(X=0.000000,Y=0.000000),(X=0.000000,Y=0.000000)),ScalarCurveValues=(None,None,None,None,None,None),ScalarCurveAtlasValues=(None,None,None,None,None,None),VectorChannelNameValues=(()),VectorUsedAsChannelMaskValues=(False),TextureChannelNameValues=(())),ReferencedTextures=(Texture2D'"/Engine/EngineResources/DefaultTexture.DefaultTexture"'),FunctionInfos=((StateId=CEB825F749B3784E3010779E623B62DB,Function=MaterialFunction'"/Engine/Functions/Engine_MaterialFunctions02/ObjectLocalBounds.ObjectLocalBounds"'),(StateId=5B938C50440B6892955AD79FCD1A8337,Function=MaterialFunction'"/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components"'),(StateId=62DA98654653E4493385F69C97674F2E,Function=MaterialFunction'"/Engine/Functions/Engine_MaterialFunctions02/UVs/BoundingBoxBased_0-1_UVW.BoundingBoxBased_0-1_UVW"'),(StateId=0238C2801C446D24838E1FAEE5EB0F1F,Function=MaterialFunction'"/Game/Dissolve/MF_Dissolve.MF_Dissolve"')),ParameterCollectionInfos=((StateId=D107C011644052B5A6C002B1C26814D1,ParameterCollection=MaterialParameterCollection'"/Game/Dissolve/Angle.Angle"'),(StateId=D271272F0E42AF5CCE255AA4BE0B34A8,ParameterCollection=MaterialParameterCollection'"/Game/Dissolve/Dissolve.Dissolve"')),QualityLevelsUsed=(False,False,False,False))
+   ReferencedTextureGuids(0)=00000000000000000000000000000000
+   TextureStreamingDataVersion=1
+   TextureStreamingData(0)=(SamplingScale=1.000000,UVChannelIndex=0,TextureName="DefaultTexture",TextureReference=/Engine/EngineResources/DefaultTexture.DefaultTexture)
+   ThumbnailInfo=SceneThumbnailInfoWithPrimitive'"SceneThumbnailInfoWithPrimitive_0"'
+   ParameterOverviewExpansion=(("-12Global", True))
+   LightingGuid=964F82968643B75F8E840EB3A2200769
+End Object

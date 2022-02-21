@@ -1,0 +1,24 @@
+Begin Object Class=/Script/Engine.MaterialInstanceConstant Name="M_Dissolve_Inst"
+   Begin Object Class=/Script/UnrealEd.SceneThumbnailInfoWithPrimitive Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   Begin Object Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   ParameterStateId=1C82B2A7484FA12ABE02318B112EDADA
+   Parent=Material'"/Game/Dissolve/M_Dissolve.M_Dissolve"'
+   ScalarParameterValues(0)=(ParameterInfo=(Name="Amount"),ParameterValue=3.489746,ExpressionGUID=3D3C2987AC4C807CC7FB2B8FC5FF09B2)
+   ScalarParameterValues(1)=(ParameterInfo=(Name="Boost"),ParameterValue=70.000000,ExpressionGUID=D4583B428844CB35C096869DCF6235AC)
+   ScalarParameterValues(2)=(ParameterInfo=(Name="Fringe Amount"),ParameterValue=0.670000,ExpressionGUID=702117F1D34F5B69601EEE9493CEF558)
+   ScalarParameterValues(3)=(ParameterInfo=(Name="Length"),ParameterValue=0.100000,ExpressionGUID=0C8B88885849F18FF02CF3959BA4C74C)
+   ScalarParameterValues(4)=(ParameterInfo=(Name="Power"),ExpressionGUID=C6B758C3FC423B1E6055F4880BDA2279)
+   ScalarParameterValues(5)=(ParameterInfo=(Name="Texture Fade"),ParameterValue=1.000000,ExpressionGUID=5E30A63F644AB296D16E459E227A6136)
+   ScalarParameterValues(6)=(ParameterInfo=(Name="RefractionDepthBias"))
+   VectorParameterValues(0)=(ParameterInfo=(Name="Color"),ParameterValue=(R=0.486573,G=0.975316,B=1.000000,A=0.000000),ExpressionGUID=09692975A9455D9F8662E39856F810C1)
+   TextureParameterValues(0)=(ParameterInfo=(Name="Texture"),ParameterValue=Texture2D'"/Game/StarterContent/Textures/T_Fire_Tiled_D.T_Fire_Tiled_D"',ExpressionGUID=BC2F3BA7F2461F1C0E72778170D364FE)
+   BasePropertyOverrides=(TwoSided=True,BlendMode=BLEND_Masked,OpacityMaskClipValue=0.333300)
+   ReferencedTextureGuids(0)=CD87BBF7494C920ACA25D7A133975C73
+   CachedReferencedTextures(0)=Texture2D'"/Engine/EngineResources/DefaultTexture.DefaultTexture"'
+   TextureStreamingDataVersion=1
+   TextureStreamingData(0)=(SamplingScale=1.000000,UVChannelIndex=0,TextureName="T_Fire_Tiled_D",TextureReference=/Game/StarterContent/Textures/T_Fire_Tiled_D.T_Fire_Tiled_D)
+   ThumbnailInfo=SceneThumbnailInfoWithPrimitive'"SceneThumbnailInfoWithPrimitive_0"'
+   LightingGuid=DFFEB68E438925EC304C68B1C2F3D87F
+End Object
