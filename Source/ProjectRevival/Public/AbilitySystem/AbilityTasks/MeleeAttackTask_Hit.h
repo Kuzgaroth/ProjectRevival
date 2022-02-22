@@ -19,15 +19,15 @@ public:
 	virtual void Activate() override;
 	
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility"))
-	static UMeleeAttackTask_Hit* AttackInit(UGameplayAbility* OwningAbility, UCurveFloat* AttackCurve, UAnimMontage* Montage);
+	static UMeleeAttackTask_Hit* AttackInit(UGameplayAbility* OwningAbility, UCurveFloat* AttackCurve,
+		UAnimMontage* Montage, float PlayRate );
 
 	UFUNCTION()
 	void AttackStarted();
 	UFUNCTION()
 	void AttackFinished();
-	
-	//FOnTimelineEvent OnAttackStarted;
-	//FOnTimelineEvent OnAttackFinished;
+	UFUNCTION()
+	void CheckOverlap();
 	
 	UFUNCTION()
 	void TickTimeline(float Delta);
@@ -35,7 +35,7 @@ private:
 	virtual void OnDestroy(bool AbilityEnded) override;
 
 	UPROPERTY(EditDefaultsOnly)
-	float PlayRate = 2.0;
+	float PlayRate;
 	
 	UPROPERTY(EditDefaultsOnly)
 	UAnimMontage* MeleeAttackMontage;

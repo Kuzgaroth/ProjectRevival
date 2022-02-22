@@ -23,7 +23,10 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Constants")
 	float AttackDamage = 50.0;
-		
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Constants")
+	float PlayRate = 2.0;
+	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Animations")
 	UAnimMontage* AttackMontage1;
 
@@ -41,12 +44,6 @@ protected:
 
 	UFUNCTION()
 	void OnDelayEnd();
-	/*
-	UFUNCTION()
-	void OnAttackBegin();
-	
-	*/
-private:
 	UPROPERTY()
 	UMeleeAttackTask_Hit* AttackTask;
 	UPROPERTY()

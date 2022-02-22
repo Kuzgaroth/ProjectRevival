@@ -39,15 +39,12 @@ void UMeleeAttackAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	default:
 		break;
 	}
-	AttackTask = UMeleeAttackTask_Hit::AttackInit(this, AttackCurve, AttackMontage);
-	DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, AttackDuration);
-	//AttackTask->OnAttackStarted.BindUFunction(this, "OnAttackBegin");
-	//AttackTask->OnAttackFinished.BindUFunction(this, "OnAttackEnd");
+	AttackDuration = AttackMontage->GetPlayLength();
+	AttackTask = UMeleeAttackTask_Hit::AttackInit(this, AttackCurve, AttackMontage, PlayRate);
+	DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, AttackDuration / PlayRate);
 	DelayTask->OnFinish.AddDynamic(this, &UMeleeAttackAbility::OnDelayEnd);
 	AttackTask->Activate();
 	DelayTask->ReadyForActivation();
-	//DelayTask->GetDebugString();
-	
 }
 
 void UMeleeAttackAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -61,18 +58,3 @@ void UMeleeAttackAbility::OnDelayEnd()
 	AttackTask->EndTask();
 	K2_EndAbility();
 }
-
-/*
-void UMeleeAttackAbility::OnAttackBegin()
-{
-	AttackTask->OnAttackStarted.Unbind();
-	DelayTask->Activate();	
-}
-
-void UMeleeAttackAbility::OnAttackEnd()
-{
-	AttackTask->OnAttackFinished.Unbind();
-	AttackTask->EndTask();
-	K2_EndAbility();
-}
-*/

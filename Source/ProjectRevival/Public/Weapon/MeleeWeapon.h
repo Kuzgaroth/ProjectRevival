@@ -16,7 +16,8 @@ class PROJECTREVIVAL_API AMeleeWeapon : public ABaseWeapon
 public:
 	AMeleeWeapon();
 	void AddNewBeam(const FVector Point1, const FVector Point2);
-
+	void BeginPlay();
+	
 	void ToggleCollisionOn();
 	void ToggleCollisionOff() const;
 	bool IsHitDone() const { return bIsHitDone; };

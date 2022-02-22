@@ -9,12 +9,23 @@
 
 AMeleeWeapon::AMeleeWeapon()
 {
+	RootComponent = WeaponMesh;
+	
 	BeamComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Beam Component"));
 	BeamComp->bAutoActivate = false;
+	BeamComp->SetupAttachment(RootComponent);
 	
 	BladeCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Component"));
-	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	BladeCollisionBox->SetupAttachment(RootComponent);
+	BladeCollisionBox->SetGenerateOverlapEvents(true);
+	//BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
 
+void AMeleeWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+	check(WeaponMesh);
+	check(BladeCollisionBox);
 	BladeCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AMeleeWeapon::OnOverlapBegin);
 }
 
@@ -45,11 +56,13 @@ void AMeleeWeapon::ToggleCollisionOff() const
 void AMeleeWeapon::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && (OtherActor != this) && OtherComp)
+	//const FString temp = OtherActor->GetOwner()->GetName();
+	
+	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("OtherActor: %s"), *OtherActor->GetName()); 
+	if (OtherActor && (OtherActor != this) && OtherComp && OtherActor != this->GetOwner())
 	{
 		bIsHitDone = true;
 		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Damage done yaaay"));
 	}
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("OnOverlapBegin"));
 	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
