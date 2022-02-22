@@ -22,6 +22,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	FCollisionResponseContainer CollisionResponseContainer;
 
 public:	
 	// Called every frame
@@ -41,7 +42,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* SceneComponent;
 
-
-	void OnTimeLineFinished() override;
-	void Changing() override;
+	
+	virtual void TimeLineFinished() override;
+	virtual void TimeLineFloatReturn(float Value) override;
+	virtual void Changing() override;
 };

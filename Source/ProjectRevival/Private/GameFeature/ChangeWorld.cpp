@@ -15,7 +15,10 @@ AChangeWorld::AChangeWorld()
 void AChangeWorld::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	if(VisualCurve)
+	{
+		VisualCurve->GetValueRange(MinCurveValue,MaxCureveValue);
+	}
 }
 
 // Called every frame
@@ -32,10 +35,20 @@ void AChangeWorld::TimelineProgress(float Value)
 	//}
 	GLog->Log("Progressing");
 }
-void AChangeWorld::OnTimeLineFinished()
+void AChangeWorld::TimeLineFinished()
 {
 	
 }
+
+void AChangeWorld::TimeLineStart()
+{
+}
+
+void AChangeWorld::TimeLineFloatReturn(float Value)
+{
+
+}
+
 void AChangeWorld::Changing()
 {
 	

@@ -44,10 +44,20 @@ protected:
 	UFUNCTION()
 	void TimelineProgress(float Value);
 	FTimeline TimeLine;
-	FOnTimelineEvent OnAppearFinished;
-	FOnTimelineEvent OnDisappearFinished;
+	FOnTimelineEvent OnTimeLineFinished;
+	FOnTimelineEvent OnTimeLineStart;
+	float MinCurveValue;
+	float MaxCureveValue;
+	bool isApearing=false;
 	UFUNCTION()
-	virtual void OnTimeLineFinished();
+	virtual void TimeLineFinished();
+	UFUNCTION()
+	virtual void TimeLineStart();
+	UFUNCTION()
+	virtual void TimeLineFloatReturn(float Value);
+
+	FOnTimelineFloat InterpFunction;
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
