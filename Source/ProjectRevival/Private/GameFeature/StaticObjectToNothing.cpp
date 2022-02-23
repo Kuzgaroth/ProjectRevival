@@ -6,6 +6,7 @@
 #include <string>
 
 #include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
+#include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/GameUserSettings.h"
@@ -21,8 +22,7 @@ AStaticObjectToNothing::AStaticObjectToNothing()
 	RootComponent = SceneComponent;
 
 	InterpFunction.BindUFunction(this,FName("TimeLineFloatReturn"));
-	OnTimeLineFinished.BindUFunction(this,FName("TimeLineFinished"));	
-	OnTimeLineStart.BindUFunction(this,FName(""));
+	OnTimeLineFinished.BindUFunction(this,FName("TimeLineFinished"));
 	
 	SuperMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SuperMesh"));
 	SuperMesh->SetupAttachment(RootComponent);
@@ -35,24 +35,17 @@ void AStaticObjectToNothing::BeginPlay()
 {
 	Super::BeginPlay();
 	CollisionResponseContainer=SuperMesh->GetCollisionResponseToChannels();
-	auto components=this->GetComponents();
-	
-	//const auto f=Cast<UMeshComponent>(components);
-	for(auto obj :components)
+	SuperMesh->SetVisibility(true);
+	//TArray<USceneComponent*> components;
+	int32 num=SuperMesh->GetNumMaterials();
+	for (int32 i=0;i<num;i++)
 	{
-		auto mat=Cast<UMeshComponent>(obj);
-		if(mat)
-		{
-			int32 num=mat->GetNumMaterials();
-			for (int32 i=0;i<num;i++)
-			{
-				const auto Material = mat->CreateDynamicMaterialInstance(i);
-				MeshesMaterials.Add(Material);
-			}
-		}
+		const auto Material = SuperMesh->CreateDynamicMaterialInstance(i);
+		MeshesMaterials.Add(Material);
 	}
 	if(VisualCurve)
 	{
+		VisualCurve->GetValueRange(MinCurveValue,MaxCurveValue);
 		TimeLine.AddInterpFloat(VisualCurve,InterpFunction);
 		TimeLine.SetTimelineFinishedFunc(OnTimeLineFinished);
 		TimeLine.SetLooping(false);
@@ -64,25 +57,23 @@ void AStaticObjectToNothing::BeginPlay()
 		{
 			for (const auto Material : MeshesMaterials)
 			{
-				Material->SetScalarParameterValue("Amount",-MinCurveValue);
+				Material->SetScalarParameterValue("Amount",MinCurveValue);
 			}
-			TimeLine.SetNewTime(TimeLine.GetTimelineLength());
 		}
 		else
 		{
 			SuperMesh->SetVisibility(true);
 		}
+		SuperMesh->SetCollisionProfileName("OverlapAll");
 		SuperMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
 	}
 	else
 	{
 		if(VisualCurve)
 		{
-			//SuperMesh->SetVisibility(false);
 			for (const auto Material : MeshesMaterials)
 			{
-				Material->SetScalarParameterValue("Amount",MaxCureveValue);
-				//Material->SetScalarParameterValue("Amount",VisualCurve->);
+				Material->SetScalarParameterValue("Amount",MaxCurveValue);
 			}
 		}
 		else
@@ -91,7 +82,7 @@ void AStaticObjectToNothing::BeginPlay()
 		}
 		SuperMesh->SetCollisionProfileName("OverlapAll");
 	}
-	
+	SuperMesh->OnComponentBeginOverlap.AddDynamic(this,&AStaticObjectToNothing::OnMeshComponentCollision);
 }
 
 // Called every frame
@@ -135,6 +126,7 @@ void AStaticObjectToNothing::Changing()
 		{
 			isApearing=true;
 			TimeLine.PlayFromStart();
+			SuperMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
 		}
 		else
 		{
@@ -156,37 +148,38 @@ void AStaticObjectToNothing::Changing()
 	}
 }
 
+void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	GLog->Log("Working");
+	if(Cast<AChangeWorldSphereActor>(OtherActor))
+	{
+		Changing();
+	}
+}
+
 void AStaticObjectToNothing::TimeLineFinished()
 {
 	GLog->Log("Timeline working");
-	if(SuperMesh->GetCollisionResponseToChannels()==CollisionResponseContainer)
+	if(!isApearing)
 	{
 		SuperMesh->SetCollisionProfileName("OverlapAll");
-	}
-	else
-	{
-		SuperMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
 	}
 }
 
 void AStaticObjectToNothing::TimeLineFloatReturn(float Value)
 {
-	Super::TimeLineFloatReturn(Value);
 	for (const auto Material : MeshesMaterials)
 	{
-		GLog->Log(FString::SanitizeFloat(-Value));
-		//GLog->Log(FString::SanitizeFloat(-Value));
 		if(isApearing)
 		{
-			GLog->Log("IsApearing");
-			Material->SetScalarParameterValue("Amount",-Value);
+			Material->SetScalarParameterValue("Amount",Value);
 		}
 		else
 		{
 			float val=MinCurveValue-Value;
-			val=MaxCureveValue+val;
-			GLog->Log(FString::SanitizeFloat(-val));
-			Material->SetScalarParameterValue("Amount",-val);
+			val=MaxCurveValue+val;
+			Material->SetScalarParameterValue("Amount",val);
 		}
 	}
 	

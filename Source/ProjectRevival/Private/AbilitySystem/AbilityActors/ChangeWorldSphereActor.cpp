@@ -67,10 +67,8 @@ void AChangeWorldSphereActor::OnSphereComponentCollision(UPrimitiveComponent* Ov
 					  bool bFromSweep, 
 					  const FHitResult &SweepResult)
 {
-	auto obj =Cast<AChangeWorld>(OtherActor);
-	if(obj)
-		obj->Changing();
-	//auto ChangingObj=cast
-	//UE_LOG(LogTemp,Warning,TEXT("Collision with: %s"),*OtherActor->GetName());
+	//auto obj =Cast<AChangeWorld>(OtherActor);
+	//if(obj)
+	//	obj->Changing();
 }
 

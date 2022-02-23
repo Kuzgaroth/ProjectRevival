@@ -35,28 +35,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
-    TEnumAsByte<EChangeEditorVisibility> VisibleWorld = DefaultWorld;
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
-	UCurveFloat* VisualCurve;
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
-	TArray<UMaterialInstanceDynamic*> MeshesMaterials;
+    TEnumAsByte<EChangeEditorVisibility> VisibleWorld = BothWorlds;
 
-	UFUNCTION()
-	void TimelineProgress(float Value);
-	FTimeline TimeLine;
-	FOnTimelineEvent OnTimeLineFinished;
-	FOnTimelineEvent OnTimeLineStart;
-	float MinCurveValue;
-	float MaxCureveValue;
-	bool isApearing=false;
-	UFUNCTION()
-	virtual void TimeLineFinished();
-	UFUNCTION()
-	virtual void TimeLineStart();
-	UFUNCTION()
-	virtual void TimeLineFloatReturn(float Value);
 
-	FOnTimelineFloat InterpFunction;
+
+
+
 	
 public:	
 	// Called every frame
