@@ -23,6 +23,20 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	FCollisionResponseContainer CollisionResponseContainer;
+	TArray<UMaterialInstanceDynamic*> MeshesMaterials;
+	
+    FTimeline TimeLine;
+    FOnTimelineEvent OnTimeLineFinished;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	UCurveFloat* VisualCurve;
+    float MinCurveValue;
+    float MaxCurveValue;
+    bool isApearing=false;
+    UFUNCTION()
+    virtual void TimeLineFinished();
+    UFUNCTION()
+    virtual void TimeLineFloatReturn(float Value);
+    FOnTimelineFloat InterpFunction;
 
 public:	
 	// Called every frame
@@ -36,14 +50,17 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
 	
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
-	UBoxComponent* CollisionComponent = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* SceneComponent;
 
+	UFUNCTION()
+	void OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, 
+					  AActor* OtherActor, 
+					  UPrimitiveComponent* OtherComp, 
+					  int32 OtherBodyIndex, 
+					  bool bFromSweep, 
+					  const FHitResult &SweepResult);
 	
-	virtual void TimeLineFinished() override;
-	virtual void TimeLineFloatReturn(float Value) override;
-	virtual void Changing() override;
+	void Changing() override;
 };
