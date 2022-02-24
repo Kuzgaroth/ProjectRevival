@@ -18,7 +18,8 @@ AMeleeWeapon::AMeleeWeapon()
 	BladeCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision Component"));
 	BladeCollisionBox->SetupAttachment(RootComponent);
 	BladeCollisionBox->SetGenerateOverlapEvents(true);
-	//BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	BladeCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AMeleeWeapon::OnOverlapBegin);
+	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
 void AMeleeWeapon::BeginPlay()
@@ -26,7 +27,7 @@ void AMeleeWeapon::BeginPlay()
 	Super::BeginPlay();
 	check(WeaponMesh);
 	check(BladeCollisionBox);
-	BladeCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AMeleeWeapon::OnOverlapBegin);
+	UE_LOG(LogPRAbilitySystemBase, Error, TEXT("BeginPlay"));
 }
 
 void AMeleeWeapon::AddNewBeam(const FVector Point1, const FVector Point2)
@@ -39,7 +40,7 @@ void AMeleeWeapon::AddNewBeam(const FVector Point1, const FVector Point2)
 
 void AMeleeWeapon::ToggleCollisionOn()
 {
- 	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+ 	//BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	const FVector TraceStart = WeaponMesh->GetSocketLocation("TraceStart");
 	const FVector TraceEnd = WeaponMesh->GetSocketLocation("TraceEnd");
 	if (BeamComp)
@@ -50,19 +51,24 @@ void AMeleeWeapon::ToggleCollisionOn()
 
 void AMeleeWeapon::ToggleCollisionOff() const
 {
-	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AMeleeWeapon::MakeDamage(AActor* OtherActor)
+{
+	//OtherActor->
 }
 
 void AMeleeWeapon::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	//const FString temp = OtherActor->GetOwner()->GetName();
-	
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("OtherActor: %s"), *OtherActor->GetName()); 
-	if (OtherActor && (OtherActor != this) && OtherComp && OtherActor != this->GetOwner())
+	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("this: %s"), *this->GetName()); 
+	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("OtherComp: %s"), *OtherComp->GetOwner()->GetName()); 
+	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("OverlappedComp: %s"), *OverlappedComp->GetOwner()->GetName()); 
+	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("OtherActor: %s"), *OtherActor->GetName());
+	if (OtherActor && (OtherActor != this) && OtherComp && OtherActor != this->GetOwner() && !bIsHitDone)
 	{
 		bIsHitDone = true;
 		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Damage done yaaay"));
 	}
-	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }

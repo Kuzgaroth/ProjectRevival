@@ -3,7 +3,6 @@
 
 #include "AbilitySystem/Abilities/MeleeAttackAbility.h"
 #include "GameplayTask.h"
-#include "Runtime/Engine/Public/EngineGlobals.h"
 
 UMeleeAttackAbility::UMeleeAttackAbility()
 {
@@ -14,14 +13,13 @@ void UMeleeAttackAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 								 const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
-	const auto Owner = ActorInfo->OwnerActor.Get();
-	if (!Owner)
-	{
-		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Unable to get Owner Actor"))
-		K2_EndAbility();
-	}
+		
+	AAssassinEnemy* Character = Cast<AAssassinEnemy>(ActorInfo->OwnerActor.Get());
+	const UWeaponComponent* WeaponComponent = Cast<UWeaponComponent>(Character->GetWeaponComponent());
+	AMeleeWeapon* Weapon = Cast<AMeleeWeapon>(WeaponComponent->GetCurrentWeapon());
+	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
 	
-	const int MontageIndex = rand() % 3;
+	const int MontageIndex = rand() % 3; 
 	switch(MontageIndex)
 	{
 	case 0:
@@ -39,12 +37,23 @@ void UMeleeAttackAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	default:
 		break;
 	}
-	AttackDuration = AttackMontage->GetPlayLength();
-	AttackTask = UMeleeAttackTask_Hit::AttackInit(this, AttackCurve, AttackMontage, PlayRate);
-	DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, AttackDuration / PlayRate);
-	DelayTask->OnFinish.AddDynamic(this, &UMeleeAttackAbility::OnDelayEnd);
-	AttackTask->Activate();
-	DelayTask->ReadyForActivation();
+	
+	if(Weapon && Character && !Character->GetMovementComponent()->IsFalling() &&
+		!Character->GetMovementComponent()->IsFlying() && !Character->IsAttacking() &&
+		AttackMontage != nullptr && AnimInstance != nullptr)
+	{
+		AttackDuration = AttackMontage->GetPlayLength();
+		AttackTask = UMeleeAttackTask_Hit::AttackInit(this, AttackCurve, AttackMontage, PlayRate, AttackDuration);
+		DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, AttackDuration / PlayRate);
+		DelayTask->OnFinish.AddDynamic(this, &UMeleeAttackAbility::OnDelayEnd);
+		AttackTask->Activate();
+		DelayTask->ReadyForActivation();
+	}
+	else
+	{
+		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Melee attack failed"));
+		K2_EndAbility();
+	}
 }
 
 void UMeleeAttackAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -55,6 +64,6 @@ void UMeleeAttackAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, co
 
 void UMeleeAttackAbility::OnDelayEnd()
 {
-	AttackTask->EndTask();
+	AttackTask->AttackFinished();
 	K2_EndAbility();
 }

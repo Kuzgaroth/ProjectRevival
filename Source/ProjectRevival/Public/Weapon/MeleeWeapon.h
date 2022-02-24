@@ -16,16 +16,20 @@ class PROJECTREVIVAL_API AMeleeWeapon : public ABaseWeapon
 public:
 	AMeleeWeapon();
 	void AddNewBeam(const FVector Point1, const FVector Point2);
-	void BeginPlay();
+	virtual void BeginPlay() override;
 	
 	void ToggleCollisionOn();
 	void ToggleCollisionOff() const;
 	bool IsHitDone() const { return bIsHitDone; };
 	void ResetHitStatus() { bIsHitDone = false; };
-
+	void MakeDamage(AActor* OtherActor);
+	
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Damage")
+	float HitDamage = 50.0f;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Collision, meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* BladeCollisionBox;
