@@ -35,6 +35,10 @@ void AStaticObjectToNothing::BeginPlay()
 {
 	Super::BeginPlay();
 	CollisionResponseContainer=SuperMesh->GetCollisionResponseToChannels();
+	for(int i=0;i<SuperMesh->ComponentTags.Num();i++)
+	{
+		MeshTags.Add(SuperMesh->ComponentTags[i]);
+	}
 	SuperMesh->SetVisibility(true);
 	//TArray<USceneComponent*> components;
 	int32 num=SuperMesh->GetNumMaterials();
@@ -81,6 +85,7 @@ void AStaticObjectToNothing::BeginPlay()
 			SuperMesh->SetVisibility(false);
 		}
 		SuperMesh->SetCollisionProfileName("OverlapAll");
+		ClearComponentTags(SuperMesh);
 	}
 	SuperMesh->OnComponentBeginOverlap.AddDynamic(this,&AStaticObjectToNothing::OnMeshComponentCollision);
 }
@@ -127,6 +132,7 @@ void AStaticObjectToNothing::Changing()
 			isApearing=true;
 			TimeLine.PlayFromStart();
 			SuperMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+			LoadComponentTags(SuperMesh);
 		}
 		else
 		{
@@ -151,7 +157,6 @@ void AStaticObjectToNothing::Changing()
 void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	GLog->Log("Working");
 	if(Cast<AChangeWorldSphereActor>(OtherActor))
 	{
 		Changing();
@@ -160,9 +165,9 @@ void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* Overl
 
 void AStaticObjectToNothing::TimeLineFinished()
 {
-	GLog->Log("Timeline working");
 	if(!isApearing)
 	{
+		ClearComponentTags(SuperMesh);
 		SuperMesh->SetCollisionProfileName("OverlapAll");
 	}
 }
@@ -183,4 +188,20 @@ void AStaticObjectToNothing::TimeLineFloatReturn(float Value)
 		}
 	}
 	
+}
+
+
+
+void AStaticObjectToNothing::LoadComponentTags(UStaticMeshComponent* supermesh)
+{
+	Super::LoadComponentTags(supermesh);
+	for(int i=0;i<MeshTags.Num();i++)
+	{
+		supermesh->ComponentTags.AddUnique(MeshTags[i]);
+	}
+}
+
+bool AStaticObjectToNothing::CheckIsChangeAbleObjIsCover()
+{
+	return SuperMesh->ComponentTags.Contains("Cover");
 }

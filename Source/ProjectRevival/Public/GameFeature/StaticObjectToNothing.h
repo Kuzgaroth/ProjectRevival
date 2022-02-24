@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ChangeWorld.h"
+#include "Interfaces/IChangingWorldObjCoverCheck.h"
 #include "StaticObjectToNothing.generated.h"
 
 class UBoxComponent;
 
 UCLASS()
 
-class PROJECTREVIVAL_API AStaticObjectToNothing : public AChangeWorld
+class PROJECTREVIVAL_API AStaticObjectToNothing : public AChangeWorld, public IIChangingWorldObjCoverCheck
 {
 	GENERATED_BODY()
 	
@@ -38,6 +39,10 @@ protected:
     virtual void TimeLineFloatReturn(float Value);
     FOnTimelineFloat InterpFunction;
 
+	virtual void LoadComponentTags(UStaticMeshComponent* supermesh) override;
+
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -46,6 +51,8 @@ public:
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	UStaticMeshComponent* SuperMesh;
+
+	TArray<FName> MeshTags;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
@@ -63,4 +70,6 @@ public:
 					  const FHitResult &SweepResult);
 	
 	void Changing() override;
+	
+	virtual bool CheckIsChangeAbleObjIsCover() override;
 };

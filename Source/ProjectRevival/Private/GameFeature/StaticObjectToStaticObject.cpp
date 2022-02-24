@@ -2,6 +2,8 @@
 
 
 #include "GameFeature/StaticObjectToStaticObject.h"
+
+#include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 #include "Components/BoxComponent.h"
 
 // Sets default values
@@ -19,6 +21,12 @@ AStaticObjectToStaticObject::AStaticObjectToStaticObject()
 	SuperMesh1->SetMobility(EComponentMobility::Movable);
 	SuperMesh1->SetVisibility(true);
 
+	OrWInterpFunction.BindUFunction(this,FName("OrdinaryWTimelineFloatReturn"));
+	OtWInterpFunction.BindUFunction(this,FName("OtherWTimelineFloatReturn"));
+	
+	OrOnTimeLineFinished.BindUFunction(this,FName("OrdinaryWTimelineFinished"));
+	OtOnTimeLineFinished.BindUFunction(this,FName("OtherWTimelineFinished"));
+
 	SuperMesh2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SuperMesh2"));
 	SuperMesh2->SetupAttachment(RootComponent);
 	SuperMesh2->SetMobility(EComponentMobility::Movable);
@@ -29,10 +37,21 @@ AStaticObjectToStaticObject::AStaticObjectToStaticObject()
 void AStaticObjectToStaticObject::BeginPlay()
 {
 	Super::BeginPlay();
-	SuperMesh1->OnComponentBeginOverlap.AddDynamic(this,&AStaticObjectToStaticObject::OnOrdinaryMeshCollision);
+
 	OrdinaryWorldCollisionResponseContainer=SuperMesh1->GetCollisionResponseToChannels();
-	SuperMesh2->OnComponentBeginOverlap.AddDynamic(this,&AStaticObjectToStaticObject::OnOtherMeshCollision);
+	for(int i=0;i<SuperMesh1->ComponentTags.Num();i++)
+	{
+		OrMeshTags.Add(SuperMesh1->ComponentTags[i]);
+	}
 	OtherWorldCollisionResponseContainer=SuperMesh2->GetCollisionResponseToChannels();
+	for(int i=0;i<SuperMesh2->ComponentTags.Num();i++)
+	{
+		OtMeshTags.Add(SuperMesh2->ComponentTags[i]);
+	}
+	
+	SuperMesh1->SetVisibility(true);
+	SuperMesh2->SetVisibility(true);
+	
 	int32 num=SuperMesh1->GetNumMaterials();
 	for (int32 i=0;i<num;i++)
 	{
@@ -45,14 +64,19 @@ void AStaticObjectToStaticObject::BeginPlay()
 		const auto Material = SuperMesh2->CreateDynamicMaterialInstance(i);
 		OtherWMeshesMaterials.Add(Material);
 	}
+	
 	if(OrdinaryWVisualCurve&&OtherWVisualCurve)
 	{
 		OrdinaryWVisualCurve->GetValueRange(MinOrWValue,MaxOrWValue);
-		OtherWVisualCurve->GetValueRange(MinOtWValue,MaxOtValue);
+		OtherWVisualCurve->GetValueRange(MinOtWValue,MaxOtWValue);
+
 		OrdinaryWTimeLine.AddInterpFloat(OrdinaryWVisualCurve,OrWInterpFunction);
 		OtherWTimeLine.AddInterpFloat(OtherWVisualCurve,OtWInterpFunction);
+
+		
 		OrdinaryWTimeLine.SetTimelineFinishedFunc(OrOnTimeLineFinished);
 		OtherWTimeLine.SetTimelineFinishedFunc(OtOnTimeLineFinished);
+		
 		OrdinaryWTimeLine.SetLooping(false);
 		OtherWTimeLine.SetLooping(false);
 	}
@@ -66,7 +90,7 @@ void AStaticObjectToStaticObject::BeginPlay()
 			}
 			for (const auto Material : OtherWMeshesMaterials)
 			{
-				Material->SetScalarParameterValue("Amount",MaxOtValue);
+				Material->SetScalarParameterValue("Amount",MaxOtWValue);
 			}
 		}
 		else
@@ -79,6 +103,9 @@ void AStaticObjectToStaticObject::BeginPlay()
 		SuperMesh1->SetCollisionProfileName("OverlapAll");
 		SuperMesh1->SetCollisionResponseToChannels(OrdinaryWorldCollisionResponseContainer);
 		SuperMesh2->SetCollisionProfileName("OverlapAll");
+		OrIsAppearing=true;
+		OtIsAppearing=false;
+		ClearComponentTags(SuperMesh2);
 	}
 	else
 	{
@@ -103,7 +130,17 @@ void AStaticObjectToStaticObject::BeginPlay()
 		SuperMesh2->SetCollisionProfileName("OverlapAll");
 		SuperMesh2->SetCollisionResponseToChannels(OrdinaryWorldCollisionResponseContainer);
 		SuperMesh1->SetCollisionProfileName("OverlapAll");
+		OtIsAppearing=true;
+		OrIsAppearing=false;
+		ClearComponentTags(SuperMesh1);
 	}
+	SuperMesh1->OnComponentBeginOverlap.AddDynamic(this,&AStaticObjectToStaticObject::OnOrdinaryMeshCollision);
+	SuperMesh2->OnComponentBeginOverlap.AddDynamic(this,&AStaticObjectToStaticObject::OnOtherMeshCollision);
+}
+
+bool AStaticObjectToStaticObject::CheckIsChangeAbleObjIsCover()
+{
+	return SuperMesh1->ComponentTags.Contains("Cover")||SuperMesh2->ComponentTags.Contains("Cover");
 }
 
 // Called every frame
@@ -147,29 +184,112 @@ void AStaticObjectToStaticObject::PostEditChangeProperty(FPropertyChangedEvent& 
 void AStaticObjectToStaticObject::OnOrdinaryMeshCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	
+	if(OrdinaryWVisualCurve)
+	{
+		if(Cast<AChangeWorldSphereActor>(OtherActor))
+		{
+			if(!OrIsAppearing)
+			{
+				OrIsAppearing=true;
+				LoadComponentTags(SuperMesh1);
+				OrdinaryWTimeLine.PlayFromStart();
+				SuperMesh1->SetCollisionResponseToChannels(OrdinaryWorldCollisionResponseContainer);
+			}
+			else
+			{
+				OrIsAppearing=false;
+				OrdinaryWTimeLine.PlayFromStart();
+			}
+		}
+	}
+	else
+	{
+		Changing();
+	}
 }
 
 void AStaticObjectToStaticObject::OnOtherMeshCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	
+
+	if(Cast<AChangeWorldSphereActor>(OtherActor))
+	{
+		if(OtherWVisualCurve)
+		{
+			if(!OtIsAppearing)
+			{
+				OtIsAppearing=true;
+				LoadComponentTags(SuperMesh2);
+				OtherWTimeLine.PlayFromStart();
+				SuperMesh2->SetCollisionResponseToChannels(OtherWorldCollisionResponseContainer);
+			}
+			else
+			{
+				OtIsAppearing=false;
+				OtherWTimeLine.PlayFromStart();
+			
+			}
+		}
+		else
+		{
+			Changing();
+		}
+	}
 }
 
 void AStaticObjectToStaticObject::OrdinaryWTimelineFinished()
 {
+	if(!OrIsAppearing)
+	{
+		ClearComponentTags(SuperMesh1);
+		SuperMesh1->SetCollisionProfileName("OverlapAll");
+		
+	}
 }
 
 void AStaticObjectToStaticObject::OtherWTimelineFinished()
 {
+	if(!OtIsAppearing)
+	{
+		ClearComponentTags(SuperMesh2);
+		SuperMesh2->SetCollisionProfileName("OverlapAll");
+		
+	}
+	
 }
 
 void AStaticObjectToStaticObject::OrdinaryWTimelineFloatReturn(float Value)
 {
+	for(const auto material:OrdinaryWMeshesMaterials)
+	{
+		if(OrIsAppearing)
+		{
+			material->SetScalarParameterValue("Amount",Value);
+		}
+		else
+		{
+			float val=MinOrWValue-Value;
+			val=MaxOrWValue+val;
+			material->SetScalarParameterValue("Amount",val);
+		}
+	}
 }
 
 void AStaticObjectToStaticObject::OtherWTimelineFloatReturn(float Value)
 {
+	for(const auto material:OtherWMeshesMaterials)
+	{
+		if(OtIsAppearing)
+		{
+			material->SetScalarParameterValue("Amount",Value);
+		}
+		else
+		{
+			float val=MinOtWValue-Value;
+			val=MaxOtWValue+val;
+			material->SetScalarParameterValue("Amount",val);
+		}
+	}
 }
 
 
@@ -178,6 +298,8 @@ void AStaticObjectToStaticObject::OtherWTimelineFloatReturn(float Value)
 
 void AStaticObjectToStaticObject::Changing()
 {
+	
+
 	if(CurrentWorld==OrdinaryWorld)
 	{
 		CurrentWorld=OtherWorld;
@@ -189,10 +311,30 @@ void AStaticObjectToStaticObject::Changing()
 	else
 	{
 		CurrentWorld=OrdinaryWorld;
-        SuperMesh1->SetCollisionProfileName("BlockAll");
-        SuperMesh1->SetVisibility(true);
-        SuperMesh2->SetCollisionProfileName("OverlapAll");
-        SuperMesh2->SetVisibility(false);
+		SuperMesh1->SetCollisionProfileName("BlockAll");
+		SuperMesh1->SetVisibility(true);
+		SuperMesh2->SetCollisionProfileName("OverlapAll");
+		SuperMesh2->SetVisibility(false);
 	}
 	
+	
+}
+
+void AStaticObjectToStaticObject::LoadComponentTags(UStaticMeshComponent* supermesh)
+{
+	Super::LoadComponentTags(supermesh);
+	if(supermesh==SuperMesh1)
+	{
+		for(int i=0;i<OrMeshTags.Num();i++)
+		{
+			supermesh->ComponentTags.AddUnique(OrMeshTags[i]);
+		}
+	}
+	else
+	{
+		for(int i=0;i<OtMeshTags.Num();i++)
+		{
+			supermesh->ComponentTags.AddUnique(OtMeshTags[i]);
+		}
+	}
 }
