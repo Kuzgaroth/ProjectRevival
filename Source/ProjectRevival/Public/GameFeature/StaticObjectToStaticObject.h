@@ -5,12 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ChangeWorld.h"
+#include "Interfaces/IChangingWorldObjCoverCheck.h"
 #include "StaticObjectToStaticObject.generated.h"
 
 class UBoxComponent;
 
 UCLASS()
-class PROJECTREVIVAL_API AStaticObjectToStaticObject : public AChangeWorld
+class PROJECTREVIVAL_API AStaticObjectToStaticObject : public AChangeWorld, public IIChangingWorldObjCoverCheck
 {
 	GENERATED_BODY()
 	
@@ -25,9 +26,13 @@ protected:
 	FCollisionResponseContainer OtherWorldCollisionResponseContainer;
 	TArray<UMaterialInstanceDynamic*> OrdinaryWMeshesMaterials;
 	TArray<UMaterialInstanceDynamic*> OtherWMeshesMaterials;
+	UFUNCTION()
 	void OrdinaryWTimelineFinished();
+	UFUNCTION()
 	void OtherWTimelineFinished();
+	UFUNCTION()
 	void OrdinaryWTimelineFloatReturn(float Value);
+	UFUNCTION()
 	void OtherWTimelineFloatReturn(float Value);
 	FTimeline OrdinaryWTimeLine;
 	FTimeline OtherWTimeLine;
@@ -38,12 +43,19 @@ protected:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	UCurveFloat* OtherWVisualCurve;
 	float MinOtWValue;
-	float MaxOtValue;
+	float MaxOtWValue;
 	FOnTimelineFloat OrWInterpFunction;
 	FOnTimelineFloat OtWInterpFunction;
 	FOnTimelineEvent OrOnTimeLineFinished;
 	FOnTimelineEvent OtOnTimeLineFinished;
+	bool OrIsAppearing;
+	bool OtIsAppearing;
 	virtual void Changing() override;
+    virtual void LoadComponentTags(UStaticMeshComponent* supermesh) override;
+    TArray<FName> OrMeshTags;
+    TArray<FName> OtMeshTags;
+    
+
     
 
 public:	
@@ -78,5 +90,7 @@ public:
 					  const FHitResult &SweepResult);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* SceneComponent;
+	
+	virtual bool CheckIsChangeAbleObjIsCover() override;
 
 };

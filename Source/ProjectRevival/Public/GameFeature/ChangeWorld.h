@@ -36,7 +36,8 @@ protected:
 	virtual void BeginPlay() override;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
     TEnumAsByte<EChangeEditorVisibility> VisibleWorld = BothWorlds;
-
+	virtual void ClearComponentTags(UStaticMeshComponent* supermesh);
+	virtual void LoadComponentTags(UStaticMeshComponent* supermesh);
 
 
 
