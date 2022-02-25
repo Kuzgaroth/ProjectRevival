@@ -23,8 +23,6 @@ public:
 	static UMeleeAttackTask_Hit* AttackInit(UGameplayAbility* OwningAbility, UCurveFloat* AttackCurve,
 		UAnimMontage* Montage, float PlayRate, float AttackDuration);
 	UFUNCTION()
-	void AttackStarted();
-	UFUNCTION()
 	void AttackFinished();
 	
 	UFUNCTION()

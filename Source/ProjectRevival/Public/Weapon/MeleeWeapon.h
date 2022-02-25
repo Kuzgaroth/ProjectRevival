@@ -15,14 +15,14 @@ class PROJECTREVIVAL_API AMeleeWeapon : public ABaseWeapon
 	GENERATED_BODY()
 public:
 	AMeleeWeapon();
-	void AddNewBeam(const FVector Point1, const FVector Point2);
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	
-	void ToggleCollisionOn();
+	void AddNewBeam();
+	void ToggleCollisionOn() const;
 	void ToggleCollisionOff() const;
-	bool IsHitDone() const { return bIsHitDone; };
-	void ResetHitStatus() { bIsHitDone = false; };
-	void MakeDamage(AActor* OtherActor);
+	bool IsHitDone() const { return bIsHitDone; }
+	void ResetHitStatus() { bIsHitDone = false; }
 	
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,

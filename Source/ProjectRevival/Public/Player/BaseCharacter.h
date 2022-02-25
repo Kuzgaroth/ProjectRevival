@@ -37,7 +37,7 @@ public:
 	virtual void UnPossessed() override;
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-	
+	UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UHealthComponent* HealthComponent;

@@ -2,6 +2,7 @@
 
 #include "Weapon/MeleeWeapon.h"
 #include "AssassinEnemy.h"
+#include "HealthComponent.h"
 #include "Weapon/Projectile/BaseProjectile.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/BoxComponent.h"
@@ -10,6 +11,7 @@
 AMeleeWeapon::AMeleeWeapon()
 {
 	RootComponent = WeaponMesh;
+	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 	BeamComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Beam Component"));
 	BeamComp->bAutoActivate = false;
@@ -19,7 +21,12 @@ AMeleeWeapon::AMeleeWeapon()
 	BladeCollisionBox->SetupAttachment(RootComponent);
 	BladeCollisionBox->SetGenerateOverlapEvents(true);
 	BladeCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AMeleeWeapon::OnOverlapBegin);
-	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AMeleeWeapon::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void AMeleeWeapon::BeginPlay()
@@ -30,45 +37,36 @@ void AMeleeWeapon::BeginPlay()
 	UE_LOG(LogPRAbilitySystemBase, Error, TEXT("BeginPlay"));
 }
 
-void AMeleeWeapon::AddNewBeam(const FVector Point1, const FVector Point2)
+void AMeleeWeapon::AddNewBeam()
 {
-	BeamComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamFX, Point1, FRotator::ZeroRotator, true);
-	BeamArray.Add(BeamComp);
- 	BeamComp->SetBeamSourcePoint(0, Point1, 0);
-	BeamComp->SetBeamTargetPoint(0, Point2, 0);
-}
-
-void AMeleeWeapon::ToggleCollisionOn()
-{
- 	//BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	const FVector TraceStart = WeaponMesh->GetSocketLocation("TraceStart");
 	const FVector TraceEnd = WeaponMesh->GetSocketLocation("TraceEnd");
 	if (BeamComp)
 	{
-		AddNewBeam(TraceStart, TraceEnd);
+		BeamComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamFX, TraceStart, FRotator::ZeroRotator, true);
+		BeamArray.Add(BeamComp);
+		BeamComp->SetBeamSourcePoint(0, TraceStart, 0);
+		BeamComp->SetBeamTargetPoint(0, TraceEnd, 0);
 	}
 }
 
 void AMeleeWeapon::ToggleCollisionOff() const
 {
-	//BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-void AMeleeWeapon::MakeDamage(AActor* OtherActor)
+void AMeleeWeapon::ToggleCollisionOn() const
 {
-	//OtherActor->
+	BladeCollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
 void AMeleeWeapon::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("this: %s"), *this->GetName()); 
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("OtherComp: %s"), *OtherComp->GetOwner()->GetName()); 
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("OverlappedComp: %s"), *OverlappedComp->GetOwner()->GetName()); 
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("OtherActor: %s"), *OtherActor->GetName());
-	if (OtherActor && (OtherActor != this) && OtherComp && OtherActor != this->GetOwner() && !bIsHitDone)
+	ABaseCharacter* Character = Cast<ABaseCharacter>(OtherActor);
+	if (OtherActor && Character && (OtherActor != this) && OtherComp && OtherActor != this->GetOwner() && !bIsHitDone)
 	{
+		Character->TakeDamage(HitDamage,FDamageEvent{},Character->GetController(),this);
 		bIsHitDone = true;
-		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Damage done yaaay"));
 	}
 }

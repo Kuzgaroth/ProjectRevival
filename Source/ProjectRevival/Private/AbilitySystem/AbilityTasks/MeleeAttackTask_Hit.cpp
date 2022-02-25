@@ -29,40 +29,27 @@ UMeleeAttackTask_Hit* UMeleeAttackTask_Hit::AttackInit(UGameplayAbility* OwningA
 void UMeleeAttackTask_Hit::Activate()
 {
 	Super::Activate();
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Task activated"));
 	if (CurveFloat)
 	{
 		FOnTimelineFloat TimeLineProgress;
 		TimeLineProgress.BindUFunction(this, FName("TimelineProgress"));
 		Timeline.AddInterpFloat(CurveFloat,TimeLineProgress);
 		Timeline.SetLooping(false);
-		AttackStarted();
-	}
-	else
-	{
-		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Curve not found"));
-	}
-}
-
-void UMeleeAttackTask_Hit::AttackStarted()
-{
-	const AAssassinEnemy* Character = Cast<AAssassinEnemy>(GetAvatarActor());
-	const UWeaponComponent* WeaponComponent = Cast<UWeaponComponent>(Character->GetWeaponComponent());
-	AMeleeWeapon* Weapon = Cast<AMeleeWeapon>(WeaponComponent->GetCurrentWeapon());
+		
+		const AAssassinEnemy* Character = Cast<AAssassinEnemy>(GetAvatarActor());
+		const UWeaponComponent* WeaponComponent = Cast<UWeaponComponent>(Character->GetWeaponComponent());
+		AMeleeWeapon* Weapon = Cast<AMeleeWeapon>(WeaponComponent->GetCurrentWeapon());
 	
-	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
-	if(MeleeAttackMontage != nullptr && AnimInstance != nullptr)
-	{
 		MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(Ability, NAME_None, MeleeAttackMontage,
 			PlayRate, NAME_None, true, 1.f, 0.f);
 		MontageTask->ReadyForActivation();
-		
 		Weapon->ToggleCollisionOn();
+		Weapon->AddNewBeam();
 		Character->GetMovementComponent()->SetJumpAllowed(false);
 	}
 	else
 	{
-		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("No montage founded"));
+		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Curve not found"));
 	}
 }
 
@@ -72,12 +59,9 @@ void UMeleeAttackTask_Hit::AttackFinished()
 	const UWeaponComponent* WeaponComponent = Cast<UWeaponComponent>(Character->GetWeaponComponent());
 	AMeleeWeapon* Weapon = Cast<AMeleeWeapon>(WeaponComponent->GetCurrentWeapon());
 	
-	if(Weapon->IsHitDone())
-	{
-		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Damage done!"));
-	}
 	Weapon->ResetHitStatus();
 	Character->GetMovementComponent()->SetJumpAllowed(true);
+	Weapon->ToggleCollisionOff();
 	
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 	MontageTask->EndTask();

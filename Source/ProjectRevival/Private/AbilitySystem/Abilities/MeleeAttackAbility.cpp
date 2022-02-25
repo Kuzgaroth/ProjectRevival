@@ -18,8 +18,8 @@ void UMeleeAttackAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	const UWeaponComponent* WeaponComponent = Cast<UWeaponComponent>(Character->GetWeaponComponent());
 	AMeleeWeapon* Weapon = Cast<AMeleeWeapon>(WeaponComponent->GetCurrentWeapon());
 	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
-	
-	const int MontageIndex = rand() % 3; 
+	//замени на секции, если успеешь
+	MontageIndex = rand() % 3; 
 	switch(MontageIndex)
 	{
 	case 0:

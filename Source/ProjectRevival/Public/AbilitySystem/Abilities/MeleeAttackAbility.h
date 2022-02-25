@@ -27,6 +27,13 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Constants")
 	float PlayRate = 2.0;
 	
+	UPROPERTY(BlueprintReadOnly, Category="Animations")
+	int MontageIndex;
+	
+	//UPROPERTY(Transient, Replicated)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Animations")
+	TArray<UAnimMontage*> AttackMontages;
+	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Animations")
 	UAnimMontage* AttackMontage1;
 
