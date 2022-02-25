@@ -9,6 +9,8 @@
 
 class UNiagaraSystem;
 class UNiagaraComponent;
+class AChangeWorld;
+class AStaticObjectToNothing;
 
 DECLARE_MULTICAST_DELEGATE(FOnEndAbitity)
 UCLASS()
