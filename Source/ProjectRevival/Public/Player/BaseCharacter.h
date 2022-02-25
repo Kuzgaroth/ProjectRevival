@@ -107,6 +107,9 @@ public:
 	UFUNCTION()
 	bool StopCover(AActor* InstigatorObj);
 
+	UFUNCTION(BlueprintCallable, Category="Components")
+	bool IsFlipping() const { return bIsFlipping; }
+	bool bIsFlipping = false;
 
 private:
 	UPROPERTY()

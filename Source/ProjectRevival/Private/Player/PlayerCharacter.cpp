@@ -78,7 +78,7 @@ void APlayerCharacter::MoveForward(float Amount)
 {
 	if (Amount==0.f) return;
 	if (CoverData.IsInCover() || CoverData.IsInTransition() || CoverData.IsFiring) return;
-	IsMovingForward = Amount>0;
+	bIsMovingForward = Amount>0;
 	PlayerMovementComponent->MoveForward(Amount);
 }
 
@@ -90,6 +90,7 @@ void APlayerCharacter::MoveRight(float Amount)
 	{
 		if (!(CoverData.TryMoveInCover(Amount, this))) return;;
 	}
+	bIsMovingRight = Amount>0;
 	PlayerMovementComponent->MoveRight(Amount);
 }
 
@@ -214,7 +215,7 @@ void APlayerCharacter::Landed(const FHitResult& Hit)
 
 bool APlayerCharacter::IsRunning() const
 {
-	return bWantsToRun && IsMovingForward && !GetVelocity().IsZero();
+	return bWantsToRun && bIsMovingForward && !GetVelocity().IsZero();
 }
 
 ECoverType APlayerCharacter::CheckCover()

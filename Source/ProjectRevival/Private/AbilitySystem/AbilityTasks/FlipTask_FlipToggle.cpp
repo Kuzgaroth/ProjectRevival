@@ -12,11 +12,20 @@
 #include "Player/BaseCharacter.h"
 
 
-void UFlipTask_FlipToggle::Activate()
+UFlipTask_FlipToggle* UFlipTask_FlipToggle::FlipInit(UGameplayAbility* OwningAbility, UCurveFloat* FlipCurve,
+	float Strength, float Duration, UAnimMontage* Montage, FVector Direction)
 {
+	const auto AbilityTask = NewAbilityTask<UFlipTask_FlipToggle>(OwningAbility, FName("FlipTask"));
+	AbilityTask->CurveFloat = FlipCurve;
+	AbilityTask->bTickingTask = 1;
+	AbilityTask->FlipDuration = Duration;
+	AbilityTask->FlipStrength = Strength;
+	AbilityTask->FlipMontage = Montage;
+	AbilityTask->FlipDirection = Direction;
+	return AbilityTask;
 }
 
-void UFlipTask_FlipToggle::Activate(float Strength, float Duration, UCurveFloat* Curve)
+void UFlipTask_FlipToggle::Activate()
 {
 	Super::Activate();
 	if (CurveFloat)
@@ -25,81 +34,86 @@ void UFlipTask_FlipToggle::Activate(float Strength, float Duration, UCurveFloat*
 		TimeLineProgress.BindUFunction(this, FName("TimelineProgress"));
 		Timeline.AddInterpFloat(CurveFloat,TimeLineProgress);
 		Timeline.SetLooping(false);
-		FlipStarted(Strength, Duration, Curve);
+		FlipStarted();
 	}
 }
 
-UFlipTask_FlipToggle* UFlipTask_FlipToggle::FlipInit(UGameplayAbility* OwningAbility,
-	UCurveFloat* FlipCurve)
-{
-	const auto AbilityTask = NewAbilityTask<UFlipTask_FlipToggle>(OwningAbility, FName("FlipTask"));
-	AbilityTask->CurveFloat = FlipCurve;
-	AbilityTask->bTickingTask = 1;
-	return AbilityTask;
-}
+
 
 void UFlipTask_FlipToggle::TickTimeline(float Delta)
 {
 	if (Timeline.IsPlaying()) Timeline.TickTimeline(Delta);
 }
 
-void UFlipTask_FlipToggle::FlipStarted(float Strength, float Duration, UCurveFloat* Curve)
+void UFlipTask_FlipToggle::FlipStarted()
 {
-	const FGameplayTag FlipTag = FGameplayTag::RequestGameplayTag(FName("Ability.Flip.IsFlipping"));
-	APlayerCharacter* const Character = Cast<APlayerCharacter>(GetAvatarActor());
-		UWeaponComponent* Weapon = Cast<UWeaponComponent>(Character->GetWeaponComponent());
+	APlayerCharacter* const Character = Cast<APlayerCharacter>(GetOwnerActor());
+	//ABaseCharacter* const Character = Cast<ABaseCharacter>(GetOwnerActor());
+	UWeaponComponent* Weapon = Cast<UWeaponComponent>(Character->GetWeaponComponent());
+	
 	if(Character->GetCharacterMovement()->IsFlying()||Character->GetCharacterMovement()->IsFalling()
-		||Weapon->IsShooting()||!Weapon->CanFire())
+		||!Weapon->CanFire())
 	{
 		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Flip failed"));
 		EndTask();
 	}
 	else
 	{
-		UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Flip has started"));
+		APlayerController* Controller = Cast<APlayerController>(Character->GetController());
+		
 		Timeline.SetTimelineFinishedFunc(OnFlipStarted);
 		Timeline.PlayFromStart();
-		Character->GetPlayerSpringArmComponent()->bUsePawnControlRotation = false;
-		APawn* ACharacter = Cast<APawn>(GetAvatarActor());
-		ACharacter->bUseControllerRotationYaw = false;
-		const FVector Forward  = Character->GetActorForwardVector();
-		const FVector TempVelocity = Character->GetCharacterMovement()->Velocity;
+
+		Character->CameraZoomOut();
+		Character->DisableInput(Controller);
+		Character->bUseControllerRotationYaw = false;
+		Character->bIsFlipping = true;
+		//Character->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+		if(Weapon->IsShooting())
+		{
+			Weapon->StopFire();
+		}
+				
+		//const FVector Forward  = Character->GetActorForwardVector();
 		ForceTask = UAbilityTask_ApplyRootMotionConstantForce::ApplyRootMotionConstantForce(
 			Ability,
 			NAME_None,
-			Forward,
-			Strength,
-			Duration,
+			FlipDirection,
+			FlipStrength,
+			FlipDuration,
 			false,
-			Curve,
+			CurveFloat,
 			ERootMotionFinishVelocityMode::SetVelocity,
-			TempVelocity,
+			Character->GetCharacterMovement()->Velocity,
 			0.f,
 			false);
-		if(FlipMontage != nullptr)
-		{	
-			UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
-			if(AnimInstance != nullptr)
-			{
-				MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(Ability, NAME_None, FlipMontage, true, NAME_None, true);
-			}
+		
+		UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+		if(FlipMontage != nullptr && AnimInstance != nullptr)
+		{
+			MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(Ability, NAME_None,
+				FlipMontage, true, NAME_None, true);
+			MontageTask->ReadyForActivation();
 		}
 		else
 		{
 			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("No montage founded"));
 		}
-		FlipFinished();
+		//FlipFinished();
 	}
 }
 
 void UFlipTask_FlipToggle::FlipFinished()
 {
 	Timeline.SetTimelineFinishedFunc(OnFlipFinished);
-	APlayerCharacter* const Character = Cast<APlayerCharacter>(GetAvatarActor());
-	Character->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	Character->GetPlayerSpringArmComponent()->bUsePawnControlRotation = true;
-	APawn* ACharacter = Cast<APawn>(GetAvatarActor());
-	ACharacter->bUseControllerRotationYaw = true;
+	
+	ABaseCharacter* const Character = Cast<ABaseCharacter>(GetOwnerActor());
+	APlayerController* Controller = Cast<APlayerController>(Character->GetController());
+	//Character->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	Character->EnableInput(Controller);
+	Character->bIsFlipping = false;
+	Character->bUseControllerRotationYaw = true;
+	
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 }
 
