@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "IChangingWorldObjCoverCheck.generated.h"
+#include "IChangingWorldActor.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UIChangingWorldObjCoverCheck : public UInterface
+class UIChangingWorldActor : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -16,7 +16,7 @@ class UIChangingWorldObjCoverCheck : public UInterface
 /**
  * 
  */
-class PROJECTREVIVAL_API IIChangingWorldObjCoverCheck
+class PROJECTREVIVAL_API IIChangingWorldActor
 {
 	GENERATED_BODY()
 	

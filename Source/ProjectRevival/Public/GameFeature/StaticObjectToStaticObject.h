@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ChangeWorld.h"
-#include "Interfaces/IChangingWorldObjCoverCheck.h"
+#include "Interfaces/IChangingWorldActor.h"
 #include "StaticObjectToStaticObject.generated.h"
 
 class UBoxComponent;
 
 UCLASS()
-class PROJECTREVIVAL_API AStaticObjectToStaticObject : public AChangeWorld, public IIChangingWorldObjCoverCheck
+class PROJECTREVIVAL_API AStaticObjectToStaticObject : public AChangeWorld, public IIChangingWorldActor
 {
 	GENERATED_BODY()
 	
