@@ -38,8 +38,6 @@ void UFlipTask_FlipToggle::Activate()
 	}
 }
 
-
-
 void UFlipTask_FlipToggle::TickTimeline(float Delta)
 {
 	if (Timeline.IsPlaying()) Timeline.TickTimeline(Delta);
@@ -48,7 +46,6 @@ void UFlipTask_FlipToggle::TickTimeline(float Delta)
 void UFlipTask_FlipToggle::FlipStarted()
 {
 	APlayerCharacter* const Character = Cast<APlayerCharacter>(GetOwnerActor());
-	//ABaseCharacter* const Character = Cast<ABaseCharacter>(GetOwnerActor());
 	UWeaponComponent* Weapon = Cast<UWeaponComponent>(Character->GetWeaponComponent());
 	
 	if(Character->GetCharacterMovement()->IsFlying()||Character->GetCharacterMovement()->IsFalling()
@@ -66,15 +63,11 @@ void UFlipTask_FlipToggle::FlipStarted()
 
 		Character->CameraZoomOut();
 		Character->DisableInput(Controller);
-		Character->bUseControllerRotationYaw = false;
 		Character->bIsFlipping = true;
-		//Character->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 		if(Weapon->IsShooting())
 		{
 			Weapon->StopFire();
 		}
-				
-		//const FVector Forward  = Character->GetActorForwardVector();
 		ForceTask = UAbilityTask_ApplyRootMotionConstantForce::ApplyRootMotionConstantForce(
 			Ability,
 			NAME_None,
@@ -99,7 +92,6 @@ void UFlipTask_FlipToggle::FlipStarted()
 		{
 			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("No montage founded"));
 		}
-		//FlipFinished();
 	}
 }
 
@@ -109,10 +101,8 @@ void UFlipTask_FlipToggle::FlipFinished()
 	
 	ABaseCharacter* const Character = Cast<ABaseCharacter>(GetOwnerActor());
 	APlayerController* Controller = Cast<APlayerController>(Character->GetController());
-	//Character->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	Character->EnableInput(Controller);
 	Character->bIsFlipping = false;
-	Character->bUseControllerRotationYaw = true;
 	
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 }

@@ -27,7 +27,8 @@ void UFlipAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const 
 		const APlayerCharacter* Character = Cast<APlayerCharacter>(ActorInfo->OwnerActor.Get());
 		const APlayerController* Controller = Cast<APlayerController>(Character->GetController());
 		if(!GetDirectionalMontage(Character, Controller)) K2_EndAbility();;
-		
+		//FlipDirection = Character->GetActorForwardVector();
+		//FlipMontage = ForwardMontage;
 		FlipTask = UFlipTask_FlipToggle::FlipInit(this, FlipCurve, FlipStrength, FlipDuration,
 			FlipMontage, FlipDirection);
         DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, FlipDuration);
@@ -61,14 +62,15 @@ bool UFlipAbility::GetDirectionalMontage(const APlayerCharacter* Character, cons
 	{
 		if(Controller->IsInputKeyDown("A"))
 		{
-			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press W+A"))
+			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press W+A"));
 			FlipMontage = ForwardLeftMontage;
+			
 			FlipDirection = Character->GetActorForwardVector() - Character->GetActorRightVector();
 			return true;
 		}
 		if(Controller->IsInputKeyDown("D"))
 		{
-			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press W+D"))
+			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press W+D"));
 			FlipMontage = ForwardRightMontage;
 			FlipDirection = Character->GetActorForwardVector() + Character->GetActorRightVector();
 			return true;
@@ -82,14 +84,14 @@ bool UFlipAbility::GetDirectionalMontage(const APlayerCharacter* Character, cons
 	{
 		if(Controller->IsInputKeyDown("A"))
 		{
-			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press S+A"))
+			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press S+A"));
 			FlipMontage = BackwardLeftMontage;
 			FlipDirection = -Character->GetActorForwardVector() - Character->GetActorRightVector();
 			return true;
 		}
 		if(Controller->IsInputKeyDown("D"))
 		{
-			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press S+D"))
+			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press S+D"));
 			FlipMontage = BackwardRightMontage;
 			FlipDirection = -Character->GetActorForwardVector() + Character->GetActorRightVector();
 			return true;
