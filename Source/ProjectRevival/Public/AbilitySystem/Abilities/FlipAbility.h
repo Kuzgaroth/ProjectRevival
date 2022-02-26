@@ -54,7 +54,8 @@ protected:
 	void OnFlipEnd();
 	UFUNCTION()
 	bool GetDirectionalMontage(const APlayerCharacter* Character, const  APlayerController* Controller);
-	
+	UFUNCTION()
+	FVector GetFlipDirection(const APlayerCharacter* Character, const FVector MovementInputDirection);
 private:
 	UPROPERTY()
 	UFlipTask_FlipToggle* FlipTask;

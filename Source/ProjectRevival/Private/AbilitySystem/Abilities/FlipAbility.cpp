@@ -27,8 +27,7 @@ void UFlipAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const 
 		const APlayerCharacter* Character = Cast<APlayerCharacter>(ActorInfo->OwnerActor.Get());
 		const APlayerController* Controller = Cast<APlayerController>(Character->GetController());
 		if(!GetDirectionalMontage(Character, Controller)) K2_EndAbility();;
-		//FlipDirection = Character->GetActorForwardVector();
-		//FlipMontage = ForwardMontage;
+		
 		FlipTask = UFlipTask_FlipToggle::FlipInit(this, FlipCurve, FlipStrength, FlipDuration,
 			FlipMontage, FlipDirection);
         DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, FlipDuration);
@@ -58,64 +57,123 @@ void UFlipAbility::OnFlipEnd()
 
 bool UFlipAbility::GetDirectionalMontage(const APlayerCharacter* Character, const APlayerController* Controller)
 {
-	if(Controller->IsInputKeyDown("W") || (Character->GetCharacterMovement()->Velocity.Size() == 0.f))
+	FVector MovementInputDirection;
+	if(Character)
 	{
-		if(Controller->IsInputKeyDown("A"))
+		//if(Character->GetCharacterMovement()->Velocity.Size() > 300.f || (Character->GetCharacterMovement()->Velocity.Size() == 0.f))
+		//if(Character->GetCharacterMovement()->Velocity.Size() > 300.f)
+		//{
+		//	FlipMontage = ForwardMontage;
+		//	FlipDirection = Character->GetActorForwardVector();
+		//	return true;
+		//}
+		//else
 		{
-			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press W+A"));
-			FlipMontage = ForwardLeftMontage;
-			
-			FlipDirection = Character->GetActorForwardVector() - Character->GetActorRightVector();
+			if(Controller->IsInputKeyDown("W"))
+			{
+				if(Controller->IsInputKeyDown("A"))
+				{
+					UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press W+A"));
+					FlipMontage = ForwardLeftMontage;
+					MovementInputDirection.X = 1;
+					MovementInputDirection.Y = -1;
+				}
+				else
+				{
+					if(Controller->IsInputKeyDown("D"))
+					{
+						UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press W+D"));
+						FlipMontage = ForwardRightMontage;
+						MovementInputDirection.X = 1;
+						MovementInputDirection.Y = 1;
+					}
+					else
+					{
+						UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press W"));
+						FlipMontage = ForwardMontage;
+						MovementInputDirection.X = 1;
+						MovementInputDirection.Y = 0;
+					}
+				}
+			}
+			else
+			{
+				if(Controller->IsInputKeyDown("S"))
+				{
+					if(Controller->IsInputKeyDown("A"))
+					{
+						UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press S+A"));
+						FlipMontage = BackwardLeftMontage;
+						MovementInputDirection.X = -1;
+						MovementInputDirection.Y = -1;
+					}
+					else
+					{
+						if(Controller->IsInputKeyDown("D"))
+						{
+							UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press S+D"));
+							FlipMontage = BackwardRightMontage;
+							MovementInputDirection.X = -1;
+							MovementInputDirection.Y = 1;
+						}
+						else
+						{
+							UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press S"));
+							FlipMontage = BackwardMontage;
+							MovementInputDirection.X = -1;
+							MovementInputDirection.Y = 0;
+						}
+					}
+				}
+				else
+				{
+					if(Controller->IsInputKeyDown("A"))
+					{
+						UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press A"));
+						FlipMontage = LeftMontage;
+						MovementInputDirection.X = 0;
+						MovementInputDirection.Y = -1;
+					}
+					else
+					{
+						if(Controller->IsInputKeyDown("D"))
+						{
+							UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press D"));
+							FlipMontage = RightMontage;
+							MovementInputDirection.X = 0;
+							MovementInputDirection.Y = 1;
+						}
+						else
+						{
+							FlipMontage = ForwardMontage;
+							FlipDirection = Character->GetActorForwardVector();
+							return true;
+						}
+					}
+				}
+			}
+			FlipDirection = GetFlipDirection(Character, MovementInputDirection);
 			return true;
 		}
-		if(Controller->IsInputKeyDown("D"))
-		{
-			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press W+D"));
-			FlipMontage = ForwardRightMontage;
-			FlipDirection = Character->GetActorForwardVector() + Character->GetActorRightVector();
-			return true;
-		}
-		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press W"));
-		FlipMontage = ForwardMontage;
-		FlipDirection = Character->GetActorForwardVector();
-		return true;
 	}
-	if(Controller->IsInputKeyDown("S"))
+	else
 	{
-		if(Controller->IsInputKeyDown("A"))
-		{
-			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press S+A"));
-			FlipMontage = BackwardLeftMontage;
-			FlipDirection = -Character->GetActorForwardVector() - Character->GetActorRightVector();
-			return true;
-		}
-		if(Controller->IsInputKeyDown("D"))
-		{
-			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press S+D"));
-			FlipMontage = BackwardRightMontage;
-			FlipDirection = -Character->GetActorForwardVector() + Character->GetActorRightVector();
-			return true;
-		}
-		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press S"));
-		FlipMontage = BackwardMontage;
-		FlipDirection = -Character->GetActorForwardVector();
-		return true;
+		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Fltp Ability: Input error"));
+		return false; 
 	}
-	if(Controller->IsInputKeyDown("A"))
-	{
-		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press A"));
-		FlipMontage = LeftMontage;
-		FlipDirection = -Character->GetActorRightVector();
-		return true;
-	}
-	if(Controller->IsInputKeyDown("D"))
-	{
-		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("press D"));
-		FlipMontage = RightMontage;
-		FlipDirection = Character->GetActorRightVector();
-		return true;
-	}
-	return false;
+}
+
+
+FVector UFlipAbility::GetFlipDirection(const APlayerCharacter* Character, const FVector MovementInputDirection)
+{
+	// Get player forward and right
+	FRotator PlayerRotZeroPitch = Character->GetActorRotation();
+	PlayerRotZeroPitch.Pitch = 0;
+    const FVector PlayerRight = FRotationMatrix(PlayerRotZeroPitch).GetUnitAxis(EAxis::Y);
+	const FVector PlayerForward = FRotationMatrix(PlayerRotZeroPitch).GetUnitAxis(EAxis::X);
+	// Scale the forward and right vectors by movementInputDirection
+	const FVector Direction = PlayerForward * MovementInputDirection.X + PlayerRight * MovementInputDirection.Y;
+	return Direction;
 }
 
 void UFlipAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
