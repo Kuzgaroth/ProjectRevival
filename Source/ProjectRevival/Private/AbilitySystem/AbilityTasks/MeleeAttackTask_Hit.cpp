@@ -37,7 +37,7 @@ void UMeleeAttackTask_Hit::Activate()
 		Timeline.SetLooping(false);
 		
 		const AAssassinEnemy* Character = Cast<AAssassinEnemy>(GetAvatarActor());
-		const UWeaponComponent* WeaponComponent = Cast<UWeaponComponent>(Character->GetWeaponComponent());
+		UWeaponComponent* WeaponComponent = Cast<UWeaponComponent>(Character->GetWeaponComponent());
 		AMeleeWeapon* Weapon = Cast<AMeleeWeapon>(WeaponComponent->GetCurrentWeapon());
 	
 		MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(Ability, NAME_None, MeleeAttackMontage,
@@ -56,7 +56,7 @@ void UMeleeAttackTask_Hit::Activate()
 void UMeleeAttackTask_Hit::AttackFinished()
 {
 	const AAssassinEnemy* Character = Cast<AAssassinEnemy>(GetAvatarActor());
-	const UWeaponComponent* WeaponComponent = Cast<UWeaponComponent>(Character->GetWeaponComponent());
+	UWeaponComponent* WeaponComponent = Cast<UWeaponComponent>(Character->GetWeaponComponent());
 	AMeleeWeapon* Weapon = Cast<AMeleeWeapon>(WeaponComponent->GetCurrentWeapon());
 	
 	Weapon->ResetHitStatus();

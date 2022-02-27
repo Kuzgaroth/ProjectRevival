@@ -15,10 +15,9 @@ void UMeleeAttackAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
 		
 	AAssassinEnemy* Character = Cast<AAssassinEnemy>(ActorInfo->OwnerActor.Get());
-	const UWeaponComponent* WeaponComponent = Cast<UWeaponComponent>(Character->GetWeaponComponent());
+	UWeaponComponent* WeaponComponent = Cast<UWeaponComponent>(Character->GetWeaponComponent());
 	AMeleeWeapon* Weapon = Cast<AMeleeWeapon>(WeaponComponent->GetCurrentWeapon());
 	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
-	//замени на секции, если успеешь
 	MontageIndex = rand() % 3; 
 	switch(MontageIndex)
 	{

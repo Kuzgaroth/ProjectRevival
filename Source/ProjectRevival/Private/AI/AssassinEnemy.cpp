@@ -19,7 +19,7 @@ void AAssassinEnemy::BeginPlay()
 
 void AAssassinEnemy::SetMovementMode(EMovementMode Mode)
 {
-	AssassinMovementComponent->SetMovementMode(Mode);
+	//AssassinMovementComponent->SetMovementMode(Mode);
 }
 
 void AAssassinEnemy::PossessedBy(AController* NewController)
