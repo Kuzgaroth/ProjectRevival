@@ -15,7 +15,7 @@ class USphereComponent;
 class UCurveFloat;
 
 UCLASS()
-class PROJECTREVIVAL_API APlayerCharacter : public ABaseCharacter
+class PROJECTREVIVAL_API APlayerCharacter : public ABaseCharacter, public IICoverable
 {
 	GENERATED_BODY()
 public:
@@ -30,19 +30,38 @@ public:
 
 	UFUNCTION()
 	void TimelineLeftSideView(float Value);
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
-	FPlayerAimZoom PlayerAimZoom;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
-	FLeftSideView LeftSideView;
-	
-	FTimeline CurveTimeline;
-	FTimeline LeftSideViewCurveTimeline;
 
+	UFUNCTION()
+	void TimelineCover(float Value);
+
+	UFUNCTION()
+	void TimelineCoverFieldOfView(float Value);
+
+	UFUNCTION()
+	void TimelineCoverYShift(float Value);
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
+	FPlayerAimZoomBlueprint PlayerAimZoom;
 	
-	USpringArmComponent* GetPlayerSpringArmComponent(){return SpringArmComponent;}
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
+	FLeftSideViewBlueprint LeftSideView;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Cover")
+	FCameraCover CameraCover;
+
+	UPROPERTY()
+	UPlayerAimZoomFunctions* PlayerAimZoomFunctions;
+
+	UPROPERTY()
+	ULeftSideViewFunctions* LeftSideViewFunctions;
+
+	UPROPERTY()
+	UCameraCoverFunctions* CameraCoverFunctions;
+	
+	USpringArmComponent* GetPlayerSpringArmComponent(){ return SpringArmComponent; }
+	void CameraZoomIn();
+	void CameraZoomOut();
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UCameraComponent* CameraComponent;
@@ -52,6 +71,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	USphereComponent* CameraCollisionComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
+	USceneComponent* CameraSocket;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data) override;
@@ -61,13 +83,11 @@ protected:
 	virtual void BeginPlay() override;
 	
 	void OnCameraMove();
-	void CameraStop();
-	void CameraBlock();
 	
-	void CameraZoomIn();
-	void CameraZoomOut();
-
+	
 	void OnWorldChanged();
+	virtual bool StartCover_Internal(FHitResult& CoverHit) override;
+	virtual bool StopCover_Internal() override;
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -85,51 +105,53 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesToHighlight;
 	
-	void HighlightAbility();
-
-	UFUNCTION()
-	void OnOverlapBeginForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	// declare overlap end function used specially for detecting objects when using highlight function
-	UFUNCTION()
-	void OnOverlapEndForHighlight(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
 	UFUNCTION(BlueprintCallable)
 	FRotator GetAimDelta() const;
-	
 	virtual bool IsRunning() const override;
+	virtual ECoverType CheckCover() override;
+	virtual void OnTurn() override;
+	virtual void Falling() override;
+	virtual void Landed(const FHitResult& Hit) override;
+	UFUNCTION(BlueprintCallable)
+	FCoverData& GetCoverData();
+	
+	bool IsMovingRight() const { return bIsMovingRight; }
+	bool IsMovingLeft() const { return bIsMovingLeft; }
+	bool IsMovingBackward() const { return bIsMovingBackward; }
+	bool IsMovingForward() const { return bIsMovingForward; }
 private:
-
 	UPROPERTY()
 	UBaseCharacterMovementComponent* PlayerMovementComponent;
+	UPROPERTY()
+	FCoverData CoverData;
 	
 	bool bWantsToRun = false;
-	bool IsMovingForward = false;
+	bool bIsMovingForward = false;
+	bool bIsMovingRight = false;
+	bool bIsMovingBackward = false;
+	bool bIsMovingLeft = false;
+	
 	void MoveForward(float Amount);
+	void MoveRight(float Amount);
 	void StartRun();
 	void StopRun();
+	void Cover();
 	void StartFire();
 	void LookUp(float Amount);
 	void LookAround(float Amount);
+	void CoverCrouch();
 	UPROPERTY()
 	class USphereComponent* SphereDetectingHighlightables;
 	
-	bool IsHighlighting = false;
-
+	bool IsInCover=false;
 	FTimerHandle THandle;
-
 	const float FlipTime = 0.5f;
 	const float FlipStrength = 2000.f;
 	// curve from content manager
 	UPROPERTY(EditAnywhere)
 	UCurveFloat* FlipCurve = LoadObject<UCurveFloat>(nullptr, TEXT("/Game/ProjectRevival/Core/Player/FlipCurve.FlipCurve"));
-	bool IsFlipping = false;
 	
-	UPROPERTY()
-	TArray<AActor*> ToHighlight;
-	//Array of objects/enemies to ignore at highlighting
-	UPROPERTY()
-	TArray<AActor*> ToIgnore;
+	
 	UFUNCTION()
 	void OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
@@ -138,5 +160,4 @@ private:
 	void OnCameraCollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	void CheckCameraOverlap();
-	
 };

@@ -2,7 +2,6 @@
 
 
 #include "Components/BaseCharacterMovementComponent.h"
-
 #include "AimAnimNotify.h"
 #include "AnimUtils.h"
 #include "JumpAnimNotify.h"
@@ -19,16 +18,17 @@ void UBaseCharacterMovementComponent::JumpPressEnded()
 	PlayerMovementLogic.JumpPressed=false;
 	PlayerMovementLogic.JumpStarted=true;
 	auto JumpEndedNotify = AnimUtils::FindNotifyByClass<UJumpAnimNotify>(JumpEndAnim);
-	if (JumpEndedNotify)
+	if (JumpEndedNotify && !JumpEndedNotify->OnActionPointReached.IsBound())
 	{
 		JumpEndedNotify->OnActionPointReached.BindUObject(this, &UBaseCharacterMovementComponent::JumpProcessEnded);
 	}
-	CharacterOwner->Jump();
+	if (!IsFalling()) CharacterOwner->Jump();
 	
 }
 
 void UBaseCharacterMovementComponent::JumpProcessEnded()
 {
+	if (IsFalling()) return;
 	PlayerMovementLogic.JumpStarted=false;
 	PlayerMovementLogic.JumpPressed=false;
 }
@@ -48,6 +48,11 @@ void UBaseCharacterMovementComponent::JumpInMoveStarted()
 	CharacterOwner->AddMovementInput(CharacterOwner->GetActorForwardVector()*100.0f);
 }
 
+void UBaseCharacterMovementComponent::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
 float UBaseCharacterMovementComponent::GetMaxSpeed() const
 {
 	const float MaxSpeed = Super::GetMaxSpeed();
@@ -63,7 +68,7 @@ void UBaseCharacterMovementComponent::Jump()
 	UE_LOG(LogPlayerMovement, Warning, TEXT("Jump pressed = %s, jump started = %s"),
 		PlayerMovementLogic.JumpPressed ? "1" : "0",PlayerMovementLogic.JumpStarted ? "1" : "0");
 	if (PlayerMovementLogic.IsPivotTargeted) return;
-	if (PlayerMovementLogic.IsInJump()) return;
+	if (PlayerMovementLogic.IsInJump() || IsFalling() || Cast<ABaseCharacter>(GetPawnOwner())->IsRunning()) return;
 	if (CharacterOwner->GetVelocity().Size()>=300.0f)
 	{
 		UE_LOG(LogPlayerMovement, Warning, TEXT("Jump in movement"));
@@ -90,7 +95,7 @@ void UBaseCharacterMovementComponent::Jump()
 
 void UBaseCharacterMovementComponent::MoveRight(float Amount)
 {
-	if (PlayerMovementLogic.IsInJump()) return;
+	if (PlayerMovementLogic.IsInJump() || IsFalling()) return;
 	if ( (CharacterOwner->GetController() != nullptr) && (Amount != 0.0f) )
 	{
 		const FRotator Rotation = CharacterOwner->GetController()->GetControlRotation();
@@ -105,6 +110,7 @@ void UBaseCharacterMovementComponent::MoveRight(float Amount)
 void UBaseCharacterMovementComponent::MoveForward(float Amount)
 {
 	if (PlayerMovementLogic.IsInJump() && CharacterOwner->GetVelocity().Size()<300.0f) return;
+	if (IsFalling()) return;
 	if ( (CharacterOwner->GetController() != nullptr) && (Amount != 0.0f) )
 	{
 		const FRotator Rotation = CharacterOwner->GetController()->GetControlRotation();

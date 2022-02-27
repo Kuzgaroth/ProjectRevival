@@ -50,6 +50,10 @@ protected:
 	virtual bool GetTraceData(FVector& TraceStart, FVector& TraceEnd) override;
 	void MakeDamage(FHitResult& HitResult);
 	virtual void BeginPlay() override;
+
+	void InitFX();
+	void SetFXActive(bool IsActive);
+	void SpawnTraceFX(const FVector& TraceStart, const FVector& TraceEnd);
 private:
 	FTimerHandle ShotTimerHandle;
 	
@@ -61,8 +65,5 @@ private:
 	UPROPERTY()
 	UAudioComponent* FireAudioComponent;
 	
-	void InitFX();
-	void SetFXActive(bool IsActive);
-	void SpawnTraceFX(const FVector& TraceStart, const FVector& TraceEnd);
 	AController* GetController() const;
 };

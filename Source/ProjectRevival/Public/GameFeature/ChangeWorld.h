@@ -3,14 +3,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
 #include "ChangeWorld.generated.h"
 
 UENUM(BlueprintType, Category = "GameRules")
 enum EChangeWorld
 {
-	OrdinaryWorld UMETA(DisplayName = "Ordinary World"),
-	OtherWorld UMETA(DisplayName = "Other World")
+	OrdinaryWorld=0 UMETA(DisplayName = "Ordinary World"),
+	OtherWorld=1 UMETA(DisplayName = "Other World")
+};
+
+UENUM(BlueprintType, Category = "GameRules")
+enum EChangeEditorVisibility
+{
+	DefaultWorld=0 UMETA(DisplayName = "Ordinary World"),
+    AltirnativeWorld=1 UMETA(DisplayName = "Other World"),
+	BothWorlds=2 UMETA(DisplayName = "Both Worlds")
 };
 
 UCLASS()
@@ -25,7 +34,15 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+    TEnumAsByte<EChangeEditorVisibility> VisibleWorld = BothWorlds;
+	virtual void ClearComponentTags(UStaticMeshComponent* supermesh);
+	virtual void LoadComponentTags(UStaticMeshComponent* supermesh);
 
+
+
+
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

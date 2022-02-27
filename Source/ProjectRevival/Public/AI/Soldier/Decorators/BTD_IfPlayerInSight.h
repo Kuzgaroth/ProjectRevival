@@ -3,16 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CoreTypes.h"
 #include "BehaviorTree/BTDecorator.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "BTD_IfPlayerInSight.generated.h"
-
-DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
-
-struct FBTPlayerCheckDecoratorMemory
-{
-	bool bLastRawResult;
-};
 
 /*
  * 

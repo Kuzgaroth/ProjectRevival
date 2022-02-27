@@ -9,20 +9,16 @@
 #include "AbilitySystem/PRAttributeSet.h"
 #include "AbilitySystem/Abilities/PRGameplayAbility.h"
 #include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
+#include "ProjectRevival/Public/CoreTypes.h"
+#include "Interfaces/ICoverable.h"
+#include "Components/InterpToMovementComponent.h"
+#include "GameFramework/RotatingMovementComponent.h"
 #include "ProjectRevival/Public/AbilitySystem/PRAbilityTypes.h"
 #include "BaseCharacter.generated.h"
 
 class UHealthComponent;
 class UWeaponComponent;
 class USoundCue;
-
-UENUM()
-enum ECoverType
-{
-	High,
-	Low,
-	None
-};
 
 UCLASS()
 class PROJECTREVIVAL_API ABaseCharacter : public ACharacter,  public IAbilitySystemInterface, public IIDynMaterialsFromMesh
@@ -39,6 +35,9 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Components")
+	UInterpToMovementComponent* InterpToMovementComponent;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UHealthComponent* HealthComponent;
 	
@@ -59,8 +58,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Sound")
 	USoundCue* DeathSound;
-
-	/** Компонент для управления способностями */
+	
+	/* Компонент для управления способностями */
 	UPROPERTY()
 	UPRAbilitySystemComponent* AbilitySystemComponent;
 
@@ -71,6 +70,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Abilities)
 	TMap<EGASInputActions, TSubclassOf<UPRGameplayAbility>> GameplayAbilities;
 
+	//Смещение анимации относительно капсулы
+	UPROPERTY(EditDefaultsOnly, Category="Cover")
+	float RootDelta = 100.f;
+	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void AddStartupGameplayAbilities();
 	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data);
@@ -83,6 +86,7 @@ protected:
 	virtual bool StartCover_Internal(FHitResult& CoverHit);
 	virtual bool StopCover_Internal();
 	virtual ECoverType CoverTrace(FHitResult& CoverHit);
+	virtual void AdjustLocationBeforeCover(FHitResult& CoverHit);
 public:	
 	virtual void Tick(float DeltaTime) override;
 	
@@ -92,7 +96,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Movement")
 	float GetMovementDirection() const;
 
-	//UFUNCTION(BlueprintCallable, Category="Components")
+	UFUNCTION(BlueprintCallable, Category="Components")
 	UWeaponComponent* GetWeaponComponent() const;
 	
 	void SetPlayerColor(const FLinearColor& Color);
@@ -102,13 +106,18 @@ public:
 	bool StartCover(AActor* InstigatorObj);
 	UFUNCTION()
 	bool StopCover(AActor* InstigatorObj);
+
+	UFUNCTION(BlueprintCallable, Category="Components")
+	bool IsFlipping() const { return bIsFlipping; }
+	bool bIsFlipping = false;
+
 private:
 	UPROPERTY()
 	TArray<UMaterialInstanceDynamic*> DynamicMaterials;
 	
 	UFUNCTION()
 	void OnGroundLanded(const FHitResult& HitResult);
-
+	void StopAdjustingMovement(const FHitResult& ImpactResult, float Time );
 	friend UPRAttributeSet;
 
 	

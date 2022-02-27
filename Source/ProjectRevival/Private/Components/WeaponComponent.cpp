@@ -42,6 +42,7 @@ TArray<UMaterialInstanceDynamic*> UWeaponComponent::GetCurrentWeaponMaterials()
 
 void UWeaponComponent::NextWeapon()
 {
+	return;
 	if (!CanEquip()) return;
 	CurrentWeaponIndex = (CurrentWeaponIndex+1) % Weapons.Num();
 	EquipWeapon(CurrentWeaponIndex);
@@ -165,6 +166,7 @@ void UWeaponComponent::SpawnWeapons()
 		Weapon->SetOwner(Character);
 		Weapons.Add(Weapon);
 		AttachWeaponToSocket(Weapon, Character->GetMesh(), WeaponArmorySocketName);
+		Weapon->OnWeaponShotDelegate.AddUObject(this, &UWeaponComponent::OnShotMade);
 	}
 }
 
@@ -233,6 +235,10 @@ void UWeaponComponent::OnEquipFinished(USkeletalMeshComponent* MeshComponent)
 	EquipAnimInProgress = false;
 }
 
+void UWeaponComponent::OnShotMade()
+{
+	PlayAnimMontage(FireMontage);
+}
 void UWeaponComponent::OnReloadFinished(USkeletalMeshComponent* MeshComponent)
 {
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
@@ -281,5 +287,48 @@ void UWeaponComponent::ChangeClip()
 	CurrentWeapon->StopFire();
 	CurrentWeapon->ChangeClip();
 	ReloadAnimInProgress = true;
+	
 	PlayAnimMontage(CurrentReloadAnimMontage);
+}
+
+
+int32 UWeaponComponent::GetCurrentWeaponClips() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetAmmoData().Clips;
+	}
+	return -1;
+}
+
+int32 UWeaponComponent::GetCurrentWeaponBullets() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetAmmoData().Bullets;
+	}
+	return -1;
+}
+
+int32 UWeaponComponent::GetMaxWeaponClips() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetDefaultAmmoData().Clips;
+	}
+	return -1;
+}
+
+int32 UWeaponComponent::GetMaxWeaponBullets() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetDefaultAmmoData().Bullets;
+	}
+	return -1;
+}
+
+ABaseWeapon* UWeaponComponent::GetCurrentWeapon()
+{
+	return CurrentWeapon;
 }

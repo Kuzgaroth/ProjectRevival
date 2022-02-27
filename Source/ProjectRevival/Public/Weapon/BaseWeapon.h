@@ -9,9 +9,12 @@
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "BaseWeapon.generated.h"
 
+class UMatineeCameraShake;
 class USkeletalMeshComponent;
 class UNiagaraComponent;
 class USoundCue;
+
+DECLARE_MULTICAST_DELEGATE(FOnWeaponShotSignature)
 
 UCLASS()
 class PROJECTREVIVAL_API ABaseWeapon : public AActor, public IIDynMaterialsFromMesh
@@ -24,10 +27,11 @@ public:
 	void ChangeClip();
 	bool CanReload() const;
 	FWeaponUIData GetUIData() const {return UIData;}
-	FAmmoData GetDefaultAmmoData() const { return DefaultAmmo; }
-	FAmmoData GetAmmoData() const { return CurrentAmmo; }
-	USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; };
+	FAmmoData GetAmmoData() const {return CurrentAmmo;}
+	FAmmoData GetDefaultAmmoData() const {return DefaultAmmo;}
 	bool IsAmmoEmpty() const;
+
+	FOnWeaponShotSignature OnWeaponShotDelegate;
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
 	USkeletalMeshComponent* WeaponMesh;
@@ -61,10 +65,17 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Sound")
 	USoundCue* FireSound;
+
+	UPROPERTY(EditDefaultsOnly, Category="Effects")
+	TSubclassOf<UCameraShakeBase> FireCameraShake;
+	
+	UPROPERTY(EditDefaultsOnly, Category=Effects)
+	UForceFeedbackEffect *FireForceFeedback;
 	
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
 	virtual void MakeShot();
+	virtual void PlayForceEffects();
 
 	APlayerController* GetPlayerController() const;
 	bool GetPlayerViewPoint(FVector& ViewLocation, FRotator& ViewRotation) const;

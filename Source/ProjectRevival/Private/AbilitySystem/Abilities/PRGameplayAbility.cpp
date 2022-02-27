@@ -13,34 +13,37 @@ UPRGameplayAbility::UPRGameplayAbility()
 
 void UPRGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
-	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
+	//Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
+	ApplyCost(Handle, ActorInfo, ActivationInfo);
 	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("%s has started"), *GetName());
-	float CooldownMagnitude;
+	
+	//Вызов старта кулдауна способности
+	
+	
+	//K2_EndAbility();
+}
+
+void UPRGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	float CooldownMagnitude=0.f;
 	UGameplayEffect* CooldownEffect = GetCooldownGameplayEffect(); 
 	if (CooldownEffect)
 	{
 		CooldownEffect->DurationMagnitude.GetStaticMagnitudeIfPossible(1.f, CooldownMagnitude);
 		UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Cooldown is %f seconds"), CooldownMagnitude);
 	}
-	//Вызов старта кулдауна способности
-	if(ActorInfo->PlayerController.Get()->GetHUD()) {
-		auto PlayerHUDWidget = Cast<UPlayerHUDWidget>(Cast<ABasePlayerController>(ActorInfo->PlayerController.Get())->GetHUD<AGameHUD>()->GetPlayerHUDWidget());
-		if (PlayerHUDWidget)
-		{
-			AbilityWidget = PlayerHUDWidget->GetWidgetByAction(AbilityAction);
-		}
-		
-		if (!AbilityWidget) UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Widget have not found. Check Blueprint version on AbilityAction parameter or widget method directly"));
-		if (AbilityWidget)
-		{
-			AbilityWidget->StartCooldown(CooldownMagnitude);	
-		}
+	ApplyCooldown(Handle, ActorInfo, ActivationInfo);
+	auto PlayerHUDWidget = Cast<UPlayerHUDWidget>(Cast<ABasePlayerController>(ActorInfo->PlayerController.Get())->GetHUD<AGameHUD>()->GetPlayerHUDWidget());
+	if (PlayerHUDWidget)
+	{
+		AbilityWidget = PlayerHUDWidget->GetWidgetByAction(AbilityAction);
 	}
-	//K2_EndAbility();
-}
-
-void UPRGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
-{
+	
+	if (!AbilityWidget) UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Widget have not found. Check Blueprint version on AbilityAction parameter or widget method directly"));
+	if (AbilityWidget)
+	{
+		AbilityWidget->StartCooldown(CooldownMagnitude);	
+	}
 	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("%s has ended"), *GetName());
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
