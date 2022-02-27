@@ -20,6 +20,17 @@ enum EChangeEditorVisibility
 	DefaultWorld=0 UMETA(DisplayName = "Ordinary World"),
     AltirnativeWorld=1 UMETA(DisplayName = "Other World"),
 	BothWorlds=2 UMETA(DisplayName = "Both Worlds")
+
+};
+
+UENUM(BlueprintType, Category = "GameRules")
+enum EChangeAllMapEditorVisibility
+{
+	DefaultVisibleWorld=0 UMETA(DisplayName = "Ordinary World"),
+    AltirnativeVisibleWorld=1 UMETA(DisplayName = "Other World"),
+	BothVisibleWorlds=2 UMETA(DisplayName = "Both Worlds"),
+	None=3 UMETA(DisplayName = "None Vorld")
+
 };
 
 UCLASS()
@@ -38,6 +49,8 @@ protected:
     TEnumAsByte<EChangeEditorVisibility> VisibleWorld = BothWorlds;
 	virtual void ClearComponentTags(UStaticMeshComponent* supermesh);
 	virtual void LoadComponentTags(UStaticMeshComponent* supermesh);
+	
+	
 
 
 
@@ -48,6 +61,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	TEnumAsByte<EChangeWorld> CurrentWorld = OrdinaryWorld;
-	
+
+	virtual void ChangeVisibleWorld(EChangeEditorVisibility VisibleInEditorWorld);
     virtual void Changing();
 };
