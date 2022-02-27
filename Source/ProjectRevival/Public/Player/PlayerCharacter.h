@@ -30,6 +30,15 @@ public:
 
 	UFUNCTION()
 	void TimelineLeftSideView(float Value);
+
+	UFUNCTION()
+	void TimelineCover(float Value);
+
+	UFUNCTION()
+	void TimelineCoverFieldOfView(float Value);
+
+	UFUNCTION()
+	void TimelineCoverYShift(float Value);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoomBlueprint PlayerAimZoom;
@@ -37,11 +46,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FLeftSideViewBlueprint LeftSideView;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Cover")
+	FCameraCover CameraCover;
+
 	UPROPERTY()
 	UPlayerAimZoomFunctions* PlayerAimZoomFunctions;
 
 	UPROPERTY()
 	ULeftSideViewFunctions* LeftSideViewFunctions;
+
+	UPROPERTY()
+	UCameraCoverFunctions* CameraCoverFunctions;
 	
 	USpringArmComponent* GetPlayerSpringArmComponent(){ return SpringArmComponent; }
 	void CameraZoomIn();
