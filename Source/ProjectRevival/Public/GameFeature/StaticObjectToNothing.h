@@ -71,5 +71,7 @@ public:
 	
 	void Changing() override;
 	
+	virtual void ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld) override;
+	
 	virtual bool CheckIsChangeAbleObjIsCover() override;
 };

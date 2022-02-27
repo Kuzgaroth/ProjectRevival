@@ -103,13 +103,26 @@ void AStaticObjectToNothing::Tick(float DeltaTime)
 void AStaticObjectToNothing::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-	if(VisibleWorld==World || VisibleWorld==BothWorlds)
+	if(PropertyChangedEvent.Property->GetName()=="VisibleWorld")
 	{
-		SuperMesh->SetVisibility(true);
+		if(VisibleWorld==World || VisibleWorld==BothWorlds)
+		{
+			SuperMesh->SetVisibility(true);
+		}
+		else
+		{
+			SuperMesh->SetVisibility(false);
+		}
 	}
-	else
+	if(PropertyChangedEvent.Property->GetName()=="AllObjectVisibleWorld")
 	{
-		SuperMesh->SetVisibility(false);
+		TArray<AActor*> ChangeAbleObjs;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(),AChangeWorld::StaticClass(),ChangeAbleObjs);
+		for(auto obj:ChangeAbleObjs)
+		{
+			auto chobj=Cast<AChangeWorld>(obj);
+			chobj->ChangeVisibleWorld(AllObjectVisibleWorld);
+		}
 	}
 }
 #endif
@@ -130,9 +143,10 @@ void AStaticObjectToNothing::Changing()
 		if(VisualCurve)
 		{
 			isApearing=true;
-			TimeLine.PlayFromStart();
 			SuperMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
 			LoadComponentTags(SuperMesh);
+			TimeLine.PlayFromStart();
+			
 		}
 		else
 		{
@@ -145,7 +159,51 @@ void AStaticObjectToNothing::Changing()
 		if(VisualCurve)
 		{
 			isApearing=false;
+			SuperMesh->SetCollisionProfileName("OverlapAll");
 			TimeLine.PlayFromStart();
+
+		}
+		else
+		{
+			SuperMesh->SetVisibility(false);
+		}
+	}
+}
+
+void AStaticObjectToNothing::ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld)
+{
+	Super::ChangeVisibleWorld(VisibleInEditorWorld);
+	if(VisibleInEditorWorld!=OwnValuesWorld)
+	{
+		switch (VisibleInEditorWorld)
+		{
+		case DefaultVisibleWorld:
+			VisibleWorld=DefaultWorld;
+			break;
+		case OtherVisibleWorld:
+			VisibleWorld=AltirnativeWorld;
+			break;
+		case BothVisibleWorlds:
+			VisibleWorld=BothWorlds;
+			break;
+		default:
+			break;
+		}
+		if(VisibleWorld==World || VisibleWorld==BothWorlds)
+		{
+			SuperMesh->SetVisibility(true);
+		}
+		else
+		{
+			SuperMesh->SetVisibility(false);
+		}
+	}
+	else
+	{
+		VisibleWorld=DefaultWorld;
+		if(VisibleWorld==World || VisibleWorld==BothWorlds)
+		{
+			SuperMesh->SetVisibility(true);
 		}
 		else
 		{
@@ -155,7 +213,7 @@ void AStaticObjectToNothing::Changing()
 }
 
 void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                                      UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if(Cast<AChangeWorldSphereActor>(OtherActor))
 	{
@@ -168,7 +226,7 @@ void AStaticObjectToNothing::TimeLineFinished()
 	if(!isApearing)
 	{
 		ClearComponentTags(SuperMesh);
-		SuperMesh->SetCollisionProfileName("OverlapAll");
+
 	}
 }
 
