@@ -58,7 +58,10 @@ public:
 	UPROPERTY()
 	UCameraCoverFunctions* CameraCoverFunctions;
 	
-	USpringArmComponent* GetPlayerSpringArmComponent(){return SpringArmComponent;}
+	USpringArmComponent* GetPlayerSpringArmComponent(){ return SpringArmComponent; }
+	void CameraZoomIn();
+	void CameraZoomOut();
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UCameraComponent* CameraComponent;
@@ -81,9 +84,7 @@ protected:
 	
 	void OnCameraMove();
 	
-	void CameraZoomIn();
-	void CameraZoomOut();
-
+	
 	void OnWorldChanged();
 	virtual bool StartCover_Internal(FHitResult& CoverHit) override;
 	virtual bool StopCover_Internal() override;
@@ -106,7 +107,6 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	FRotator GetAimDelta() const;
-	
 	virtual bool IsRunning() const override;
 	virtual ECoverType CheckCover() override;
 	virtual void OnTurn() override;
@@ -114,6 +114,11 @@ public:
 	virtual void Landed(const FHitResult& Hit) override;
 	UFUNCTION(BlueprintCallable)
 	FCoverData& GetCoverData();
+	
+	bool IsMovingRight() const { return bIsMovingRight; }
+	bool IsMovingLeft() const { return bIsMovingLeft; }
+	bool IsMovingBackward() const { return bIsMovingBackward; }
+	bool IsMovingForward() const { return bIsMovingForward; }
 private:
 	UPROPERTY()
 	UBaseCharacterMovementComponent* PlayerMovementComponent;
@@ -121,7 +126,11 @@ private:
 	FCoverData CoverData;
 	
 	bool bWantsToRun = false;
-	bool IsMovingForward = false;
+	bool bIsMovingForward = false;
+	bool bIsMovingRight = false;
+	bool bIsMovingBackward = false;
+	bool bIsMovingLeft = false;
+	
 	void MoveForward(float Amount);
 	void MoveRight(float Amount);
 	void StartRun();
@@ -141,7 +150,7 @@ private:
 	// curve from content manager
 	UPROPERTY(EditAnywhere)
 	UCurveFloat* FlipCurve = LoadObject<UCurveFloat>(nullptr, TEXT("/Game/ProjectRevival/Core/Player/FlipCurve.FlipCurve"));
-	bool IsFlipping = false;
+	
 	
 	UFUNCTION()
 	void OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
