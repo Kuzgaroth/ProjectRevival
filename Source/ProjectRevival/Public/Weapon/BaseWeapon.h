@@ -62,7 +62,7 @@ protected:
 	//Cascade effect to play
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
 	UParticleSystem* MuzzleFXCascade;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Sound")
 	USoundCue* FireSound;
 
