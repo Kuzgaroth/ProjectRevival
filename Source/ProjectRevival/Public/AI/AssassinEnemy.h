@@ -18,8 +18,6 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
-
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	bool bIsAttacking = false;
@@ -30,14 +28,8 @@ private:
 	bool bWantsToRun = false;
 	bool IsMovingForward = false;
 	
-	void MoveForward(float Amount);
-	void MoveRight(float Amount);
-	void StartRun();
-	void StopRun();
 	virtual bool IsRunning() const override;
-	void LookUp(float Amount);
-	void LookAround(float Amount);
-	
+		
 	UPROPERTY()
 	UCharacterMovementComponent* AssassinMovementComponent;
 };
