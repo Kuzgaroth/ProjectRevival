@@ -94,4 +94,5 @@ public:
 	virtual void ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld) override;
 	virtual bool CheckIsChangeAbleObjIsCover() override;
 
+	virtual void Changing() override;
 };

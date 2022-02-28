@@ -57,6 +57,8 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
 	
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	UBoxComponent* CollisionComponent = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* SceneComponent;
