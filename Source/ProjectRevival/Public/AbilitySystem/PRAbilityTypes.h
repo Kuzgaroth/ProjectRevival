@@ -13,5 +13,6 @@ enum class EGASInputActions : uint8
 	Visor,
 	Ghost,
 	ChangeWorld,
-	MeleeAttack
+	MeleeAttack,
+	Vampire
 };
