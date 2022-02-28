@@ -16,16 +16,14 @@ AStaticObjectToNothing::AStaticObjectToNothing()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	
 
-	SceneComponent = CreateDefaultSubobject<USceneComponent>("SceneComponent");
-	SceneComponent->SetMobility(EComponentMobility::Static);
-	RootComponent = SceneComponent;
 
 	InterpFunction.BindUFunction(this,FName("TimeLineFloatReturn"));
 	OnTimeLineFinished.BindUFunction(this,FName("TimeLineFinished"));
 	
 	SuperMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SuperMesh"));
-	SuperMesh->SetupAttachment(RootComponent);
+	RootComponent = SuperMesh;
 	SuperMesh->SetMobility(EComponentMobility::Movable);
 	SuperMesh->SetVisibility(true);
 }
