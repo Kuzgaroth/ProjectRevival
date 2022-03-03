@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AStaticObjectToStaticObject::AStaticObjectToStaticObject()
@@ -138,6 +139,49 @@ void AStaticObjectToStaticObject::BeginPlay()
 	SuperMesh2->OnComponentBeginOverlap.AddDynamic(this,&AStaticObjectToStaticObject::OnOtherMeshCollision);
 }
 
+void AStaticObjectToStaticObject::ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld)
+{
+	Super::ChangeVisibleWorld(VisibleInEditorWorld);
+	if(VisibleInEditorWorld!=OwnValuesWorld)
+	{
+		switch (VisibleInEditorWorld)
+		{
+		case DefaultVisibleWorld:
+			VisibleWorld=DefaultWorld;
+			break;
+		case OtherVisibleWorld:
+			VisibleWorld=AltirnativeWorld;
+			break;
+		case BothVisibleWorlds:
+			VisibleWorld=BothWorlds;
+			break;
+		default:
+			break;
+		}
+		if(VisibleWorld==DefaultWorld)
+		{
+			SuperMesh1->SetVisibility(true);
+			SuperMesh2->SetVisibility(false);
+
+		}
+		else if(VisibleWorld==AltirnativeWorld)
+		{
+			SuperMesh1->SetVisibility(false);
+			SuperMesh2->SetVisibility(true);
+		}
+		else
+		{
+			SuperMesh1->SetVisibility(true);
+			SuperMesh2->SetVisibility(true);
+		}
+	}
+	else
+	{
+		SuperMesh1->SetVisibility(true);
+		SuperMesh2->SetVisibility(false);
+	}
+}
+
 bool AStaticObjectToStaticObject::CheckIsChangeAbleObjIsCover()
 {
 	return SuperMesh1->ComponentTags.Contains("Cover")||SuperMesh2->ComponentTags.Contains("Cover");
@@ -161,22 +205,36 @@ void AStaticObjectToStaticObject::Tick(float DeltaTime)
 void AStaticObjectToStaticObject::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-	if(VisibleWorld==DefaultWorld)
+	if(PropertyChangedEvent.Property->GetName()=="VisibleWorld")
 	{
-		SuperMesh1->SetVisibility(true);
-		SuperMesh2->SetVisibility(false);
+		if(VisibleWorld==DefaultWorld)
+		{
+			SuperMesh1->SetVisibility(true);
+			SuperMesh2->SetVisibility(false);
 
+		}
+		else if(VisibleWorld==AltirnativeWorld)
+		{
+			SuperMesh1->SetVisibility(false);
+			SuperMesh2->SetVisibility(true);
+		}
+		else
+		{
+			SuperMesh1->SetVisibility(true);
+			SuperMesh2->SetVisibility(true);
+		}
 	}
-	else if(VisibleWorld==AltirnativeWorld)
+	if(PropertyChangedEvent.Property->GetName()=="AllObjectVisibleWorld")
 	{
-		SuperMesh1->SetVisibility(false);
-		SuperMesh2->SetVisibility(true);
+		TArray<AActor*> ChangeAbleObjs;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(),AChangeWorld::StaticClass(),ChangeAbleObjs);
+		for(auto obj:ChangeAbleObjs)
+		{
+			auto chobj=Cast<AChangeWorld>(obj);
+			chobj->ChangeVisibleWorld(AllObjectVisibleWorld);
+		}
 	}
-	else
-	{
-		SuperMesh1->SetVisibility(true);
-		SuperMesh2->SetVisibility(true);
-	}
+
 }
 #endif
 
@@ -198,6 +256,7 @@ void AStaticObjectToStaticObject::OnOrdinaryMeshCollision(UPrimitiveComponent* O
 			else
 			{
 				OrIsAppearing=false;
+				SuperMesh1->SetCollisionProfileName("OverlapAll");
 				OrdinaryWTimeLine.PlayFromStart();
 			}
 		}
@@ -226,6 +285,7 @@ void AStaticObjectToStaticObject::OnOtherMeshCollision(UPrimitiveComponent* Over
 			else
 			{
 				OtIsAppearing=false;
+				SuperMesh2->SetCollisionProfileName("OverlapAll");
 				OtherWTimeLine.PlayFromStart();
 			
 			}
@@ -242,8 +302,6 @@ void AStaticObjectToStaticObject::OrdinaryWTimelineFinished()
 	if(!OrIsAppearing)
 	{
 		ClearComponentTags(SuperMesh1);
-		SuperMesh1->SetCollisionProfileName("OverlapAll");
-		
 	}
 }
 
@@ -252,8 +310,6 @@ void AStaticObjectToStaticObject::OtherWTimelineFinished()
 	if(!OtIsAppearing)
 	{
 		ClearComponentTags(SuperMesh2);
-		SuperMesh2->SetCollisionProfileName("OverlapAll");
-		
 	}
 	
 }

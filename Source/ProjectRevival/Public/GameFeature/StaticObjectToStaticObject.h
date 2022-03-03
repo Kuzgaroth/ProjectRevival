@@ -91,6 +91,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* SceneComponent;
 	
+	virtual void ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld) override;
 	virtual bool CheckIsChangeAbleObjIsCover() override;
 
 };
