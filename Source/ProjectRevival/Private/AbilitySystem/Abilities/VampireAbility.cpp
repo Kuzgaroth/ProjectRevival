@@ -1,4 +1,5 @@
 #include "AbilitySystem/Abilities/VampireAbility.h"
+#include "Components/WeaponComponent.h"
 #include "AbilitySystem/AbilityTasks/VampireAbility_TraceTask.h"
 
 UVampireAbility::UVampireAbility()
@@ -10,8 +11,7 @@ void UVampireAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, con
                                  const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
-	//далее идет место с твоей логикой, туда ты вставляешь свой код
-	//--------------------------------------------------------------------
+	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("UVampireAbility::CommitExecute"));
 	const auto Owner = ActorInfo->OwnerActor.Get();
 	if (!Owner)
 	{
@@ -20,28 +20,64 @@ void UVampireAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, con
 	}
 	else
 	{
-		const APlayerCharacter* Character = Cast<APlayerCharacter>(ActorInfo->OwnerActor.Get());
-		//const APlayerController* Controller = Cast<APlayerController>(Character->GetController());
+		APlayerCharacter* Character = Cast<APlayerCharacter>(ActorInfo->OwnerActor.Get());
+		APlayerController* Controller = Cast<APlayerController>(Character->GetController());
+		UWeaponComponent* Weapon = Cast<UWeaponComponent>(Character->GetWeaponComponent());
 		UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
-		if(VampireMontage != nullptr && AnimInstance != nullptr)
-		{
-			MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None,
-				VampireMontage, true, NAME_None, true);
-			MontageTask->ReadyForActivation();
-		}
-		else
+		
+		if(Character->GetCharacterMovement()->IsFlying()||Character->GetCharacterMovement()->IsFalling() &&
+			VampireReverseMontage == nullptr && VampireMontage == nullptr && AnimInstance == nullptr)
 		{
 			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("No montage founded"));
+			K2_EndAbility();
+  		}
+		else
+		{
+			if(Weapon->IsShooting())
+			{
+				Weapon->StopFire();
+			}
+						
+			TraceTask = UVampireAbility_TraceTask::TaskInit(this, VampireAbilityDistance, VampireAbilityDamage);
+			TraceTask->Activate();
+			
+			if(TraceTask->Status)
+			{
+				MontageDuration = VampireMontage->GetPlayLength();
+				AddNewBeam();
+				MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None,
+				   VampireMontage, true, NAME_None, true);
+				MontageTask->ReadyForActivation();
+				UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("trace match"));
+			}
+			else
+			{
+				MontageDuration = VampireReverseMontage->GetPlayLength();
+				MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None,
+				   VampireReverseMontage, true, NAME_None, true);
+				MontageTask->ReadyForActivation();
+				UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("No trace match"));
+			}
+			DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, MontageDuration);
+			DelayTask->OnFinish.AddDynamic(this, &UVampireAbility::OnTraceAnalysisEnd);
+			DelayTask->ReadyForActivation();
 		}
-        //DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, FlipDuration);
-        //DelayTask->OnFinish.AddDynamic(this, &UFlipAbility::OnFlipEnd);
-        //TraceTask->Activate();
-		//DelayTask->ReadyForActivation();
 	}
-	//--------------------------------------------------------------------
-	//K2_EndAbility();
 }
 
+void UVampireAbility::AddNewBeam()
+{
+	//const FVector TraceStart = WeaponMesh->GetSocketLocation("TraceStart");
+	//const FVector TraceEnd = WeaponMesh->GetSocketLocation("TraceEnd");
+	if (BeamComp)
+	{
+		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Beam added"));
+		//BeamComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamFX, TraceStart, FRotator::ZeroRotator, true);
+		//BeamArray.Add(BeamComp);
+		//BeamComp->SetBeamSourcePoint(0, TraceStart, 0);
+		//BeamComp->SetBeamTargetPoint(0, TraceEnd, 0);
+	}
+}
 
 void UVampireAbility::OnTraceAnalysisEnd()
 {
