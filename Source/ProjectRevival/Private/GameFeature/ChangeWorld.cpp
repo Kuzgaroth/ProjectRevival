@@ -35,6 +35,10 @@ void AChangeWorld::Tick(float DeltaTime)
 }
 
 
+void AChangeWorld::ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld)
+{
+	
+}
 
 void AChangeWorld::Changing()
 {
