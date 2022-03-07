@@ -43,69 +43,45 @@ void UVampireAbility_TraceTask::TraceAnalysisStarted()
   	FRotator ViewRotation;
 	
 	APlayerCharacter* Character = Cast<APlayerCharacter>(GetAvatarActor());
-	UWeaponComponent* WeaponComponent = Cast<UWeaponComponent>(Character->GetWeaponComponent());
-	ABaseWeapon* Weapon = WeaponComponent->GetCurrentWeapon();
+	//UWeaponComponent* WeaponComponent = Cast<UWeaponComponent>(Character->GetWeaponComponent());
+	APlayerController* Controller = Cast<APlayerController>(Character->GetController());
+    if (!Controller)
+    {
+    	UE_LOG(LogPRAbilitySystemBase, Error, TEXT("!Controller"));
+    	return;
+    }
+	if (!GetWorld())
+	{
+		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("!GetWorld"));
+		return;
+	}
 	
-	if (Character->IsPlayerControlled())
- 	{
- 		APlayerController* Controller = Cast<APlayerController>(Character->GetController());
-     	 		
-		FVector TraceStart;
-		FVector TraceEnd;
- 		if (!Controller)
- 		{
- 			Controller->GetPlayerViewPoint(ViewLocation, ViewRotation);
- 			UE_LOG(LogPRAbilitySystemBase, Error, TEXT("!Controller"));
- 			return;
- 		}
-	
- 		TraceStart = ViewLocation;
- 		const FVector ShootDirection = ViewRotation.Vector();
- 		TraceEnd = TraceStart + ShootDirection * VampireAbilityDistance;
- 		
-		FHitResult HitResult;
- 		if (!GetWorld())
- 		{
- 			UE_LOG(LogPRAbilitySystemBase, Error, TEXT("!GetWorld"));
- 			return;
- 		}
- 		
- 		FCollisionQueryParams CollisionQueryParams;
- 		CollisionQueryParams.AddIgnoredActor(Character);
- 		CollisionQueryParams.bReturnPhysicalMaterial = true;
- 		GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, CollisionQueryParams);
-
+	Controller->GetPlayerViewPoint(ViewLocation, ViewRotation);
+	FVector TraceStart = ViewLocation;
+	FVector TraceEnd = TraceStart + ViewRotation.Vector() * VampireAbilityDistance;
+	 	
+ 	FHitResult HitResult;	
+	FCollisionQueryParams CollisionQueryParams;
+	CollisionQueryParams.AddIgnoredActor(Character);
+	CollisionQueryParams.bReturnPhysicalMaterial = true;
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, CollisionQueryParams))
+	{
 		FVector TraceFXEnd = TraceEnd;
-		if (HitResult.bBlockingHit)
-		{
-			TraceFXEnd = HitResult.ImpactPoint;
-			//DrawDebugLine(GetWorld(),GetMuzzleWorldLocation(), HitResult.ImpactPoint, FColor::Red, false, 3.0f, 0, 3.0f);
-			//DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 10.0f, 24, FColor::Red, false, 5.0f);
-			MakeDamage(HitResult, Character, Controller);
-			//Weapon->WeaponFXComponent->PlayImpactFX(HitResult);
-		}
- 	}
- 	else
- 	{
- 		//ViewLocation = Weapon->GetWeaponMesh->GetSocketLocation(MuzzelSocketName);
- 		//ViewRotation = WeaponMesh->GetSocketRotation(MuzzelSocketName);
- 	}
-
- 	//return true;
-	if(this)
-	{
+		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("HitResult.bBlockingHit"));
 		Status = true;
-		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("TraceAnalysisStarted failed"));
-		EndTask();
-	}
-	else
-	{
-		Status = false;
+		TraceFXEnd = HitResult.ImpactPoint;
+		//DrawDebugLine(GetWorld(),GetMuzzleWorldLocation(), HitResult.ImpactPoint, FColor::Red, false, 3.0f, 0, 3.0f);
+		//DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 10.0f, 24, FColor::Red, false, 5.0f);
+		MakeDamage(HitResult, Character, Controller);
 		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("TraceAnalysisStarted done"));
-		//Timeline.SetTimelineFinishedFunc(OnAnalysisStarted);
-		//Timeline.PlayFromStart();
-		TraceAnalysisFinished();
+		//Weapon->WeaponFXComponent->PlayImpactFX(HitResult);
 	}
+	
+	if (HitResult.GetActor())
+	{
+		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Hit actor: %s"), *HitResult.GetActor()->GetName());
+	}
+	TraceAnalysisFinished();
 }
 
 void UVampireAbility_TraceTask::TraceAnalysisFinished()
@@ -113,14 +89,10 @@ void UVampireAbility_TraceTask::TraceAnalysisFinished()
 	UE_LOG(LogPRAbilitySystemBase, Error, TEXT("TraceAnalysisFinished"));
 	//Timeline.SetTimelineFinishedFunc(OnAnalysisFinished);
 	//GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
-	
 }
 
 void UVampireAbility_TraceTask::MakeDamage(FHitResult& HitResult, APlayerCharacter* Character, APlayerController* Controller)
-{
-	//APlayerCharacter* Character = Cast<APlayerCharacter>(GetAvatarActor());
-	//APlayerController* Controller = Cast<APlayerController>(Character->GetController());
-	
+{	
 	const auto DamagedActor = HitResult.GetActor();
 	if (!DamagedActor)
 	{
