@@ -8,6 +8,7 @@
 #include "AbilitySystem/AbilityTasks/VampireAbility_TraceTask.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitDelay.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "VampireAbility.generated.h"
 
 UCLASS()
@@ -17,22 +18,30 @@ class PROJECTREVIVAL_API UVampireAbility : public UPRGameplayAbility
 public:
 	UVampireAbility();
 	    
-	UPROPERTY(EditDefaultsOnly, Category="Flip constants")
-	float VampireAbilityDistance;
+	UPROPERTY(EditDefaultsOnly, Category="Ability constants")
+	float VampireAbilityDistance = 5000.f;
     
-	UPROPERTY(EditDefaultsOnly, Category="Flip constants")
-	float VampireAbilityDamage;
+	UPROPERTY(EditDefaultsOnly, Category="Ability constants")
+	float VampireAbilityDamage = 50.f;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Animations")
 	UAnimMontage* VampireMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category="Animations")
 	UAnimMontage* VampireReverseMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category="Animations")
+	float MontageRate = 3.0;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
 	UParticleSystem* BeamFX;
 
-	float MontageDuration;
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	UParticleSystemComponent* BeamComp;
+    	
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	TArray<UParticleSystemComponent*>BeamArray;
+	
 protected:	
 	virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
@@ -40,17 +49,20 @@ protected:
 	UFUNCTION()
 	void OnTraceAnalysisEnd();
 	UFUNCTION()
-	void AddNewBeam();
+	void OnReverseMontageEnd();
+	UFUNCTION()
+	void PlayVFX();
+	UFUNCTION()
+	void MakeDamage(const FHitResult& HitResult, APlayerCharacter* Character, APlayerController* Controller) const;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-	UParticleSystemComponent* BeamComp;
-	TArray<UParticleSystemComponent*>BeamArray;
-	
+	float MontageDuration;
 private:
 	UPROPERTY()
 	UVampireAbility_TraceTask* TraceTask;
+	
 	UPROPERTY()
 	UAbilityTask_WaitDelay* DelayTask;
+	
 	UPROPERTY()
-	class UAbilityTask_PlayMontageAndWait* MontageTask;
+	UAbilityTask_PlayMontageAndWait* MontageTask;
 };
