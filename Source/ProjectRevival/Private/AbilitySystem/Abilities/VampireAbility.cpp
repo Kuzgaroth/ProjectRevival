@@ -64,13 +64,12 @@ void UVampireAbility::OnTraceAnalysisEnd()
 	APlayerCharacter* Character = Cast<APlayerCharacter>(CurrentActorInfo->OwnerActor.Get());
  	APlayerController* Controller = Cast<APlayerController>(Character->GetController());
  	UWeaponComponent* Weapon = Cast<UWeaponComponent>(Character->GetWeaponComponent());
-    Weapon->SetWeaponBlocked(false);
 	
 	if(TraceTask->Status)
 	{
-		
 		PlayVFX();
 		MakeDamage(TraceTask->DamagedCharacter, Character, Controller);
+		Weapon->SetWeaponBlocked(false);
 		TraceTask->EndTask();
 		K2_EndAbility();
 	}
@@ -87,10 +86,14 @@ void UVampireAbility::OnTraceAnalysisEnd()
 		
 		TraceTask->EndTask();
 	}
+	
 }
 
 void UVampireAbility::OnReverseMontageEnd()
 {
+	const APlayerCharacter* Character = Cast<APlayerCharacter>(CurrentActorInfo->OwnerActor.Get());
+	UWeaponComponent* Weapon = Cast<UWeaponComponent>(Character->GetWeaponComponent());
+	Weapon->SetWeaponBlocked(false);
 	K2_EndAbility();
 }
 
