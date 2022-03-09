@@ -53,7 +53,7 @@ protected:
 	UFUNCTION()
 	void PlayVFX();
 	UFUNCTION()
-	void MakeDamage(const FHitResult& HitResult, APlayerCharacter* Character, APlayerController* Controller) const;
+	void MakeDamage(ABaseCharacter* DamagedActor, APlayerCharacter* Character, APlayerController* Controller) const;
 	
 	float MontageDuration;
 private:

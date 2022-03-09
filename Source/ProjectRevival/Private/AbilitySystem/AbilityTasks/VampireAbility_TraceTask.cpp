@@ -6,8 +6,8 @@
 #include "PlayerCharacter.h"
 #include "DrawDebugHelpers.h"
 #include "Player/BaseCharacter.h"
-#include "WeaponComponent.h"
 #include "BaseWeapon.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 UVampireAbility_TraceTask* UVampireAbility_TraceTask::TaskInit(UGameplayAbility* OwningAbility, float Distance)
 {
@@ -42,14 +42,21 @@ void UVampireAbility_TraceTask::TraceAnalysisStarted()
 	FCollisionQueryParams CollisionQueryParams;
 	CollisionQueryParams.AddIgnoredActor(Character);
 	CollisionQueryParams.bReturnPhysicalMaterial = true;
-	if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, CollisionQueryParams))
+	
+	FHitResult HitResult;
+	TArray<AActor*> ActorsToIgnore; ActorsToIgnore.Add(GetAvatarActor());
+	if(UKismetSystemLibrary::LineTraceSingle(GetWorld(), TraceStart, TraceEnd, UEngineTypes::ConvertToTraceType(ECC_Visibility),
+	   		false, ActorsToIgnore, EDrawDebugTrace::None, HitResult, true))
 	{
-		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Hit actor: %s"), *HitResult.GetActor()->GetName());
-		ABaseCharacter* TempActor = Cast<ABaseCharacter>(HitResult.GetActor());
-		if (TempActor != nullptr)
-     	{
-			Status = true;
-     	}
+		if(HitResult.GetActor())
+		{
+			DamagedCharacter = Cast<ABaseCharacter>(HitResult.GetActor());
+			UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Hit actor: %s"), *HitResult.GetActor()->GetName());
+			if (DamagedCharacter != nullptr)
+			{
+				Status = true;
+			}
+		}
 	}
 }
 

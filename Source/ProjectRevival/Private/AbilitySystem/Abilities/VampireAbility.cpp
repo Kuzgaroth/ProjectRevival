@@ -38,6 +38,7 @@ void UVampireAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, con
   		}
 		else
 		{
+			Weapon->SetWeaponBlocked(true);
 			if(Weapon->IsShooting())
 			{
 				Weapon->StopFire();
@@ -60,13 +61,16 @@ void UVampireAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, con
 
 void UVampireAbility::OnTraceAnalysisEnd()
 {
+	APlayerCharacter* Character = Cast<APlayerCharacter>(CurrentActorInfo->OwnerActor.Get());
+ 	APlayerController* Controller = Cast<APlayerController>(Character->GetController());
+ 	UWeaponComponent* Weapon = Cast<UWeaponComponent>(Character->GetWeaponComponent());
+    Weapon->SetWeaponBlocked(false);
+	
 	if(TraceTask->Status)
 	{
-		APlayerCharacter* Character = Cast<APlayerCharacter>(CurrentActorInfo->OwnerActor.Get());
-		APlayerController* Controller = Cast<APlayerController>(Character->GetController());
 		
 		PlayVFX();
-		MakeDamage(TraceTask->HitResult, Character, Controller);
+		MakeDamage(TraceTask->DamagedCharacter, Character, Controller);
 		TraceTask->EndTask();
 		K2_EndAbility();
 	}
@@ -97,15 +101,14 @@ void UVampireAbility::PlayVFX()
 		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("PlayVFX failed"));
 		return;
 	}
-	const FVector TraceEnd = TraceTask->HitResult.GetActor()->GetActorLocation();
+	const FVector TraceEnd = TraceTask->DamagedCharacter->GetActorLocation();
 	BeamComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamFX, TraceEnd, FRotator::ZeroRotator, true);
 	BeamArray.Add(BeamComp);
 }
 
-void UVampireAbility::MakeDamage(const FHitResult& HitResult, APlayerCharacter* Character, APlayerController* Controller) const
+void UVampireAbility::MakeDamage(ABaseCharacter* DamagedActor, APlayerCharacter* Character, APlayerController* Controller) const
 {	
-	const auto DamagedActor = HitResult.GetActor();
-		if (!DamagedActor)
+	if (!DamagedActor)
 	{
 		UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Impossible to get damaged actor"));
 		return;

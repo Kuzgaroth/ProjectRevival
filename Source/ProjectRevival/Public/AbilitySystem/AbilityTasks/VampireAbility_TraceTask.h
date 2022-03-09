@@ -5,6 +5,7 @@
 #include "Abilities/Tasks/AbilityTask.h"
 #include "AbilitySystem/Abilities/PRGameplayAbility.h"
 #include "CoreMinimal.h"
+#include "BaseCharacter.h"
 #include "VampireAbility_TraceTask.generated.h"
 
 UCLASS()
@@ -19,10 +20,10 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	bool Status = false;
-	
+
 	UPROPERTY()
-	FHitResult HitResult;
-	
+	ABaseCharacter* DamagedCharacter;
+		
 private:
 	void TraceAnalysisStarted();
 	
