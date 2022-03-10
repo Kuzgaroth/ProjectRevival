@@ -248,17 +248,18 @@ void UWeaponComponent::OnReloadFinished(USkeletalMeshComponent* MeshComponent)
 
 bool UWeaponComponent::CanFire()
 {
-	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress;
+	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress && !bIsWeaponBlocked;
 }
 
 bool UWeaponComponent::CanEquip()
 {
-	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress;
+	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress && !bIsWeaponBlocked;
 }
 
 bool UWeaponComponent::CanReload()
 {
-	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress && CurrentWeapon->CanReload();
+	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress && !bIsWeaponBlocked
+	&& CurrentWeapon->CanReload();
 }
 
 void UWeaponComponent::OnEmptyClip(ABaseWeapon* AmmoEmptyWeapon)
