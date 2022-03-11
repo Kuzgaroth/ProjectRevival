@@ -35,66 +35,66 @@ void ASoldierEnemy::BeginPlay()
  *также раскомментить подряд идущие строки ближе к концу .h файла
  *и в блюпринте core/BP_PRGameModeBase поменять параметр Default Pawn Class с BP_PlayerCharacter на BP_SoldierEnemyCharacter*/
 
-// void ASoldierEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-// {
-// 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-//
-// 	PlayerInputComponent->BindAxis("MoveForward",this,&ASoldierEnemy::MoveForward);
-// 	PlayerInputComponent->BindAxis("MoveRight",this,&ASoldierEnemy::MoveRight);
-// 	PlayerInputComponent->BindAxis("LookUp",this,&ASoldierEnemy::AddControllerPitchInput);
-// 	PlayerInputComponent->BindAxis("TurnAround",this,&ASoldierEnemy::AddControllerYawInput);
-// 	PlayerInputComponent->BindAction("Jump",EInputEvent::IE_Pressed,this, &ABaseCharacter::Jump);
-// 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Pressed,this, &ASoldierEnemy::StartRun);
-// 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Released,this, &ASoldierEnemy::StopRun);
-// 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::StartFire);
-// 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Released,WeaponComponent, &UWeaponComponent::StopFire);
-// 	
-// 	AbilitySystemComponent->BindAbilityActivationToInputComponent(this->InputComponent,
-// 	FGameplayAbilityInputBinds(FString("ConfirmTarget"),
-// 	FString("CancelTarget"), FString("EGASInputActions")));
-// }
-//
-// void ASoldierEnemy::MoveForward(float Amount)
-// {
-// 	IsMovingForward = Amount>0;
-// 	if ( (this->GetController() != nullptr) && (Amount != 0.0f))
-// 	{
-// 		const FRotator Rotation = this->GetController()->GetControlRotation();
-// 		const FRotator YawRotation(0, Rotation.Yaw, 0);
-// 		
-// 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-// 		
-// 		this->AddMovementInput(Direction, Amount);
-// 	}
-// }
-//
-// void ASoldierEnemy::MoveRight(float Amount)
-// {
-// 	if ( (this->GetController() != nullptr) && (Amount != 0.0f))
-// 	{
-// 		const FRotator Rotation = this->GetController()->GetControlRotation();
-// 		const FRotator YawRotation(0, Rotation.Yaw, 0);
-// 		
-// 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-// 		
-// 		this->AddMovementInput(Direction, Amount);
-// 	}
-// }
-//
-// void ASoldierEnemy::StartRun()
-// {
-// 	bWantsToRun=true;
-// }
-//
-// void ASoldierEnemy::StopRun()
-// {
-// 	bWantsToRun=false;
-// }
-//
-// bool ASoldierEnemy::IsRunning() const
-// {
-// 	return bWantsToRun && IsMovingForward && !GetVelocity().IsZero();
-// }
+ void ASoldierEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+ {
+ 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+ 	PlayerInputComponent->BindAxis("MoveForward",this,&ASoldierEnemy::MoveForward);
+ 	PlayerInputComponent->BindAxis("MoveRight",this,&ASoldierEnemy::MoveRight);
+ 	PlayerInputComponent->BindAxis("LookUp",this,&ASoldierEnemy::AddControllerPitchInput);
+ 	PlayerInputComponent->BindAxis("TurnAround",this,&ASoldierEnemy::AddControllerYawInput);
+ 	PlayerInputComponent->BindAction("Jump",EInputEvent::IE_Pressed,this, &ABaseCharacter::Jump);
+ 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Pressed,this, &ASoldierEnemy::StartRun);
+ 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Released,this, &ASoldierEnemy::StopRun);
+ 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::StartFire);
+ 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Released,WeaponComponent, &UWeaponComponent::StopFire);
+ 	
+ 	AbilitySystemComponent->BindAbilityActivationToInputComponent(this->InputComponent,
+ 	FGameplayAbilityInputBinds(FString("ConfirmTarget"),
+ 	FString("CancelTarget"), FString("EGASInputActions")));
+ }
+
+ void ASoldierEnemy::MoveForward(float Amount)
+ {
+ 	IsMovingForward = Amount>0;
+ 	if ( (this->GetController() != nullptr) && (Amount != 0.0f))
+ 	{
+ 		const FRotator Rotation = this->GetController()->GetControlRotation();
+ 		const FRotator YawRotation(0, Rotation.Yaw, 0);
+ 		
+ 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+ 		
+ 		this->AddMovementInput(Direction, Amount);
+ 	}
+ }
+
+ void ASoldierEnemy::MoveRight(float Amount)
+ {
+ 	if ( (this->GetController() != nullptr) && (Amount != 0.0f))
+ 	{
+ 		const FRotator Rotation = this->GetController()->GetControlRotation();
+ 		const FRotator YawRotation(0, Rotation.Yaw, 0);
+ 		
+ 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+ 		
+ 		this->AddMovementInput(Direction, Amount);
+ 	}
+ }
+
+ void ASoldierEnemy::StartRun()
+ {
+ 	bWantsToRun=true;
+ }
+
+ void ASoldierEnemy::StopRun()
+ {
+ 	bWantsToRun=false;
+ }
+
+ bool ASoldierEnemy::IsRunning() const
+ {
+ 	return bWantsToRun && IsMovingForward && !GetVelocity().IsZero();
+ }
 
 void ASoldierEnemy::OnDeath()
 {
