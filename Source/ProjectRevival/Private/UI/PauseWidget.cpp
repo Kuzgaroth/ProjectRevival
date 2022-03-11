@@ -5,6 +5,7 @@
 #include "Components/Button.h"
 #include "GameFramework/GameModeBase.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Menu/ConfirmationWidget.h"
 #include "Menu/OptionsWidget.h"
 
 void UPauseWidget::NativeOnInitialized()
@@ -14,14 +15,14 @@ void UPauseWidget::NativeOnInitialized()
 		ClearPauseButton->OnClicked.AddDynamic(this, &UPauseWidget::OnClearPause);
 	}
 
-	if (SaveGameButton)
+	if (CheckPointButton)
 	{
-		SaveGameButton->OnClicked.AddDynamic(this, &UPauseWidget::OnSaveGame);
+		CheckPointButton->OnClicked.AddDynamic(this, &UPauseWidget::OnCheckPoint);
 	}
 	
-	if (LoadGameButton)
+	if (PlayAgainButton)
 	{
-		LoadGameButton->OnClicked.AddDynamic(this, &UPauseWidget::OnLoadGame);
+		PlayAgainButton->OnClicked.AddDynamic(this, &UPauseWidget::OnPlayAgain);
 	}
 
 	if (OptionsButton)
@@ -50,15 +51,64 @@ void UPauseWidget::OnOptions()
 	}
 }
 
-void UPauseWidget::OnSaveGame()
+void UPauseWidget::OnCheckPoint()
 {
+	if (ConfirmationWidgetClass)
+	{
+		ConfirmationWidget = CreateWidget<UConfirmationWidget>(GetWorld(), ConfirmationWidgetClass);
+		ConfirmationWidget->ConfirmButton->OnClicked.AddDynamic(this, &UPauseWidget::LoadCheckPoint);
+		ConfirmationWidget->DeclineButton->OnClicked.AddDynamic(this, &UPauseWidget::CloseConfirmationWidget);
+		ConfirmationWidget->SetLabelText(FText::FromString("Do you want to load the last check point?"));
+		ConfirmationWidget->AddToViewport();
+	}
 }
 
-void UPauseWidget::OnLoadGame()
+void UPauseWidget::OnPlayAgain()
 {
+	if (ConfirmationWidgetClass)
+	{
+		ConfirmationWidget = CreateWidget<UConfirmationWidget>(GetWorld(), ConfirmationWidgetClass);
+		ConfirmationWidget->ConfirmButton->OnClicked.AddDynamic(this, &UPauseWidget::PlayAgain);
+		ConfirmationWidget->DeclineButton->OnClicked.AddDynamic(this, &UPauseWidget::CloseConfirmationWidget);
+		ConfirmationWidget->SetLabelText(FText::FromString("Do you want to load the last check point?"));
+		ConfirmationWidget->AddToViewport();
+	}
 }
 
 void UPauseWidget::OnQuitGame()
 {
+	if (ConfirmationWidgetClass)
+	{
+		ConfirmationWidget = CreateWidget<UConfirmationWidget>(GetWorld(), ConfirmationWidgetClass);
+		ConfirmationWidget->ConfirmButton->OnClicked.AddDynamic(this, &UPauseWidget::QuitGame);
+		ConfirmationWidget->DeclineButton->OnClicked.AddDynamic(this, &UPauseWidget::CloseConfirmationWidget);
+		ConfirmationWidget->SetLabelText(FText::FromString("Are you sure you want to exit?"));
+		ConfirmationWidget->AddToViewport();
+	}
+}
+
+void UPauseWidget::LoadCheckPoint()
+{
+	CloseConfirmationWidget();
+	/*load the last check point code here*/
+}
+
+void UPauseWidget::PlayAgain()
+{
+	CloseConfirmationWidget();
+	/*play again code here*/
+}
+
+void UPauseWidget::QuitGame()
+{
+	CloseConfirmationWidget();
 	UKismetSystemLibrary::QuitGame(this, GetOwningPlayer(), EQuitPreference::Quit, true);
+}
+
+void UPauseWidget::CloseConfirmationWidget()
+{
+	if (ConfirmationWidget)
+	{
+		ConfirmationWidget->RemoveFromParent();
+	}
 }

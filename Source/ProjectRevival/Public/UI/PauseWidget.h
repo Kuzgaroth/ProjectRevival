@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Menu/ConfirmationWidget.h"
+
 #include "PauseWidget.generated.h"
 
 class UButton;
@@ -21,10 +23,10 @@ protected:
 	UButton* ClearPauseButton;
 
 	UPROPERTY(meta=(BindWidget))
-	UButton* SaveGameButton;
+	UButton* CheckPointButton;
 	
 	UPROPERTY(meta=(BindWidget))
-	UButton* LoadGameButton;
+	UButton* PlayAgainButton;
 	
 	UPROPERTY(meta=(BindWidget))
 	UButton* OptionsButton;
@@ -35,9 +37,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> OptionsWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
+	TSubclassOf<UUserWidget> ConfirmationWidgetClass;
+
 
 	virtual void NativeOnInitialized() override;
 private:
+	UPROPERTY()
+	UConfirmationWidget* ConfirmationWidget;
+	
 	UFUNCTION()
 	void OnClearPause();
 
@@ -45,13 +53,23 @@ private:
 	void OnOptions();
 
 	UFUNCTION()
-	void OnSaveGame();
+	void OnCheckPoint();
 
 	UFUNCTION()
-    void OnLoadGame();
+    void OnPlayAgain();
 
 	UFUNCTION()
 	void OnQuitGame();
 
-	
+	UFUNCTION()
+	void LoadCheckPoint();
+
+	UFUNCTION()
+	void PlayAgain();
+
+	UFUNCTION()
+	void QuitGame();
+
+	UFUNCTION()
+	void CloseConfirmationWidget();
 };
