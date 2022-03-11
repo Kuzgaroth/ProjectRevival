@@ -65,7 +65,7 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 	//GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
 	if (PerceivedActors.Num()==0)
 	{
-		//UE_LOG(LogPRAIPerception, Log, TEXT("Cover: Empty Sight"))
+		UE_LOG(LogPRAIPerception, Log, TEXT("NO COVER FOUND"))
 		return FVector::ZeroVector;
 	}
 	//UE_LOG(LogPRAIPerception, Log, TEXT("Cover: Not empty"))
