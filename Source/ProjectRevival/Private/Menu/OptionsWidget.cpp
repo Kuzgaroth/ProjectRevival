@@ -7,6 +7,7 @@
 #include "Components/Button.h"
 #include "PRGameInstance.h"
 #include "Menu/OptionsControlsWidget.h"
+#include "Menu/OptionsGameWidget.h"
 #include "Menu/OptionsGraphicsWidget.h"
 #include "Menu/OptionsSoundWidget.h"
 #include "ProjectRevival/Public/Menu/MenuWidget.h"
@@ -34,6 +35,11 @@ void UOptionsWidget::NativeOnInitialized()
 		SoundButton->SetBackgroundColor(FLinearColor(1, 1, 1, 0));
 		SoundButton->OnClicked.AddDynamic(this, &UOptionsWidget::OnSound);
 	}
+	if (GameButton)
+	{
+		GameButton->SetBackgroundColor(FLinearColor(1, 1, 1, 0));
+		GameButton->OnClicked.AddDynamic(this, &UOptionsWidget::OnGame);
+	}
 	if (OptionsGraphicsWidgetClass)
 	{
 		UOptionsGraphicsWidget* OptionsGraphicsWidget = CreateWidget<UOptionsGraphicsWidget>(GetWorld(),
@@ -50,6 +56,11 @@ void UOptionsWidget::NativeOnInitialized()
 	{
 		UOptionsSoundWidget* OptionsSoundWidget = CreateWidget<UOptionsSoundWidget>(GetWorld(), OptionsSoundWidgetClass);
 		OptionsWidgetSwitcher->AddChild(OptionsSoundWidget);
+	}
+	if (OptionsGameWidgetClass)
+	{
+		UOptionsGameWidget* OptionsGameWidget = CreateWidget<UOptionsGameWidget>(GetWorld(), OptionsGameWidgetClass);
+		OptionsWidgetSwitcher->AddChild(OptionsGameWidget);
 	}
 }
 
@@ -95,6 +106,14 @@ void UOptionsWidget::OnSound()
 	if (OptionsWidgetSwitcher)
 	{
 		OptionsWidgetSwitcher->SetActiveWidgetIndex(2);
+	}
+}
+
+void UOptionsWidget::OnGame()
+{
+	if (OptionsWidgetSwitcher)
+	{
+		OptionsWidgetSwitcher->SetActiveWidgetIndex(3);
 	}
 }
 

@@ -36,6 +36,9 @@ protected:
 	UPROPERTY(meta=(BindWidget))
 	UButton* SoundButton;
 	
+	UPROPERTY(meta=(BindWidget))
+	UButton* GameButton;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> MenuWidgetClass;
 
@@ -51,6 +54,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> OptionsGraphicsWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
+	TSubclassOf<UUserWidget> OptionsGameWidgetClass;
+
 	virtual void NativeOnInitialized() override;
 
 private:
@@ -65,6 +71,9 @@ private:
 
 	UFUNCTION()
 	void OnSound();
+
+	UFUNCTION()
+	void OnGame();
 
 	UFUNCTION()
 	void OpenMenu();
