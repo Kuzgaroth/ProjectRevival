@@ -5,10 +5,12 @@
 
 #include <string>
 
+#include "DrawDebugHelpers.h"
 #include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
 #include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/BoxComponent.h"
+#include "UObject/UObjectGlobals.h"
 #include "GameFramework/GameUserSettings.h"
 
 // Sets default values
@@ -38,7 +40,6 @@ void AStaticObjectToNothing::BeginPlay()
 		MeshTags.Add(SuperMesh->ComponentTags[i]);
 	}
 	SuperMesh->SetVisibility(true);
-	//TArray<USceneComponent*> components;
 	int32 num=SuperMesh->GetNumMaterials();
 	for (int32 i=0;i<num;i++)
 	{
@@ -122,6 +123,44 @@ void AStaticObjectToNothing::PostEditChangeProperty(FPropertyChangedEvent& Prope
 			chobj->ChangeVisibleWorld(AllObjectVisibleWorld);
 		}
 	}
+	if(PropertyChangedEvent.Property->GetName()=="CoverPointsAmount")
+	{
+		CoverStruct.PositionsOfCoverPoints.Empty();
+		for(auto covpos:CoverStruct.CoverPositions)
+		{
+			if(covpos)
+				CoverStruct.PositionsOfCoverPoints.Push(covpos->GetRelativeLocation());
+			covpos->DestroyComponent();
+		}
+		if(CoverStruct.CoverPositions.Num()>=0) CoverStruct.CoverPositions.Empty();
+		CoverStruct.CoverPositions.SetNum(CoverStruct.CoverPointsAmount);
+		for(int i=0;i<CoverStruct.CoverPositions.Num();++i)
+		{
+			auto newCoverPoint=NewObject<UBoxComponent>(this,UBoxComponent::StaticClass(),*FString("CoverPos").Append(FString::FromInt(i+1)));
+			newCoverPoint->CreationMethod=EComponentCreationMethod::Native;
+			newCoverPoint->OnComponentCreated();
+			newCoverPoint->SetupAttachment(RootComponent);
+			newCoverPoint->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			newCoverPoint->SetMobility(EComponentMobility::Movable);
+			if(i<CoverStruct.PositionsOfCoverPoints.Num())
+			{
+				newCoverPoint->SetWorldLocation(CoverStruct.PositionsOfCoverPoints[i]);
+				newCoverPoint->SetRelativeLocation(CoverStruct.PositionsOfCoverPoints[i]);
+			}
+			newCoverPoint->RegisterComponent();
+			CoverStruct.CoverPositions[i]=newCoverPoint;
+		}
+	}
+	if(PropertyChangedEvent.Property->GetName()=="AllObjectVisibleWorld")
+	{
+		TArray<AActor*> ChangeAbleObjs;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(),AChangeWorld::StaticClass(),ChangeAbleObjs);
+		for(auto obj:ChangeAbleObjs)
+		{
+			auto chobj=Cast<AChangeWorld>(obj);
+			chobj->ChangeVisibleWorld(AllObjectVisibleWorld);
+		}
+	}
 }
 #endif
 
@@ -141,6 +180,7 @@ void AStaticObjectToNothing::Changing()
 		if(VisualCurve)
 		{
 			isApearing=true;
+			TimeLine.PlayFromStart();
 			SuperMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
 			LoadComponentTags(SuperMesh);
 			TimeLine.PlayFromStart();
@@ -259,5 +299,29 @@ void AStaticObjectToNothing::LoadComponentTags(UStaticMeshComponent* supermesh)
 
 bool AStaticObjectToNothing::CheckIsChangeAbleObjIsCover()
 {
-	return SuperMesh->ComponentTags.Contains("Cover");
+	return CoverStruct.CanBeTakenAsCover&&SuperMesh->ComponentTags.Contains("Cover");
+}
+
+bool AStaticObjectToNothing::TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos)
+{
+	if(CoverStruct.CoverPositions.Num()==0) return false;
+	for(auto covpos:CoverStruct.CoverPositions)
+	{
+		FVector TraceStart=covpos->GetComponentLocation();
+		FVector TraceEnd=PlayerPos;
+		FHitResult HitResult;
+		FCollisionQueryParams CollisionParams;
+		GetWorld()->LineTraceSingleByChannel(HitResult,TraceStart,TraceEnd,ECollisionChannel::ECC_Visibility,CollisionParams);
+		if(HitResult.bBlockingHit)
+		{
+			DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
+			if(HitResult.Actor==this)
+			{
+
+				CoverPos=TraceStart;
+				return true;
+			}
+		}
+	}
+	return false;
 }
