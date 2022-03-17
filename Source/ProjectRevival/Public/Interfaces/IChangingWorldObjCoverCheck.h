@@ -22,6 +22,6 @@ class PROJECTREVIVAL_API IIChangingWorldObjCoverCheck
 	
 public:
 	virtual bool CheckIsChangeAbleObjIsCover();
-
+	virtual bool TryToFindCoverPoint(FVector PlayerPos,FVector& CoverPos);
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 };

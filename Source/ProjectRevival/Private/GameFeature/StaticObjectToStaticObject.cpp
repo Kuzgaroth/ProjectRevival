@@ -3,6 +3,7 @@
 
 #include "GameFeature/StaticObjectToStaticObject.h"
 
+#include "DrawDebugHelpers.h"
 #include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -234,7 +235,61 @@ void AStaticObjectToStaticObject::PostEditChangeProperty(FPropertyChangedEvent& 
 			chobj->ChangeVisibleWorld(AllObjectVisibleWorld);
 		}
 	}
+	if(PropertyChangedEvent.Property->GetName()=="CoverPointsAmount")
+	{
+		CoverStructForOrdinaryWObject.PositionsOfCoverPoints.Empty();
+		for(auto covpos:CoverStructForOrdinaryWObject.CoverPositions)
+		{
+			if(covpos)
+				CoverStructForOrdinaryWObject.PositionsOfCoverPoints.Push(covpos->GetRelativeLocation());
+			covpos->DestroyComponent();
+		}
+		if(CoverStructForOrdinaryWObject.CoverPositions.Num()>=0) CoverStructForOrdinaryWObject.CoverPositions.Empty();
+		CoverStructForOrdinaryWObject.CoverPositions.SetNum(CoverStructForOrdinaryWObject.CoverPointsAmount);
+		for(int i=0;i<CoverStructForOrdinaryWObject.CoverPositions.Num();++i)
+		{
+			auto newCoverPoint=NewObject<UBoxComponent>(this,UBoxComponent::StaticClass(),*FString("CoverOrdinaryPos").Append(FString::FromInt(i+1)));
+			newCoverPoint->CreationMethod=EComponentCreationMethod::Native;
+			newCoverPoint->OnComponentCreated();
+			newCoverPoint->SetupAttachment(RootComponent);
+			newCoverPoint->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			newCoverPoint->SetMobility(EComponentMobility::Movable);
+			if(i<CoverStructForOrdinaryWObject.PositionsOfCoverPoints.Num())
+			{
+				newCoverPoint->SetWorldLocation(CoverStructForOrdinaryWObject.PositionsOfCoverPoints[i]);
+				newCoverPoint->SetRelativeLocation(CoverStructForOrdinaryWObject.PositionsOfCoverPoints[i]);
+			}
+			newCoverPoint->RegisterComponent();
+			CoverStructForOrdinaryWObject.CoverPositions[i]=newCoverPoint;
+		}
 
+		CoverStructForOtherWOther.PositionsOfCoverPoints.Empty();
+		for(auto covpos:CoverStructForOtherWOther.CoverPositions)
+		{
+			if(covpos)
+				CoverStructForOtherWOther.PositionsOfCoverPoints.Push(covpos->GetRelativeLocation());
+			covpos->DestroyComponent();
+		}
+		if(CoverStructForOtherWOther.CoverPositions.Num()>=0) CoverStructForOtherWOther.CoverPositions.Empty();
+		CoverStructForOtherWOther.CoverPositions.SetNum(CoverStructForOtherWOther.CoverPointsAmount);
+		for(int i=0;i<CoverStructForOtherWOther.CoverPositions.Num();++i)
+		{
+			auto newCoverPoint=NewObject<UBoxComponent>(this,UBoxComponent::StaticClass(),*FString("CoverOtherPos").Append(FString::FromInt(i+1)));
+			newCoverPoint->CreationMethod=EComponentCreationMethod::Native;
+			newCoverPoint->OnComponentCreated();
+			newCoverPoint->SetupAttachment(RootComponent);
+			newCoverPoint->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			newCoverPoint->SetMobility(EComponentMobility::Movable);
+			if(i<CoverStructForOtherWOther.PositionsOfCoverPoints.Num())
+			{
+				newCoverPoint->SetWorldLocation(CoverStructForOtherWOther.PositionsOfCoverPoints[i]);
+				newCoverPoint->SetRelativeLocation(CoverStructForOtherWOther.PositionsOfCoverPoints[i]);
+			}
+			newCoverPoint->RegisterComponent();
+			CoverStructForOtherWOther.CoverPositions[i]=newCoverPoint;
+		}
+		
+	}
 }
 #endif
 
@@ -295,6 +350,40 @@ void AStaticObjectToStaticObject::OnOtherMeshCollision(UPrimitiveComponent* Over
 			Changing();
 		}
 	}
+}
+
+bool AStaticObjectToStaticObject::TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos)
+{
+	FCoverPointsAndPossibility coverstruct;
+	if(SuperMesh1->GetCollisionResponseToChannels()==OrdinaryWorldCollisionResponseContainer)
+	{
+		coverstruct=CoverStructForOrdinaryWObject;
+	}
+	else
+	{
+		coverstruct=CoverStructForOtherWOther;
+	}
+	if(coverstruct.CoverPositions.Num()==0) return false;
+	UE_LOG(LogTemp,Warning,TEXT("Found coverpoints in ord world 3"))
+	for(auto covpos:coverstruct.CoverPositions)
+	{
+		FVector TraceStart=covpos->GetComponentLocation();
+		FVector TraceEnd=PlayerPos;
+		FHitResult HitResult;
+		FCollisionQueryParams CollisionParams;
+		GetWorld()->LineTraceSingleByChannel(HitResult,TraceStart,TraceEnd,ECollisionChannel::ECC_Visibility,CollisionParams);
+		DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
+		if(HitResult.bBlockingHit)
+		{
+			
+			if(HitResult.Actor==this)
+			{
+				CoverPos=TraceStart;
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 void AStaticObjectToStaticObject::OrdinaryWTimelineFinished()

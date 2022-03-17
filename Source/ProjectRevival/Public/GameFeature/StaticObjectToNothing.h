@@ -6,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "ChangeWorld.h"
 #include "Interfaces/IChangingWorldObjCoverCheck.h"
+#include "UObject/UObjectGlobals.h"
+#include "CoreTypes.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "StaticObjectToNothing.generated.h"
 
 class UBoxComponent;
@@ -39,6 +42,12 @@ protected:
     virtual void TimeLineFloatReturn(float Value);
     FOnTimelineFloat InterpFunction;
 
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	FCoverPointsAndPossibility CoverStruct;
+
+
+	
 	virtual void LoadComponentTags(UStaticMeshComponent* supermesh) override;
 
 
@@ -74,4 +83,5 @@ public:
 	virtual void ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld) override;
 	
 	virtual bool CheckIsChangeAbleObjIsCover() override;
+	virtual bool TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos) override;
 };

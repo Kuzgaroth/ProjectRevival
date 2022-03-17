@@ -5,6 +5,7 @@
 #include "Interfaces/ICoverable.h"
 #include "CoreTypes.generated.h"
 
+class UBoxComponent;
 //Weapon
 class ABaseWeapon;
 
@@ -328,6 +329,24 @@ struct FCameraCover
 
 	UPROPERTY()
 	bool bIsTurning = false;
+};
+
+USTRUCT(BlueprintType)
+struct FCoverPointsAndPossibility
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="CoverPointsData")
+	int CoverPointsAmount;
+	
+	UPROPERTY(EditInstanceOnly,BlueprintReadWrite,Category="CoverPointsData")
+	TArray<UBoxComponent*> CoverPositions;
+
+	UPROPERTY(EditInstanceOnly,BlueprintReadWrite,Category="CoverPointsData")
+	bool CanBeTakenAsCover=true;
+
+	TArray<FVector> PositionsOfCoverPoints;
+	
 };
 
 UCLASS()

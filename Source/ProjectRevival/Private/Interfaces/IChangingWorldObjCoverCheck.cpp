@@ -8,3 +8,8 @@ bool IIChangingWorldObjCoverCheck::CheckIsChangeAbleObjIsCover()
 {
 	return false;
 }
+
+bool IIChangingWorldObjCoverCheck::TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos)
+{
+	return false;
+}
