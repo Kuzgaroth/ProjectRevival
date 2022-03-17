@@ -37,6 +37,24 @@ void ABaseWeapon::PostInitializeComponents()
 
 void ABaseWeapon::MakeShot(){}
 
+void ABaseWeapon::PlayForceEffects()
+{
+	auto PC =GetPlayerController();
+	if (PC != NULL && PC->IsLocalController())
+	{
+		if (FireCameraShake != nullptr)
+		{
+			PC->ClientStartCameraShake(FireCameraShake, 1);
+		}
+		if (FireForceFeedback != nullptr)
+		{
+			FForceFeedbackParameters FFParams;
+			FFParams.Tag = "Weapon";
+			PC->ClientPlayForceFeedback(FireForceFeedback, FFParams);
+		}
+	}
+}
+
 void ABaseWeapon::StartFire(){}
 
 void ABaseWeapon::StopFire(){}

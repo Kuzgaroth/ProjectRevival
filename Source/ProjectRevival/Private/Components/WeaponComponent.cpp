@@ -42,6 +42,7 @@ TArray<UMaterialInstanceDynamic*> UWeaponComponent::GetCurrentWeaponMaterials()
 
 void UWeaponComponent::NextWeapon()
 {
+	return;
 	if (!CanEquip()) return;
 	CurrentWeaponIndex = (CurrentWeaponIndex+1) % Weapons.Num();
 	EquipWeapon(CurrentWeaponIndex);
@@ -52,6 +53,15 @@ void UWeaponComponent::Reload()
 	ChangeClip();
 }
 
+ABaseWeapon* UWeaponComponent::GetCurrentWeapon()
+{
+	if (CurrentWeapon)
+	{
+		return CurrentWeapon;
+	}
+	return nullptr;
+}
+
 bool UWeaponComponent::GetCurrentWeaponUIData(FWeaponUIData& UIData) const
 {
 	if (CurrentWeapon)
@@ -60,6 +70,42 @@ bool UWeaponComponent::GetCurrentWeaponUIData(FWeaponUIData& UIData) const
 		return true;
 	}
 	return false;
+}
+
+int32 UWeaponComponent::GetCurrentWeaponClips() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetAmmoData().Clips;
+	}
+	return -1;
+}
+
+int32 UWeaponComponent::GetCurrentWeaponBullets() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetAmmoData().Bullets;
+	}
+	return -1;
+}
+
+int32 UWeaponComponent::GetMaxWeaponClips() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetDefaultAmmoData().Clips;
+	}
+	return -1;
+}
+
+int32 UWeaponComponent::GetMaxWeaponBullets() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetDefaultAmmoData().Bullets;
+	}
+	return -1;
 }
 
 bool UWeaponComponent::GetCurrentWeaponAmmoData(FAmmoData& AmmoData) const
@@ -120,6 +166,7 @@ void UWeaponComponent::SpawnWeapons()
 		Weapon->SetOwner(Character);
 		Weapons.Add(Weapon);
 		AttachWeaponToSocket(Weapon, Character->GetMesh(), WeaponArmorySocketName);
+		Weapon->OnWeaponShotDelegate.AddUObject(this, &UWeaponComponent::OnShotMade);
 	}
 }
 
@@ -188,6 +235,10 @@ void UWeaponComponent::OnEquipFinished(USkeletalMeshComponent* MeshComponent)
 	EquipAnimInProgress = false;
 }
 
+void UWeaponComponent::OnShotMade()
+{
+	PlayAnimMontage(FireMontage);
+}
 void UWeaponComponent::OnReloadFinished(USkeletalMeshComponent* MeshComponent)
 {
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
@@ -197,17 +248,18 @@ void UWeaponComponent::OnReloadFinished(USkeletalMeshComponent* MeshComponent)
 
 bool UWeaponComponent::CanFire()
 {
-	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress;
+	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress && !bIsWeaponBlocked;
 }
 
 bool UWeaponComponent::CanEquip()
 {
-	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress;
+	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress && !bIsWeaponBlocked;
 }
 
 bool UWeaponComponent::CanReload()
 {
-	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress && CurrentWeapon->CanReload();
+	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress && !bIsWeaponBlocked
+	&& CurrentWeapon->CanReload();
 }
 
 void UWeaponComponent::OnEmptyClip(ABaseWeapon* AmmoEmptyWeapon)
@@ -236,5 +288,6 @@ void UWeaponComponent::ChangeClip()
 	CurrentWeapon->StopFire();
 	CurrentWeapon->ChangeClip();
 	ReloadAnimInProgress = true;
+	
 	PlayAnimMontage(CurrentReloadAnimMontage);
 }

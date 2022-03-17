@@ -16,7 +16,10 @@ UCLASS()
 class PROJECTREVIVAL_API UOptionsWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
+public:
+	UFUNCTION(BlueprintImplementableEvent, Category="UI")
+	void LeaveEvent();
+	
 protected:
 	UPROPERTY(meta=(BindWidget))
 	UButton* BackButton;
@@ -35,6 +38,9 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> MenuWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
+	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> OptionsControlsWidgetClass;
@@ -59,4 +65,9 @@ private:
 
 	UFUNCTION()
 	void OnSound();
+
+	UFUNCTION()
+	void OpenMenu();
+
+	FTimerHandle TimerHandle;
 };

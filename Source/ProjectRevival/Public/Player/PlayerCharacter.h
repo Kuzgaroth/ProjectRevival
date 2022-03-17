@@ -15,7 +15,7 @@ class USphereComponent;
 class UCurveFloat;
 
 UCLASS()
-class PROJECTREVIVAL_API APlayerCharacter : public ABaseCharacter
+class PROJECTREVIVAL_API APlayerCharacter : public ABaseCharacter, public IICoverable
 {
 	GENERATED_BODY()
 public:
@@ -30,17 +30,38 @@ public:
 
 	UFUNCTION()
 	void TimelineLeftSideView(float Value);
+
+	UFUNCTION()
+	void TimelineCover(float Value);
+
+	UFUNCTION()
+	void TimelineCoverFieldOfView(float Value);
+
+	UFUNCTION()
+	void TimelineCoverYShift(float Value);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
-	FPlayerAimZoom PlayerAimZoom;
+	FPlayerAimZoomBlueprint PlayerAimZoom;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
-	FLeftSideView LeftSideView;
+	FLeftSideViewBlueprint LeftSideView;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Cover")
+	FCameraCover CameraCover;
+
+	UPROPERTY()
+	UPlayerAimZoomFunctions* PlayerAimZoomFunctions;
+
+	UPROPERTY()
+	ULeftSideViewFunctions* LeftSideViewFunctions;
+
+	UPROPERTY()
+	UCameraCoverFunctions* CameraCoverFunctions;
 	
-	FTimeline CurveTimeline;
-	FTimeline LeftSideViewCurveTimeline;
-	
-	USpringArmComponent* GetPlayerSpringArmComponent(){return SpringArmComponent;}
+	USpringArmComponent* GetPlayerSpringArmComponent(){ return SpringArmComponent; }
+	void CameraZoomIn();
+	void CameraZoomOut();
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UCameraComponent* CameraComponent;
@@ -50,6 +71,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	USphereComponent* CameraCollisionComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
+	USceneComponent* CameraSocket;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data) override;
@@ -59,12 +83,8 @@ protected:
 	virtual void BeginPlay() override;
 	
 	void OnCameraMove();
-	void CameraStop();
-	void CameraBlock();
 	
-	void CameraZoomIn();
-	void CameraZoomOut();
-
+	
 	void OnWorldChanged();
 	virtual bool StartCover_Internal(FHitResult& CoverHit) override;
 	virtual bool StopCover_Internal() override;
@@ -87,35 +107,50 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	FRotator GetAimDelta() const;
-	
 	virtual bool IsRunning() const override;
+	virtual ECoverType CheckCover() override;
+	virtual void OnTurn() override;
+	virtual void Falling() override;
+	virtual void Landed(const FHitResult& Hit) override;
+	UFUNCTION(BlueprintCallable)
+	FCoverData& GetCoverData();
+	
+	bool IsMovingRight() const { return bIsMovingRight; }
+	bool IsMovingLeft() const { return bIsMovingLeft; }
+	bool IsMovingBackward() const { return bIsMovingBackward; }
+	bool IsMovingForward() const { return bIsMovingForward; }
 private:
-
 	UPROPERTY()
 	UBaseCharacterMovementComponent* PlayerMovementComponent;
+	UPROPERTY()
+	FCoverData CoverData;
 	
 	bool bWantsToRun = false;
-	bool IsMovingForward = false;
+	bool bIsMovingForward = false;
+	bool bIsMovingRight = false;
+	bool bIsMovingBackward = false;
+	bool bIsMovingLeft = false;
+	
 	void MoveForward(float Amount);
+	void MoveRight(float Amount);
 	void StartRun();
 	void StopRun();
 	void Cover();
 	void StartFire();
 	void LookUp(float Amount);
 	void LookAround(float Amount);
+	void CoverCrouch();
 	UPROPERTY()
 	class USphereComponent* SphereDetectingHighlightables;
 	
 	bool IsInCover=false;
 	FTimerHandle THandle;
-	void Flip();
-	void StopFlip();
 	const float FlipTime = 0.5f;
 	const float FlipStrength = 2000.f;
 	// curve from content manager
 	UPROPERTY(EditAnywhere)
 	UCurveFloat* FlipCurve = LoadObject<UCurveFloat>(nullptr, TEXT("/Game/ProjectRevival/Core/Player/FlipCurve.FlipCurve"));
-	bool IsFlipping = false;
+	
 	
 	UFUNCTION()
 	void OnCameraCollisionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -125,5 +160,4 @@ private:
 	void OnCameraCollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	void CheckCameraOverlap();
-	
 };

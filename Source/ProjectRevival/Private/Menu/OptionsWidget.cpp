@@ -2,7 +2,10 @@
 
 
 #include "Menu/OptionsWidget.h"
+
+#include "PauseWidget.h"
 #include "Components/Button.h"
+#include "PRGameInstance.h"
 #include "Menu/OptionsControlsWidget.h"
 #include "Menu/OptionsGraphicsWidget.h"
 #include "Menu/OptionsSoundWidget.h"
@@ -18,14 +21,17 @@ void UOptionsWidget::NativeOnInitialized()
 	}
 	if (ControlsButton)
 	{
+		ControlsButton->SetBackgroundColor(FLinearColor(1, 1, 1, 0));
 		ControlsButton->OnClicked.AddDynamic(this, &UOptionsWidget::OnControls);
 	}
 	if (GraphicsButton)
 	{
+		GraphicsButton->SetBackgroundColor(FLinearColor(1, 1, 1, 1));
 		GraphicsButton->OnClicked.AddDynamic(this, &UOptionsWidget::OnGraphics);
 	}
 	if (SoundButton)
 	{
+		SoundButton->SetBackgroundColor(FLinearColor(1, 1, 1, 0));
 		SoundButton->OnClicked.AddDynamic(this, &UOptionsWidget::OnSound);
 	}
 	if (OptionsGraphicsWidgetClass)
@@ -49,12 +55,23 @@ void UOptionsWidget::NativeOnInitialized()
 
 void UOptionsWidget::OnBack()
 {
-	if (MenuWidgetClass)
+	UWorld* MyWorld = GetWorld();
+	FString CurrentMapName = MyWorld->GetMapName();
+	if (CurrentMapName.Equals("MenuLevel"))
 	{
-		RemoveFromParent();
-		UMenuWidget* MenuWidget = CreateWidget<UMenuWidget>(GetWorld(), MenuWidgetClass);
-		MenuWidget->AddToViewport();
+		if (MenuWidgetClass)
+		{
+			LeaveEvent();
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UOptionsWidget::OpenMenu, 1.0f, false, 0.125f);
+		}
 	}
+	else
+	{
+		if (PauseMenuWidgetClass)
+		{
+			RemoveFromParent();
+		}
+	}	
 }
 
 void UOptionsWidget::OnControls()
@@ -78,6 +95,32 @@ void UOptionsWidget::OnSound()
 	if (OptionsWidgetSwitcher)
 	{
 		OptionsWidgetSwitcher->SetActiveWidgetIndex(2);
+	}
+}
+
+void UOptionsWidget::OpenMenu()
+{
+	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+	
+	UWorld* MyWorld = GetWorld();
+	FString CurrentMapName = MyWorld->GetMapName();
+	if (CurrentMapName.Equals("MenuLevel"))
+	{
+		if (MenuWidgetClass)
+		{
+			RemoveFromParent();
+			UMenuWidget* MenuWidget = CreateWidget<UMenuWidget>(GetWorld(), MenuWidgetClass);
+			MenuWidget->AddToViewport();
+		}
+	}
+	else
+	{
+		if (PauseMenuWidgetClass)
+		{
+			RemoveFromParent();
+			// UMenuWidget* MenuWidget = CreateWidget<UMenuWidget>(GetWorld(), PauseMenuWidgetClass);
+			// MenuWidget->AddToViewport();
+		}
 	}
 }
 

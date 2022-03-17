@@ -39,7 +39,11 @@ void ARifleWeapon::MakeShot()
 		MuzzleFXComponentCascade->Activate();
 	}
 	SpawnTraceFX(GetMuzzleWorldLocation(), TraceFXEnd);
+	if (OnWeaponShotDelegate.IsBound()) OnWeaponShotDelegate.Broadcast();
+	PlayForceEffects();
 	DecreaseAmmo();
+	
+	
 }
 
 bool ARifleWeapon::GetTraceData(FVector& TraceStart, FVector& TraceEnd)
