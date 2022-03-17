@@ -57,7 +57,9 @@ public:
 
 	virtual ECoverType CheckCover() override;
 	virtual bool UsesOwnGrenades() override;
-	virtual bool SwitchGrenade() override; 
+	virtual bool SwitchGrenade() override;
+	
+	UFUNCTION(BlueprintCallable)
 	virtual TSubclassOf<ABaseGrenade> GetCurrentGrenade() override;
 	
 	UFUNCTION(BlueprintCallable)
@@ -136,7 +138,7 @@ protected:
 	UPROPERTY()
 	ASoldierRifleWeapon* RifleRef=nullptr;
 	
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	// virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
 	virtual void UpdateHealthWidgetVisibility() override;
@@ -147,11 +149,11 @@ private:
 	UFUNCTION()
 	void ThrowGrenadeCaller();
 
-	void MoveForward(float Amount);
-	void MoveRight(float Amount);
-	void StartRun();
-	void StopRun();
-	virtual bool IsRunning() const override;
-	bool bWantsToRun = false;
-	bool IsMovingForward = false;
+	// void MoveForward(float Amount);
+	// void MoveRight(float Amount);
+	// void StartRun();
+	// void StopRun();
+	// virtual bool IsRunning() const override;
+	// bool bWantsToRun = false;
+	// bool IsMovingForward = false;
 };

@@ -43,9 +43,9 @@ public:
 	//Time before GrenadeAction activation (before explosion)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Action parameters")
 	float ActionDelay = 3.0f;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Spawn parameters")
-	float GravityScale = 0.5f;
+
+	UPROPERTY(BlueprintReadWrite, Category="Action parameters", Meta = (ExposeOnSpawn = true))
+	bool bShouldBlow = true;
 	
 	FORCEINLINE void SetInitialSpeed(float Speed);
 
@@ -53,16 +53,21 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void SpawnActionEffect();
+	void UnbindOverlapEvent();
+
+	UPROPERTY()
+	bool bIsFirstHit = true;
+
+	UFUNCTION()
 	virtual void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 		FVector NormalImpulse, const FHitResult& Hit);
-	void UnbindOverlapEvent();
-	
+
 	FTimerHandle GrenadeActionHandler;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Components")
 	UCapsuleComponent* CollisionComponent;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Default")
 	UStaticMeshComponent* GrenadeMesh;
 
 	UPROPERTY(VisibleDefaultsOnly, Category="Components")

@@ -8,22 +8,17 @@
 ABaseGrenade::ABaseGrenade()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	PrimaryActorTick.TickInterval = 0.01;
+	// PrimaryActorTick.TickInterval = 0.01;
 
 	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>("CapsuleComponent");
-	CollisionComponent->InitCapsuleSize(5.0f, 7.0f);
-	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	CollisionComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	CollisionComponent->bReturnMaterialOnMove = true;
-	CollisionComponent->SetupAttachment(RootComponent);
-	
+	RootComponent = CollisionComponent;
+
 	GrenadeMesh = CreateDefaultSubobject<UStaticMeshComponent>("GrenadeMesh");
 	GrenadeMesh->SetSimulatePhysics(true);
+	GrenadeMesh->SetupAttachment(RootComponent);
 
 	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovementComponent");
-	MovementComponent->ProjectileGravityScale = GravityScale;
-
-	RootComponent = GrenadeMesh;
 	MovementComponent->bAutoActivate = false;
 }
 
@@ -35,18 +30,26 @@ void ABaseGrenade::Tick(float DeltaTime)
 void ABaseGrenade::BeginPlay()
 {
 	Super::BeginPlay();
-	check(GrenadeMesh);
-	check(MovementComponent);
-	check(CollisionComponent);
-	CollisionComponent->OnComponentHit.AddDynamic(this, &ABaseGrenade::OnProjectileHit);
-	CollisionComponent->IgnoreActorWhenMoving(GetOwner(), true);
+	if (bShouldBlow)
+	{
+		// UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Current InitialSpeed is %f"), MovementComponent->InitialSpeed);
+		// UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Current Owner of grenade is %s"), *GetOwner()->GetName());
+		// UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Current Velocity of grenade is %s"), *MovementComponent->Velocity.ToString());
+		CollisionComponent->OnComponentHit.AddDynamic(this, &ABaseGrenade::OnProjectileHit);
+		CollisionComponent->IgnoreActorWhenMoving(GetOwner(), true);
+		MovementComponent->Activate();
+	}
 }
 
 void ABaseGrenade::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Was used BASE implementation"));
-	GetWorldTimerManager().SetTimer(GrenadeActionHandler, this, &ABaseGrenade::GrenadeAction, ActionDelay, false);
+	if (bIsFirstHit)
+	{
+		bIsFirstHit = false;
+		// UE_LOG(LogPRAbilitySystemBase, Log, TEXT("Was used BASE implementation"));
+		GetWorldTimerManager().SetTimer(GrenadeActionHandler, this, &ABaseGrenade::GrenadeAction, ActionDelay, false);
+	}
 }
 
 void ABaseGrenade::UnbindOverlapEvent()
@@ -69,8 +72,10 @@ void ABaseGrenade::SelfDestruction()
 //Used by other classes when spawning instances of that one. Sets speed for movement component
 void ABaseGrenade::SetInitialSpeed(float Speed)
 {
+	UE_LOG(LogPRAbilitySystemBase, Log, TEXT("Set initial speed function was triggered"));
+	UE_LOG(LogPRAbilitySystemBase, Log, TEXT("Speed passed to grenade: %f"), Speed);
 	MovementComponent->InitialSpeed = Speed;
-	MovementComponent->Activate();
+	UE_LOG(LogPRAbilitySystemBase, Log, TEXT("Speed Initial in Set: %f"), MovementComponent->InitialSpeed);
 }
 
 void ABaseGrenade::SpawnActionEffect()

@@ -23,8 +23,12 @@ void AExplosiveGrenade::BeginPlay()
 void AExplosiveGrenade::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Was used EXPLOSIVE implementation"));
-	GetWorldTimerManager().SetTimer(GrenadeActionHandler, this, &AExplosiveGrenade::GrenadeAction, ActionDelay, false);
+	if (bIsFirstHit)
+	{
+		bIsFirstHit = false;
+		// UE_LOG(LogPRAbilitySystemBase, Log, TEXT("Was used EXPLOSIVE implementation"));
+		GetWorldTimerManager().SetTimer(GrenadeActionHandler, this, &AExplosiveGrenade::GrenadeAction, ActionDelay, false);
+	}
 }
 
 void AExplosiveGrenade::GrenadeAction()

@@ -14,10 +14,10 @@ class PROJECTREVIVAL_API UGrenadeAbility : public UPRGameplayAbility
 public:
 	UGrenadeAbility();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="General Settings")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="General Settings")
 	float ThrowForce = 1000.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="General Settings")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="General Settings")
 	FName GrenadeSocketName = "GrenadeSocket";
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="General Settings")

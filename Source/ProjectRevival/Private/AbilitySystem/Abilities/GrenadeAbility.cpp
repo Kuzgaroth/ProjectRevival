@@ -14,15 +14,20 @@ UGrenadeAbility::UGrenadeAbility()
 void UGrenadeAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 								  const FGameplayAbilityActivationInfo ActivationInfo)
 {
+	UE_LOG(LogPRAbilitySystemBase, Log, TEXT("Name of a CurrentGrenade: %s"), *Cast<IIGrenadeThrower>(ActorInfo->OwnerActor.Get())->GetCurrentGrenade()->GetName());
 	if (ActorInfo->OwnerActor->GetClass()->ImplementsInterface(UIGrenadeThrower::StaticClass()))
 	{
 		//TODO finish inner switching of a grenade
 		TSubclassOf<ABaseGrenade> TmpGrenade = Cast<IIGrenadeThrower>(ActorInfo->OwnerActor.Get())->GetCurrentGrenade();
-		if (TmpGrenade->GetClass() != CurrentGrenade->GetClass())
+		// UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Name of a Tmpgrenade via: %s"), *TmpGrenade->GetDefaultObjectName().ToString());
+		// UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Name of a CurrentGrenade via: %s"), *CurrentGrenade->GetDefaultObjectName().ToString());
+		if (TmpGrenade->GetDefaultObjectName() != CurrentGrenade->GetDefaultObjectName())
 		{
 			CurrentGrenade = TmpGrenade;
 		}
+		UE_LOG(LogPRAbilitySystemBase, Log, TEXT("THIS FUCKING SPAWNED GRENADE IS: %s"), *CurrentGrenade->GetName());
 	}
+	// UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Speed passed in Ability: %f"), ThrowForce);
 	GrenadeTask = UGrenadeTask_ThrowGrenade::ThrowGrenade(this, CurrentGrenade, ThrowForce, GrenadeSocketName);
 	GrenadeTask->Activate();
 	GrenadeTask->EndTask();
