@@ -129,9 +129,9 @@ void ASoldierAIController::StopCoverSideMoving()
 
 void ASoldierAIController::FindNewCover()
 {
-	CoverPos = PRPerceptionComponent->GetBestCoverWing(BotWing);
+	bool flag = PRPerceptionComponent->GetBestCoverWing(BotWing, CoverPos);
 	const auto BlackboardComp = GetBlackboardComponent();
-	if (BlackboardComp)
+	if (flag && BlackboardComp)
 	{
 		UE_LOG(LogPRAIController, Log, TEXT("Cover pos was set X: %0.2f, Y: %0.2f"), CoverPos.X, CoverPos.Y);
 		UE_LOG(LogPRAIController, Log, TEXT("Player pos X: %0.2f, Y:%0.2f"), PlayerPos.X, PlayerPos.Y);

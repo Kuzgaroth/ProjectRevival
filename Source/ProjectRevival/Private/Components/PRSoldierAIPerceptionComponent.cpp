@@ -58,7 +58,7 @@ AActor* UPRSoldierAIPerceptionComponent::GetClosestEnemy() const
 	return BestPawn;
 }
 
-FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
+bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& CoverPos)
 {
 	TArray<AActor*> PerceivedActors;
 	FVector BestCoverPos;
@@ -67,19 +67,20 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 	if (PerceivedActors.Num()==0)
 	{
 		UE_LOG(LogPRAIPerception, Log, TEXT("Cover: Empty Sight"))
-		return FVector::ZeroVector;
+		return false;
 	}
 	UE_LOG(LogPRAIPerception, Log, TEXT("Cover: Not empty"))
 
 	const auto Controller = Cast<ASoldierAIController>(GetOwner());
-	if (!Controller) return FVector::ZeroVector;
+	if (!Controller) return false;
 
 	const auto Pawn = Controller->GetPawn();
-	if (!Pawn) return FVector::ZeroVector;
+	if (!Pawn) return false;
 
 	const auto PawnPos = Pawn->GetActorLocation();
 	const auto PlayerPos = Controller->GetPlayerPos();
 	float BestDist = MAX_FLT;
+	auto StartingCoverPos = CoverPos;
 	
 	for (const auto Actor : PerceivedActors)
 	{
@@ -87,13 +88,12 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 		if (Actor && Actor->ActorHasTag(TEXT("Cover")))
 		{
 			UE_LOG(LogPRAIPerception, Log, TEXT("Actor Has Cover Tag"))
-			//const auto Cover = Cast<ACoverObject>(Actor);
-			//if (Cover && !(Cover->IsCoverTaken()))
-			//{
+			const auto Cover = Cast<IIChangingWorldActor>(Actor);
+			if (Cover && Cover->TryToFindCoverPoint(PlayerPos, CoverPos))
+			{
 				float A = PlayerPos.Y - PawnPos.Y;
 				float B = PlayerPos.X - PawnPos.X;
 				float C = PlayerPos.Y * B - PawnPos.X * A;
-				const auto CoverPos = Actor->GetActorLocation();
 				UE_LOG(LogPRAIPerception, Log, TEXT("Cover pos X: %0.2f, Y: %0.2f"), CoverPos.X, CoverPos.Y)
 				float LineEquation = A * CoverPos.X + B * CoverPos.Y + C;
 				float DistToLine = abs(A * CoverPos.X + B * CoverPos.Y + C) / sqrt(A * A + B * B);
@@ -101,7 +101,7 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 				UE_LOG(LogPRAIPerception, Log, TEXT("Line Equation: %0.2f"), LineEquation)
 				if (Wing == EWing::Left)
 				{
-					if (LineEquation > 0.0f && DistToLine > 300.0f && BestDist > FVector::Dist(PawnPos, CoverPos))
+					if (LineEquation > 0.0f && DistToLine > 400.0f && BestDist > FVector::Dist(PawnPos, CoverPos))
 					{
 						BestDist = FVector::Dist(PawnPos, CoverPos);
 						BestCoverPos = CoverPos;
@@ -109,7 +109,7 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 				}
 				else if (Wing == EWing::Center && BestDist > FVector::Dist(PawnPos, CoverPos))
 				{
-					if (DistToLine <= 300.0f)
+					if (DistToLine <= 400.0f)
 					{
 						BestDist = FVector::Dist(PawnPos, CoverPos);
 						BestCoverPos = CoverPos;
@@ -117,14 +117,20 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 				}
 				else if (Wing == EWing::Right && BestDist > FVector::Dist(PawnPos, CoverPos))
 				{
-					if (LineEquation < 0.0f && DistToLine > 300.0f && BestDist > FVector::Dist(PawnPos, CoverPos))
+					if (LineEquation < 0.0f && DistToLine > 400.0f && BestDist > FVector::Dist(PawnPos, CoverPos))
 					{
 						BestDist = FVector::Dist(PawnPos, CoverPos);
 						BestCoverPos = CoverPos;
 					}
 				}
-			//}
+			}
 		}
 	}
-	return BestCoverPos;
+	if (StartingCoverPos == BestCoverPos)
+	{
+		return false;
+	} else
+	{
+		return true;
+	}
 }
