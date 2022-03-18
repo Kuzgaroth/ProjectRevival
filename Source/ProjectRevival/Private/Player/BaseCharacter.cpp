@@ -95,7 +95,8 @@ float ABaseCharacter::GetMovementDirection() const
 
 UWeaponComponent* ABaseCharacter::GetWeaponComponent() const
 {
-	return WeaponComponent;
+	if (WeaponComponent) return WeaponComponent;
+	else return nullptr;
 }
 
 // Called to bind functionality to input

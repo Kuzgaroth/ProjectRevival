@@ -4,9 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "AICharacter.h"
-#include "AIWeaponComponent.h"
 #include "SoldierRifleWeapon.h"
-#include "EnvironmentQuery/EQSTestingPawn.h"
+#include "Interfaces/IGrenadeThrower.h"
 #include "Player/BaseCharacter.h"
 #include "Soldier/SoldierAIController.h"
 #include "SoldierEnemy.generated.h"
@@ -16,6 +15,7 @@
 // DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCoverSideMovingForAnim);
 // DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCoverToFireForAnim);
 // DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCoverFromFireForAnim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FThrowGrenade);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopEnteringCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopExitingCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopCoverSideMoving);
@@ -23,7 +23,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartFire);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopFire);
 
 UCLASS()
-class PROJECTREVIVAL_API ASoldierEnemy : public AAICharacter, public IICoverable
+class PROJECTREVIVAL_API ASoldierEnemy : public AAICharacter, public IICoverable, public IIGrenadeThrower
 {
 	GENERATED_BODY()
 public:
@@ -43,6 +43,8 @@ public:
 	// UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	// FStartCoverToFireForAnim StartCoverFromFireForAnimDelegate;
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FThrowGrenade ThrowGrenadeDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FStopEnteringCover StopEnteringCoverDelegate;
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FStopExitingCover StopExitingCoverDelegate;
@@ -54,6 +56,11 @@ public:
 	FStopFire StopFireDelegate;
 
 	virtual ECoverType CheckCover() override;
+	virtual bool UsesOwnGrenades() override;
+	virtual bool SwitchGrenade() override;
+	
+	UFUNCTION(BlueprintCallable)
+	virtual TSubclassOf<ABaseGrenade> GetCurrentGrenade() override;
 	
 	UFUNCTION(BlueprintCallable)
 	FCoverData& GetCoverData();
@@ -91,6 +98,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StartCoverFromFireFinish();
 
+	UFUNCTION(BlueprintCallable)
+	void ThrowGrenade();
+
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsInCoverBP;
 
@@ -114,19 +124,30 @@ protected:
 	virtual TEnumAsByte<ECoverSide> CheckSideByNormal(FVector Forward, FVector Normal);
 	virtual TEnumAsByte<ECoverPart> GetCoverPart(int8 PartPos);
 	virtual void CleanCoverData();
+	virtual int8 GetCoverIndex();
 
 	float SideMoveAmount;
+
+	//List of grenades which can be used. If empty than default grenade from GrenadeAbility is used
+	UPROPERTY(EditDefaultsOnly, Category="Grenade Ability")
+	TArray<TSubclassOf<ABaseGrenade>> Grenades;
+
+	UPROPERTY(EditDefaultsOnly, Category="Grenade Ability")
+	TSubclassOf<ABaseGrenade> CurrentGrenade = nullptr;
 
 	UPROPERTY()
 	ASoldierRifleWeapon* RifleRef=nullptr;
 	
-	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	// virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
 	virtual void UpdateHealthWidgetVisibility() override;
 	virtual void UpdateHStateBlackboardKey(uint8 EnumKey) override;
 	void CoverCrouch();
 	FVector PlayerPosition; //Used when we need to call StartFireBP(It is needed when we start firing while covering)
+
+	UFUNCTION()
+	void ThrowGrenadeCaller();
 
 	// void MoveForward(float Amount);
 	// void MoveRight(float Amount);

@@ -32,6 +32,8 @@ public:
 	bool CanEquip();
 	bool CanReload();
 	bool IsShooting();
+	bool IsWeaponBlocked() const { return bIsWeaponBlocked; }
+	void SetWeaponBlocked(const bool bIsBlocked) { bIsWeaponBlocked = bIsBlocked; }
 	TArray<UMaterialInstanceDynamic*> GetCurrentWeaponMaterials();
 	ABaseWeapon* GetCurrentWeapon();
 protected:
@@ -69,6 +71,7 @@ private:
 	bool EquipAnimInProgress;
 	bool ReloadAnimInProgress;
 	bool ShootingInProgress;
+	bool bIsWeaponBlocked;
 	void SpawnWeapons();
 	void AttachWeaponToSocket(ABaseWeapon* Weapon, USceneComponent* CharacterMesh, const FName& SocketName);
 	
