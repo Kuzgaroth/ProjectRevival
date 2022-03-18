@@ -20,15 +20,15 @@ AActor* UPRSoldierAIPerceptionComponent::GetClosestEnemy() const
 	GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceiveActors);
 	if (PerceiveActors.Num()==0)
 	{
-		//UE_LOG(LogPRAIPerception, Log, TEXT("Enemy: Empty Sight"))
+		UE_LOG(LogPRAIPerception, Log, TEXT("Enemy: Empty Sight"))
 		GetCurrentlyPerceivedActors(UAISense_Hearing::StaticClass(), PerceiveActors);
 	}
 	if (PerceiveActors.Num()==0)
 	{
-		//UE_LOG(LogPRAIPerception, Log, TEXT("Enemy: Empty Hearing"))
+		UE_LOG(LogPRAIPerception, Log, TEXT("Enemy: Empty Hearing"))
 		return nullptr;
 	}
-	//UE_LOG(LogPRAIPerception, Log, TEXT("Enemy, Not empty"))
+	UE_LOG(LogPRAIPerception, Log, TEXT("Enemy, Not empty"))
 
 	const auto Controller = Cast<ASoldierAIController>(GetOwner());
 	if (!Controller) return nullptr;
@@ -65,10 +65,10 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 	//GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
 	if (PerceivedActors.Num()==0)
 	{
-		//UE_LOG(LogPRAIPerception, Log, TEXT("Cover: Empty Sight"))
+		UE_LOG(LogPRAIPerception, Log, TEXT("Cover: Empty Sight"))
 		return FVector::ZeroVector;
 	}
-	//UE_LOG(LogPRAIPerception, Log, TEXT("Cover: Not empty"))
+	UE_LOG(LogPRAIPerception, Log, TEXT("Cover: Not empty"))
 
 	const auto Controller = Cast<ASoldierAIController>(GetOwner());
 	if (!Controller) return FVector::ZeroVector;
@@ -82,17 +82,17 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 	
 	for (const auto Actor : PerceivedActors)
 	{
-		//UE_LOG(LogPRAIPerception, Log, TEXT("Bool : %s"), Actor->ActorHasTag(TEXT("Cover")) ? TEXT("t") : TEXT("f"));
+		UE_LOG(LogPRAIPerception, Log, TEXT("Bool : %s"), Actor->ActorHasTag(TEXT("Cover")) ? TEXT("t") : TEXT("f"));
 		if (Actor && Actor->ActorHasTag(TEXT("Cover")))
 		{
-			//UE_LOG(LogPRAIPerception, Log, TEXT("Actor Has Cover Tag"))
-			const auto Cover = Cast<ACoverObject>(Actor);
-			if (Cover && !(Cover->IsCoverTaken()))
-			{
+			UE_LOG(LogPRAIPerception, Log, TEXT("Actor Has Cover Tag"))
+			//const auto Cover = Cast<ACoverObject>(Actor);
+			//if (Cover && !(Cover->IsCoverTaken()))
+			//{
 				float A = PlayerPos.Y - PawnPos.Y;
 				float B = PlayerPos.X - PawnPos.X;
 				float C = PlayerPos.Y * B - PawnPos.X * A;
-				const auto CoverPos = Cover->GetActorLocation();
+				const auto CoverPos = Actor->GetActorLocation();
 				UE_LOG(LogPRAIPerception, Log, TEXT("Cover pos X: %0.2f, Y: %0.2f"), CoverPos.X, CoverPos.Y)
 				float LineEquation = A * CoverPos.X + B * CoverPos.Y + C;
 				float DistToLine = abs(A * CoverPos.X + B * CoverPos.Y + C) / sqrt(A * A + B * B);
@@ -122,7 +122,7 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 						BestCoverPos = CoverPos;
 					}
 				}
-			}
+			//}
 		}
 	}
 	return BestCoverPos;
