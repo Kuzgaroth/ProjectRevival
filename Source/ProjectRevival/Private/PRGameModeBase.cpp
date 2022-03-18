@@ -27,10 +27,7 @@ void APRGameModeBase::StartPlay()
 	Super::StartPlay();
 	
 	SpawnBots();
-	CreateTeamsInfo();
 	
-	CurrentRound = 1;
-	StartRound();
 	SetMatchState(EMatchState::InProgress);
 }
 
@@ -41,22 +38,6 @@ UClass* APRGameModeBase::GetDefaultPawnClassForController_Implementation(AContro
 		return AIPawnClass;
 	}
 	return Super::GetDefaultPawnClassForController_Implementation(InController);
-}
-
-void APRGameModeBase::Killed(AController* KillerController, AController* VictimController)
-{
-	const auto KillerPlayerState = KillerController ? KillerController->GetPlayerState<APRPlayerState>() : nullptr;
-	const auto VictimPlayerState = VictimController ? VictimController->GetPlayerState<APRPlayerState>() : nullptr;
-	if (KillerPlayerState)
-	{
-		KillerPlayerState->AddKill();
-	}
-
-	if (VictimPlayerState)
-	{
-		VictimPlayerState->AddDeath();
-	}
-	StartRespawn(VictimController);
 }
 
 void APRGameModeBase::RespawnRequest(AController* Controller)
@@ -99,35 +80,6 @@ void APRGameModeBase::SpawnBots()
 	ResetPlayers();
 }
 
-void APRGameModeBase::StartRound()
-{
-	RoundCountDown = GameData.RoundTime;
-	GetWorldTimerManager().SetTimer(GameRoundTimerHandle, this, &APRGameModeBase::GameTimerUpdate, 1.0f, true);
-}
-
-void APRGameModeBase::GameTimerUpdate()
-{
-	if (--RoundCountDown==0)
-	{
-		GetWorldTimerManager().ClearTimer(GameRoundTimerHandle);
-
-		if (CurrentRound + 1 <= GameData.RoundsNum)
-		{
-			UE_LOG(LogGamePrModeBase, Display, TEXT("Round %i/%i ended"), CurrentRound, GameData.RoundsNum);
-			++CurrentRound;
-			UE_LOG(LogTemp, Log, TEXT("GameTimerUpdate+if+if+true"));
-			ResetPlayers();
-			StartRound();
-			UE_LOG(LogGamePrModeBase, Display, TEXT("Round %i/%i starts"), CurrentRound, GameData.RoundsNum);
-		}
-		else
-		{
-			GameOver();
-			
-		}
-	}
-}
-
 void APRGameModeBase::ResetPlayers()
 {
 	if (!GetWorld()) return;
@@ -145,78 +97,12 @@ void APRGameModeBase::ResetOnePlayer(AController* Controller)
 		Controller->GetPawn()->Reset();
 	}
 	RestartPlayer(Controller);
-	SetPlayerColor(Controller);
 }
 
-void APRGameModeBase::CreateTeamsInfo()
-{
-	if (!GetWorld()) return;
-	int32 TeamId = 1;
-	for (auto It = GetWorld()->GetControllerIterator(); It;++It)
-	{
-
-		const auto Controller = It->Get();
-		if (!Controller) continue;
-
-		const auto PlayerState = Cast<APRPlayerState>(Controller->PlayerState);
-		if (!PlayerState) continue;
-		
-		PlayerState->SetTeamId(TeamId);
-		PlayerState->SetTeamColor(DetermineColorByTeamID(TeamId));
-		PlayerState->SetPlayerName(Controller->IsPlayerController() ? "Player" : "Bot");
-		SetPlayerColor(Controller);
-		
-		TeamId = TeamId == 1 ? 2 : 1;
-	}
-}
-
-FLinearColor APRGameModeBase::DetermineColorByTeamID(int32 TeamId) const
-{
-	if (TeamId - 1 <GameData.TeamColors.Num())
-	{
-		
-		return GameData.TeamColors[TeamId-1];
-	}
-	return GameData.DefaultTeamColor;
-}
-
-void APRGameModeBase::SetPlayerColor(AController* Controller)
-{
-	if (!Controller) return;
-	const auto Character = Cast<ABaseCharacter>(Controller->GetPawn());
-
-	if (!Character) return;
-
-	const auto PlayerState = Controller->GetPlayerState<APRPlayerState>();
-	if (!PlayerState) return;
-
-	Character->SetPlayerColor(PlayerState->GetTeamColor());
-}
 
 void APRGameModeBase::LogPlayerInfo()
 {
-	if (!GetWorld()) return;
-	for (auto It = GetWorld()->GetControllerIterator(); It;++It)
-	{
-		const auto Controller = It->Get();
-		if (!Controller) continue;
-
-		const auto PlayerState = Cast<APRPlayerState>(Controller->PlayerState);
-		if (!PlayerState) continue;
-
-		PlayerState->LogInfo();
-	}
-}
-
-void APRGameModeBase::StartRespawn(AController* Controller)
-{
-	const auto RespawnAvailable = RoundCountDown>MinRoundTimeForSpawn+GameData.RespawnTime;
-	if (!RespawnAvailable) return;
 	
-	const auto RespawnComponent = PRUtils::GetCharacterComponent<URespawnComponent>(Controller);
-	if (!RespawnComponent) return;
-
-	RespawnComponent->Respawn(GameData.RespawnTime);
 }
 
 void APRGameModeBase::GameOver()

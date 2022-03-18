@@ -53,9 +53,6 @@ void UGameOverWidget::UpdatePlayersStat()
 		if (!PlayerStatRowWidget) continue;
 
 		PlayerStatRowWidget->SetPlayerName(FText::FromString(PlayerState->GetPlayerName()));
-		PlayerStatRowWidget->SetKills(PRUtils::TextFromInt(PlayerState->GetKillsNum()));
-		PlayerStatRowWidget->SetDeaths(PRUtils::TextFromInt(PlayerState->GetDeathsNum()));
-		PlayerStatRowWidget->SetTeam(PRUtils::TextFromInt(PlayerState->GetTeamId()));
 		PlayerStatRowWidget->SetPlayerIndicatorVisibility(Controller->IsPlayerController());
 
 		PLayerStatBox->AddChild(PlayerStatRowWidget);
