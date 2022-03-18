@@ -335,6 +335,15 @@ struct FCoverPointsAndPossibility
 	
 };
 
+// Структура для распределения ботов по направлениям
+UENUM(BlueprintType)
+enum class EWing: uint8
+{
+	Left = 0,
+	Center = 1,
+	Right = 2
+};
+
 UCLASS()
 class PROJECTREVIVAL_API UCameraCoverFunctions : public UObject
 {
