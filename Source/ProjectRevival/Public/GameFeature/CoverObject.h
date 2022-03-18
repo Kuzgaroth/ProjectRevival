@@ -5,12 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameplayTagAssetInterface.h"
 #include "GameFramework/Actor.h"
-#include "Interfaces/IChangingWorldObjCoverCheck.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "CoverObject.generated.h"
 
 UCLASS()
-class PROJECTREVIVAL_API ACoverObject : public AActor, public IIChangingWorldObjCoverCheck
+class PROJECTREVIVAL_API ACoverObject : public AActor
 {
 	GENERATED_BODY()
 	
@@ -37,5 +36,5 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	bool IsCoverTaken() const { return bIsTaken; }
 
-	virtual bool TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos) override;
+	virtual bool TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos);
 };

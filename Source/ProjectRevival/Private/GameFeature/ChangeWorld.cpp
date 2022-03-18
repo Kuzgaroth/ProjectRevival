@@ -20,7 +20,7 @@ void AChangeWorld::BeginPlay()
 
 void AChangeWorld::ClearComponentTags(UStaticMeshComponent* supermesh)
 {
-	supermesh->ComponentTags.Empty();
+	this->Tags.Empty();
 }
 
 void AChangeWorld::LoadComponentTags(UStaticMeshComponent* supermesh)

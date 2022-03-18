@@ -340,11 +340,12 @@ struct FCoverPointsAndPossibility
 	int CoverPointsAmount;
 	
 	UPROPERTY(EditInstanceOnly,BlueprintReadWrite,Category="CoverPointsData")
-	TArray<UBoxComponent*> CoverPositions;
+	TArray<USceneComponent*> CoverPositions;
 
 	UPROPERTY(EditInstanceOnly,BlueprintReadWrite,Category="CoverPointsData")
 	bool CanBeTakenAsCover=true;
 
+	TMap<UBoxComponent*,bool> PointIsNotTaken;
 	TArray<FVector> PositionsOfCoverPoints;
 	
 };

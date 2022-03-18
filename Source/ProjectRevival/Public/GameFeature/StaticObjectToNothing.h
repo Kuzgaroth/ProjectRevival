@@ -67,9 +67,6 @@ public:
 	TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
 	
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USceneComponent* SceneComponent;
-
 	UFUNCTION()
 	void OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, 
 					  AActor* OtherActor, 
@@ -77,6 +74,23 @@ public:
 					  int32 OtherBodyIndex, 
 					  bool bFromSweep, 
 					  const FHitResult &SweepResult);
+
+	UFUNCTION()
+	void OnCoverPointComponentCollision(UPrimitiveComponent* OverlappedComponent, 
+					  AActor* OtherActor, 
+					  UPrimitiveComponent* OtherComp, 
+					  int32 OtherBodyIndex, 
+					  bool bFromSweep, 
+					  const FHitResult &SweepResult);
+
+	UFUNCTION()
+	void OnCoverPointComponentExit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void BlockCoverPoint(const UBoxComponent* CoverPoint);
+
+	UFUNCTION()
+	void FreeCoverPoint(const UBoxComponent* CoverPoint);
 	
 	void Changing() override;
 	

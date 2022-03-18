@@ -9,7 +9,7 @@
 #include "Perception/AISense_Hearing.h"
 #include "Perception/AISense_Sight.h"
 #include "GameFeature/CoverObject.h"
-#include "Interfaces/IChangingWorldObjCoverCheck.h"
+#include "Interfaces/IChangingWorldActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Math/Vector.h"
 
@@ -91,7 +91,7 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 			float C = PlayerPos.Y * B - PawnPos.X * A;
 			UE_LOG(LogPRAIPerception, Log, TEXT("%s"),*Actor->GetName());
 			FVector CovPos;
-			auto Coverable=Cast<IIChangingWorldObjCoverCheck>(Actor);
+			auto Coverable=Cast<IIChangingWorldActor>(Actor);
 			if(Coverable)
 			{
 				UE_LOG(LogPRAIPerception, Log, TEXT("Working"))

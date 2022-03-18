@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ChangeWorld.h"
-#include "Interfaces/IChangingWorldObjCoverCheck.h"
+#include "Interfaces/IChangingWorldActor.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "Interfaces/IChangingWorldActor.h"
 #include "StaticObjectToStaticObject.generated.h"

@@ -25,7 +25,6 @@ AStaticObjectToNothing::AStaticObjectToNothing()
 	OnTimeLineFinished.BindUFunction(this,FName("TimeLineFinished"));
 	
 	SuperMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SuperMesh"));
-	RootComponent = SuperMesh;
 	SuperMesh->SetMobility(EComponentMobility::Movable);
 	SuperMesh->SetVisibility(true);
 }
@@ -35,9 +34,9 @@ void AStaticObjectToNothing::BeginPlay()
 {
 	Super::BeginPlay();
 	CollisionResponseContainer=SuperMesh->GetCollisionResponseToChannels();
-	for(int i=0;i<SuperMesh->ComponentTags.Num();i++)
+	for(int i=0;i<this->Tags.Num();i++)
 	{
-		MeshTags.Add(SuperMesh->ComponentTags[i]);
+		MeshTags.Add(this->Tags[i]);
 	}
 	SuperMesh->SetVisibility(true);
 	int32 num=SuperMesh->GetNumMaterials();
@@ -87,6 +86,20 @@ void AStaticObjectToNothing::BeginPlay()
 		ClearComponentTags(SuperMesh);
 	}
 	SuperMesh->OnComponentBeginOverlap.AddDynamic(this,&AStaticObjectToNothing::OnMeshComponentCollision);
+
+	SuperMesh->GetChildrenComponents(true,CoverStruct.CoverPositions);
+	
+	for(auto covpoint:CoverStruct.CoverPositions)
+	{
+		auto boxcomp=Cast<UBoxComponent>(covpoint);
+		if(boxcomp)
+		{
+			CoverStruct.PointIsNotTaken.Add(boxcomp,true);
+			boxcomp->OnComponentBeginOverlap.AddDynamic(this,&AStaticObjectToNothing::OnCoverPointComponentCollision);
+			boxcomp->OnComponentEndOverlap.AddDynamic(this,&AStaticObjectToNothing::OnCoverPointComponentExit);
+			
+		}
+	}
 }
 
 // Called every frame
@@ -123,44 +136,6 @@ void AStaticObjectToNothing::PostEditChangeProperty(FPropertyChangedEvent& Prope
 			chobj->ChangeVisibleWorld(AllObjectVisibleWorld);
 		}
 	}
-	if(PropertyChangedEvent.Property->GetName()=="CoverPointsAmount")
-	{
-		CoverStruct.PositionsOfCoverPoints.Empty();
-		for(auto covpos:CoverStruct.CoverPositions)
-		{
-			if(covpos)
-				CoverStruct.PositionsOfCoverPoints.Push(covpos->GetRelativeLocation());
-			covpos->DestroyComponent();
-		}
-		if(CoverStruct.CoverPositions.Num()>=0) CoverStruct.CoverPositions.Empty();
-		CoverStruct.CoverPositions.SetNum(CoverStruct.CoverPointsAmount);
-		for(int i=0;i<CoverStruct.CoverPositions.Num();++i)
-		{
-			auto newCoverPoint=NewObject<UBoxComponent>(this,UBoxComponent::StaticClass(),*FString("CoverPos").Append(FString::FromInt(i+1)));
-			newCoverPoint->CreationMethod=EComponentCreationMethod::Native;
-			newCoverPoint->OnComponentCreated();
-			newCoverPoint->SetupAttachment(RootComponent);
-			newCoverPoint->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			newCoverPoint->SetMobility(EComponentMobility::Movable);
-			if(i<CoverStruct.PositionsOfCoverPoints.Num())
-			{
-				newCoverPoint->SetWorldLocation(CoverStruct.PositionsOfCoverPoints[i]);
-				newCoverPoint->SetRelativeLocation(CoverStruct.PositionsOfCoverPoints[i]);
-			}
-			newCoverPoint->RegisterComponent();
-			CoverStruct.CoverPositions[i]=newCoverPoint;
-		}
-	}
-	if(PropertyChangedEvent.Property->GetName()=="AllObjectVisibleWorld")
-	{
-		TArray<AActor*> ChangeAbleObjs;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(),AChangeWorld::StaticClass(),ChangeAbleObjs);
-		for(auto obj:ChangeAbleObjs)
-		{
-			auto chobj=Cast<AChangeWorld>(obj);
-			chobj->ChangeVisibleWorld(AllObjectVisibleWorld);
-		}
-	}
 }
 #endif
 
@@ -180,7 +155,6 @@ void AStaticObjectToNothing::Changing()
 		if(VisualCurve)
 		{
 			isApearing=true;
-			TimeLine.PlayFromStart();
 			SuperMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
 			LoadComponentTags(SuperMesh);
 			TimeLine.PlayFromStart();
@@ -188,12 +162,12 @@ void AStaticObjectToNothing::Changing()
 		}
 		else
 		{
+			SuperMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
 			SuperMesh->SetVisibility(true);
 		}
 	}
 	else
 	{
-		//CurrentWorld = World;
 		if(VisualCurve)
 		{
 			isApearing=false;
@@ -203,6 +177,7 @@ void AStaticObjectToNothing::Changing()
 		}
 		else
 		{
+			SuperMesh->SetCollisionProfileName("OverlapAll");
 			SuperMesh->SetVisibility(false);
 		}
 	}
@@ -259,6 +234,35 @@ void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* Overl
 	}
 }
 
+void AStaticObjectToNothing::OnCoverPointComponentCollision(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,
+															UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,const FHitResult& SweepResult)
+{
+	if(Cast<APawn>(OtherActor))
+	{
+		BlockCoverPoint(Cast<UBoxComponent>(OverlappedComponent));
+	}
+}
+
+void AStaticObjectToNothing::OnCoverPointComponentExit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if(Cast<APawn>(OtherActor))
+	{
+		FreeCoverPoint(Cast<UBoxComponent>(OverlappedComponent));
+	}
+}
+
+
+void AStaticObjectToNothing::BlockCoverPoint(const UBoxComponent* CoverPoint)
+{
+	CoverStruct.PointIsNotTaken[CoverPoint]=false;
+}
+
+void AStaticObjectToNothing::FreeCoverPoint(const UBoxComponent* CoverPoint)
+{
+	CoverStruct.PointIsNotTaken[CoverPoint]=true;
+}
+
 void AStaticObjectToNothing::TimeLineFinished()
 {
 	if(!isApearing)
@@ -293,13 +297,13 @@ void AStaticObjectToNothing::LoadComponentTags(UStaticMeshComponent* supermesh)
 	Super::LoadComponentTags(supermesh);
 	for(int i=0;i<MeshTags.Num();i++)
 	{
-		supermesh->ComponentTags.AddUnique(MeshTags[i]);
+		this->Tags.AddUnique(MeshTags[i]);
 	}
 }
 
 bool AStaticObjectToNothing::CheckIsChangeAbleObjIsCover()
 {
-	return CoverStruct.CanBeTakenAsCover&&SuperMesh->ComponentTags.Contains("Cover");
+	return CoverStruct.CanBeTakenAsCover&&this->ActorHasTag("Cover");
 }
 
 bool AStaticObjectToNothing::TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos)
@@ -312,12 +316,12 @@ bool AStaticObjectToNothing::TryToFindCoverPoint(FVector PlayerPos, FVector& Cov
 		FHitResult HitResult;
 		FCollisionQueryParams CollisionParams;
 		GetWorld()->LineTraceSingleByChannel(HitResult,TraceStart,TraceEnd,ECollisionChannel::ECC_Visibility,CollisionParams);
+		auto box =Cast<UBoxComponent>(covpos);
 		if(HitResult.bBlockingHit)
 		{
 			DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
-			if(HitResult.Actor==this)
+			if(HitResult.Actor==this&& CoverStruct.PointIsNotTaken.Contains(box)&&CoverStruct.PointIsNotTaken[box])
 			{
-
 				CoverPos=TraceStart;
 				return true;
 			}
