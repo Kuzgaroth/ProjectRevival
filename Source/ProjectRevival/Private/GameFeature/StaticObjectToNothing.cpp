@@ -163,6 +163,7 @@ void AStaticObjectToNothing::Changing()
 		else
 		{
 			SuperMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+			LoadComponentTags(SuperMesh);
 			SuperMesh->SetVisibility(true);
 		}
 	}
@@ -177,6 +178,7 @@ void AStaticObjectToNothing::Changing()
 		}
 		else
 		{
+			ClearComponentTags(SuperMesh);
 			SuperMesh->SetCollisionProfileName("OverlapAll");
 			SuperMesh->SetVisibility(false);
 		}
