@@ -33,7 +33,7 @@ public:
 	virtual void UnPossessed() override;
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-	
+	UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Components")
 	UInterpToMovementComponent* InterpToMovementComponent;
@@ -107,6 +107,9 @@ public:
 	UFUNCTION()
 	bool StopCover(AActor* InstigatorObj);
 
+	UFUNCTION(BlueprintCallable, Category="Components")
+	bool IsFlipping() const { return bIsFlipping; }
+	bool bIsFlipping = false;
 
 private:
 	UPROPERTY()

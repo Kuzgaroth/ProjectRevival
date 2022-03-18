@@ -17,15 +17,15 @@ class PROJECTREVIVAL_API UFlipTask_FlipToggle : public UAbilityTask
 	GENERATED_BODY()
 public:
 	virtual void Activate() override;
-	void Activate(float Strength, float Duration, UCurveFloat* Curve);
 
 	UPROPERTY(EditDefaultsOnly)
 	UAnimMontage* FlipMontage;
 	
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility"))
-	static UFlipTask_FlipToggle* FlipInit(UGameplayAbility* OwningAbility, UCurveFloat* FlipCurve);
+	static UFlipTask_FlipToggle* FlipInit(UGameplayAbility* OwningAbility, UCurveFloat* FlipCurve,
+		float Strength, float Duration, UAnimMontage* Montage, FVector Direction);
 	
-	void FlipStarted(float Strength, float Duration, UCurveFloat* Curve);
+	void FlipStarted();
 	void FlipFinished();
 	FOnTimelineEvent OnFlipStarted;
 	FOnTimelineEvent OnFlipFinished;
@@ -37,7 +37,13 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly)
 	UCurveFloat* CurveFloat;
-
+	UPROPERTY(EditDefaultsOnly)
+	float FlipStrength;
+	UPROPERTY(EditDefaultsOnly)
+	float FlipDuration;
+	UPROPERTY(EditDefaultsOnly)
+	FVector FlipDirection;
+	
 	UPROPERTY()
 	class UAbilityTask_ApplyRootMotionConstantForce* ForceTask;
 

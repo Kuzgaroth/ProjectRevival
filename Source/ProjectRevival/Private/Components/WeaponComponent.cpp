@@ -53,6 +53,15 @@ void UWeaponComponent::Reload()
 	ChangeClip();
 }
 
+ABaseWeapon* UWeaponComponent::GetCurrentWeapon()
+{
+	if (CurrentWeapon)
+	{
+		return CurrentWeapon;
+	}
+	return nullptr;
+}
+
 bool UWeaponComponent::GetCurrentWeaponUIData(FWeaponUIData& UIData) const
 {
 	if (CurrentWeapon)
@@ -61,6 +70,42 @@ bool UWeaponComponent::GetCurrentWeaponUIData(FWeaponUIData& UIData) const
 		return true;
 	}
 	return false;
+}
+
+int32 UWeaponComponent::GetCurrentWeaponClips() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetAmmoData().Clips;
+	}
+	return -1;
+}
+
+int32 UWeaponComponent::GetCurrentWeaponBullets() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetAmmoData().Bullets;
+	}
+	return -1;
+}
+
+int32 UWeaponComponent::GetMaxWeaponClips() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetDefaultAmmoData().Clips;
+	}
+	return -1;
+}
+
+int32 UWeaponComponent::GetMaxWeaponBullets() const
+{
+	if (CurrentWeapon)
+	{
+		return  CurrentWeapon->GetDefaultAmmoData().Bullets;
+	}
+	return -1;
 }
 
 bool UWeaponComponent::GetCurrentWeaponAmmoData(FAmmoData& AmmoData) const
@@ -203,17 +248,18 @@ void UWeaponComponent::OnReloadFinished(USkeletalMeshComponent* MeshComponent)
 
 bool UWeaponComponent::CanFire()
 {
-	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress;
+	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress && !bIsWeaponBlocked;
 }
 
 bool UWeaponComponent::CanEquip()
 {
-	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress;
+	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress && !bIsWeaponBlocked;
 }
 
 bool UWeaponComponent::CanReload()
 {
-	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress && CurrentWeapon->CanReload();
+	return CurrentWeapon && !EquipAnimInProgress && !ReloadAnimInProgress && !bIsWeaponBlocked
+	&& CurrentWeapon->CanReload();
 }
 
 void UWeaponComponent::OnEmptyClip(ABaseWeapon* AmmoEmptyWeapon)
@@ -244,46 +290,4 @@ void UWeaponComponent::ChangeClip()
 	ReloadAnimInProgress = true;
 	
 	PlayAnimMontage(CurrentReloadAnimMontage);
-}
-
-
-int32 UWeaponComponent::GetCurrentWeaponClips() const
-{
-	if (CurrentWeapon)
-	{
-		return  CurrentWeapon->GetAmmoData().Clips;
-	}
-	return -1;
-}
-
-int32 UWeaponComponent::GetCurrentWeaponBullets() const
-{
-	if (CurrentWeapon)
-	{
-		return  CurrentWeapon->GetAmmoData().Bullets;
-	}
-	return -1;
-}
-
-int32 UWeaponComponent::GetMaxWeaponClips() const
-{
-	if (CurrentWeapon)
-	{
-		return  CurrentWeapon->GetDefaultAmmoData().Clips;
-	}
-	return -1;
-}
-
-int32 UWeaponComponent::GetMaxWeaponBullets() const
-{
-	if (CurrentWeapon)
-	{
-		return  CurrentWeapon->GetDefaultAmmoData().Bullets;
-	}
-	return -1;
-}
-
-ABaseWeapon* UWeaponComponent::GetCurrentWeapon()
-{
-	return CurrentWeapon;
 }
