@@ -3,6 +3,7 @@
 
 #include "AI/AICoordinator.h"
 #include "PlayerCharacter.h"
+#include "StaticMeshAttributes.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/PlayerStart.h"
 
@@ -33,15 +34,18 @@ void AAICoordinator::PostInitializeComponents()
 void AAICoordinator::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	GetWorldTimerManager().SetTimer(PlayerInfoTimerHandle, this, &AAICoordinator::UpdateBotPlayerInfo, PlayerPositionUpdateTime, true);
 }
 
 void AAICoordinator::ProcessBotDeath(ASoldierAIController* BotController)
 {
 	BotController->OnBotDied.Clear();
 	BotController->OnPlayerSpotted.Clear();
+	if (BotController->OnBotWingDecision.IsBound()) BotController->OnBotWingDecision.Unbind();
+	if (BotMap.Num()==0) Destroy();
 	BotMap.FindAndRemoveChecked(BotController);
-	ReorganizeBots();
+	BotController->Destroy();
+	
 }
 
 bool AAICoordinator::InitSpawn()
@@ -170,16 +174,30 @@ void AAICoordinator::ConnectController(ASoldierAIController* BotController, EWin
 	BotController->OnBotDied.AddUObject(this, &AAICoordinator::ProcessBotDeath);
 	BotController->OnPlayerSpotted.AddUObject(this, &AAICoordinator::UpdatePlayerInfoFromBot);
 	BotController->BotWing = WingSide;
-}
-
-void AAICoordinator::ReorganizeBots()
-{
-	
+	if (WingSide==EWing::Center) BotController->OnBotWingDecision.BindUObject(this, &AAICoordinator::MakeDecisionForWingBot);
 }
 
 void AAICoordinator::UpdatePlayerInfoFromBot(FVector PlayerLoc)
 {
 	this->PlayerLocation = PlayerLoc;
+}
+
+bool AAICoordinator::MakeDecisionForWingBot() const
+{
+	if (BotMap.FilterByPredicate([](TTuple<ASoldierAIController*, EWing> BotPair)
+	{
+		if (BotPair.Value==EWing::Center) return true;
+		return false;
+	}).Num()>3) return true;
+	return false;
+}
+
+void AAICoordinator::UpdateBotPlayerInfo()
+{
+	for (TTuple<ASoldierAIController*, EWing> BotPair : BotMap)
+	{
+		BotPair.Key->SetPlayerPos(PlayerLocation);
+	}
 }
 
 AAICharacter* AAICoordinator::SpawnCharacterForBot(AActor* PlayerStartActor, const FTransform& Transform)
@@ -201,4 +219,10 @@ void AAICoordinator::OnTriggerOverlap(UPrimitiveComponent* OverlappedComponent, 
 		TriggerComponent->OnComponentBeginOverlap.Clear();
 	}
 	
+}
+
+void AAICoordinator::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	GetWorldTimerManager().ClearTimer(PlayerInfoTimerHandle);
 }

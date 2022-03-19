@@ -35,17 +35,19 @@ protected:
 	UPROPERTY(EditInstanceOnly, Category="Enemies")
 	TSubclassOf<AAICharacter> EnemyCharacterClass;
 	UPROPERTY(EditAnywhere)
-	float PlayerPositionUpdateTime=2.f;
+	float PlayerPositionUpdateTime=0.5f;
 	
 	virtual void PostInitializeComponents() override;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void ProcessBotDeath(ASoldierAIController* BotController);
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 private:
 	UPROPERTY()
 	TMap<ASoldierAIController*, EWing> BotMap;
 	FVector PlayerLocation;
+	FTimerHandle PlayerInfoTimerHandle;
 	
 	bool InitSpawn();
 	UFUNCTION()
@@ -54,8 +56,11 @@ private:
 	void SpawnBot(AActor* PlayerStartActor, EWing WingSide);
 	AAICharacter* SpawnCharacterForBot(AActor* PlayerStartActor, const FTransform& Transform);
 	void ConnectController(ASoldierAIController* BotController, EWing);
-	void ReorganizeBots();
 	void UpdatePlayerInfoFromBot(FVector PlayerLocation);
+	UFUNCTION()
+	bool MakeDecisionForWingBot() const;
+	UFUNCTION()
+	void UpdateBotPlayerInfo();
 };
 
 

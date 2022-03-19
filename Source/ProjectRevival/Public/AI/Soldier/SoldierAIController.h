@@ -16,8 +16,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartEnteringCover, const FVector&,
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartCoverSideMoving, float, SideMovementAmount);
 
-DECLARE_MULTICAST_DELEGATE_OneParam(OnBotDiedSignature, ASoldierAIController*)
-DECLARE_MULTICAST_DELEGATE_OneParam(OnPlayerSpottedSignature, FVector)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnBotDiedSignature, ASoldierAIController*)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSpottedSignature, FVector)
+DECLARE_DELEGATE_RetVal(bool, FOnWingBotsDecision)
 
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
 
@@ -49,8 +50,9 @@ public:
 	FStartExitingCover StartExitingCoverDelegate;
 	UPROPERTY(BlueprintAssignable)
 	FStartCoverSideMoving StartCoverSideMovingDelegate;
-	OnBotDiedSignature OnBotDied;
-	OnPlayerSpottedSignature OnPlayerSpotted;
+	FOnBotDiedSignature OnBotDied;
+	FOnPlayerSpottedSignature OnPlayerSpotted;
+	FOnWingBotsDecision OnBotWingDecision;
 	void StartFiring();
 	// Функция, к которой должен быть привязан делегат класса Character
 	void StopFiring();
@@ -93,7 +95,7 @@ protected:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
-
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 private:
 	AActor* GetFocusOnActor();
 };

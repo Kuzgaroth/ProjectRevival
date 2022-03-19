@@ -57,7 +57,7 @@ ASoldierAIController::ASoldierAIController()
 void ASoldierAIController::SetPlayerPos(const FVector& NewPlayerPos)
 {
 	OnPlayerSpotted.Broadcast(NewPlayerPos);
-	PlayerPos=NewPlayerPos; 
+	//PlayerPos=NewPlayerPos; 
 }
 
 void ASoldierAIController::OnPossess(APawn* InPawn)
@@ -87,6 +87,14 @@ void ASoldierAIController::Tick(float DeltaSeconds)
 void ASoldierAIController::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void ASoldierAIController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	OnBotDied.Clear();
+	OnPlayerSpotted.Clear();
+	OnBotWingDecision.Unbind();
 }
 
 void ASoldierAIController::StartFiring()
