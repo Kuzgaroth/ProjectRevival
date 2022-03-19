@@ -51,7 +51,13 @@ ASoldierAIController::ASoldierAIController()
 	bIsFiring = false;
 	bIsInCover = false;
 	bIsSideTurning = false;
-	BotWing = EWing::Left;
+	BotWing = EWing::Center;
+}
+
+void ASoldierAIController::SetPlayerPos(const FVector& NewPlayerPos)
+{
+	OnPlayerSpotted.Broadcast(NewPlayerPos);
+	PlayerPos=NewPlayerPos; 
 }
 
 void ASoldierAIController::OnPossess(APawn* InPawn)

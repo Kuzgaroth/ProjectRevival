@@ -8,11 +8,16 @@
 #include "Components/RespawnComponent.h"
 #include "SoldierAIController.generated.h"
 
+class ASoldierAIController;
+
 // Объявление делегата передачи положения игрока
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerPosDelegate, const FVector&, PlayerPosition);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartEnteringCover, const FVector&, CoverPosition);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartCoverSideMoving, float, SideMovementAmount);
+
+DECLARE_MULTICAST_DELEGATE_OneParam(OnBotDiedSignature, ASoldierAIController*)
+DECLARE_MULTICAST_DELEGATE_OneParam(OnPlayerSpottedSignature, FVector)
 
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
 
@@ -31,7 +36,7 @@ public:
 	ASoldierAIController();
 
 	FVector GetPlayerPos() const { return PlayerPos; }
-	void SetPlayerPos(const FVector &NewPlayerPos) { PlayerPos=NewPlayerPos; }
+	void SetPlayerPos(const FVector &NewPlayerPos);
 	bool GetBIsFiring() const { return bIsFiring; }
 	void SetBIsFiring(bool bCond) { bIsFiring = bCond; }
 	bool GetBIsInCover() const { return bIsInCover; }
@@ -44,7 +49,8 @@ public:
 	FStartExitingCover StartExitingCoverDelegate;
 	UPROPERTY(BlueprintAssignable)
 	FStartCoverSideMoving StartCoverSideMovingDelegate;
-	
+	OnBotDiedSignature OnBotDied;
+	OnPlayerSpottedSignature OnPlayerSpotted;
 	void StartFiring();
 	// Функция, к которой должен быть привязан делегат класса Character
 	void StopFiring();
@@ -55,7 +61,9 @@ public:
 	void StartCoverSideMoving();
 	void StopCoverSideMoving();
 	void FindNewCover();
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
+	EWing BotWing;
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
 	UPRSoldierAIPerceptionComponent* PRPerceptionComponent;
@@ -77,10 +85,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Respawn")
 	URespawnComponent* RespawnComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
-	EWing BotWing;
-
+	
 	bool bIsFiring;
 	bool bIsInCover;
 	bool bIsSideTurning;
@@ -92,3 +97,4 @@ protected:
 private:
 	AActor* GetFocusOnActor();
 };
+
