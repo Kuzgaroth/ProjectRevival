@@ -94,7 +94,7 @@ void ASoldierAIController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 	OnBotDied.Clear();
 	OnPlayerSpotted.Clear();
-	OnBotWingDecision.Unbind();
+	if (OnBotWingDecision.IsBound()) OnBotWingDecision.Unbind();
 }
 
 void ASoldierAIController::StartFiring()

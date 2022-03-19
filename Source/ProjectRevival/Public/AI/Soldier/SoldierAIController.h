@@ -50,8 +50,11 @@ public:
 	FStartExitingCover StartExitingCoverDelegate;
 	UPROPERTY(BlueprintAssignable)
 	FStartCoverSideMoving StartCoverSideMovingDelegate;
+	//Делегат для оповещения о смерти (Подключен)
 	FOnBotDiedSignature OnBotDied;
+	//Делегат для оповещения координатора о положении игрока (Подключен)
 	FOnPlayerSpottedSignature OnPlayerSpotted;
+	//Делегат для выбора действий ботов в крыльях (надо подключить к BehaviorTree)
 	FOnWingBotsDecision OnBotWingDecision;
 	void StartFiring();
 	// Функция, к которой должен быть привязан делегат класса Character

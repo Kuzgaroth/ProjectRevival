@@ -39,9 +39,6 @@ void AAICoordinator::BeginPlay()
 
 void AAICoordinator::ProcessBotDeath(ASoldierAIController* BotController)
 {
-	BotController->OnBotDied.Clear();
-	BotController->OnPlayerSpotted.Clear();
-	if (BotController->OnBotWingDecision.IsBound()) BotController->OnBotWingDecision.Unbind();
 	if (BotMap.Num()==0) Destroy();
 	BotMap.FindAndRemoveChecked(BotController);
 	BotController->Destroy();
@@ -174,7 +171,7 @@ void AAICoordinator::ConnectController(ASoldierAIController* BotController, EWin
 	BotController->OnBotDied.AddUObject(this, &AAICoordinator::ProcessBotDeath);
 	BotController->OnPlayerSpotted.AddUObject(this, &AAICoordinator::UpdatePlayerInfoFromBot);
 	BotController->BotWing = WingSide;
-	if (WingSide==EWing::Center) BotController->OnBotWingDecision.BindUObject(this, &AAICoordinator::MakeDecisionForWingBot);
+	if (WingSide!=EWing::Center) BotController->OnBotWingDecision.BindUObject(this, &AAICoordinator::MakeDecisionForWingBot);
 }
 
 void AAICoordinator::UpdatePlayerInfoFromBot(FVector PlayerLoc)
