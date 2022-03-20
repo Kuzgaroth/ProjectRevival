@@ -500,3 +500,29 @@ enum class EWing: uint8
 	Center = 1,
 	Right = 2
 };
+
+USTRUCT(BlueprintType)
+struct FPlayerPositionData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	AActor* PlayerActor;
+	UPROPERTY()
+	AActor* PlayerCover;
+	FPlayerPositionData(AActor* PActor, AActor* PCover)
+	{
+		PlayerActor = PActor;
+		PlayerCover = PCover;
+	}
+	FPlayerPositionData()
+	{
+		PlayerActor=nullptr;
+		PlayerCover=nullptr;
+	}
+	FORCEINLINE void operator=(const FPlayerPositionData& PlayerPos)
+	{
+		PlayerActor = PlayerPos.PlayerActor;
+		PlayerCover = PlayerPos.PlayerCover;
+	}
+};

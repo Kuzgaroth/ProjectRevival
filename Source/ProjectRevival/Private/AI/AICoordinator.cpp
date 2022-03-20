@@ -174,9 +174,9 @@ void AAICoordinator::ConnectController(ASoldierAIController* BotController, EWin
 	if (WingSide!=EWing::Center) BotController->OnBotWingDecision.BindUObject(this, &AAICoordinator::MakeDecisionForWingBot);
 }
 
-void AAICoordinator::UpdatePlayerInfoFromBot(FVector PlayerLoc)
+void AAICoordinator::UpdatePlayerInfoFromBot(FPlayerPositionData PlayerPos)
 {
-	this->PlayerLocation = PlayerLoc;
+	this->PlayerPosition = PlayerPos;
 }
 
 bool AAICoordinator::MakeDecisionForWingBot() const
@@ -193,7 +193,7 @@ void AAICoordinator::UpdateBotPlayerInfo()
 {
 	for (TTuple<ASoldierAIController*, EWing> BotPair : BotMap)
 	{
-		BotPair.Key->SetPlayerPos(PlayerLocation);
+		BotPair.Key->SetPlayerPos(PlayerPosition);
 	}
 }
 

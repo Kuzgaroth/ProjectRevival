@@ -11,13 +11,13 @@
 class ASoldierAIController;
 
 // Объявление делегата передачи положения игрока
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerPosDelegate, const FVector&, PlayerPosition);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerPosDelegate, const FPlayerPositionData&, PlayerPosition);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartEnteringCover, const FVector&, CoverPosition);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartCoverSideMoving, float, SideMovementAmount);
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnBotDiedSignature, ASoldierAIController*)
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSpottedSignature, FVector)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSpottedSignature, FPlayerPositionData)
 DECLARE_DELEGATE_RetVal(bool, FOnWingBotsDecision)
 
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
@@ -36,8 +36,8 @@ class PROJECTREVIVAL_API ASoldierAIController : public AAIController
 public:
 	ASoldierAIController();
 
-	FVector GetPlayerPos() const { return PlayerPos; }
-	void SetPlayerPos(const FVector &NewPlayerPos);
+	FPlayerPositionData GetPlayerPos() const { return PlayerPos; }
+	void SetPlayerPos(const FPlayerPositionData &NewPlayerPos);
 	bool GetBIsFiring() const { return bIsFiring; }
 	void SetBIsFiring(bool bCond) { bIsFiring = bCond; }
 	bool GetBIsInCover() const { return bIsInCover; }
@@ -74,7 +74,7 @@ protected:
 	UPRSoldierAIPerceptionComponent* PRPerceptionComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
-	FVector PlayerPos;
+	FPlayerPositionData PlayerPos;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
 	FVector CoverPos;

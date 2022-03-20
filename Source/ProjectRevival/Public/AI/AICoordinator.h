@@ -46,7 +46,8 @@ protected:
 private:
 	UPROPERTY()
 	TMap<ASoldierAIController*, EWing> BotMap;
-	FVector PlayerLocation;
+	UPROPERTY()
+	FPlayerPositionData PlayerPosition;
 	FTimerHandle PlayerInfoTimerHandle;
 	
 	bool InitSpawn();
@@ -56,7 +57,7 @@ private:
 	void SpawnBot(AActor* PlayerStartActor, EWing WingSide);
 	AAICharacter* SpawnCharacterForBot(AActor* PlayerStartActor, const FTransform& Transform);
 	void ConnectController(ASoldierAIController* BotController, EWing);
-	void UpdatePlayerInfoFromBot(FVector PlayerLocation);
+	void UpdatePlayerInfoFromBot(FPlayerPositionData PlayerPosition);
 	UFUNCTION()
 	bool MakeDecisionForWingBot() const;
 	UFUNCTION()

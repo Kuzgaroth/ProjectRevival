@@ -77,7 +77,7 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 	if (!Pawn) return FVector::ZeroVector;
 
 	const auto PawnPos = Pawn->GetActorLocation();
-	const auto PlayerPos = Controller->GetPlayerPos();
+	const auto PlayerPos = (Controller->GetPlayerPos().PlayerActor!=nullptr) ? Controller->GetPlayerPos().PlayerActor->GetActorLocation():FVector::ZeroVector;
 	float BestDist = MAX_FLT;
 	
 	for (const auto Actor : PerceivedActors)
