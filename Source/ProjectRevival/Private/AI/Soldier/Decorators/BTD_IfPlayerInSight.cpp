@@ -29,7 +29,7 @@ bool UBTD_IfPlayerInSight::CalcCondition(UBehaviorTreeComponent& OwnerComp, uint
 	UE_LOG(LogPRAIDecorators, Log, TEXT("Player Pos is set to: X = %0.2f, Y = %0.2f"), PerceptionComp->GetActorLocation(*Actor).X, PerceptionComp->GetActorLocation(*Actor).Y)
 
 	// Удалить когда будет написан координатор
-	Controller->SetPlayerPos(PerceptionComp->GetActorLocation(*Actor));
+	Controller->SetPlayerPos(FPlayerPositionData(Actor, nullptr));
 	return true;
 }
 

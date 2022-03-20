@@ -8,11 +8,17 @@
 #include "Components/RespawnComponent.h"
 #include "SoldierAIController.generated.h"
 
+class ASoldierAIController;
+
 // Объявление делегата передачи положения игрока
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerPosDelegate, const FVector&, PlayerPosition);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerPosDelegate, const FPlayerPositionData&, PlayerPosition);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartEnteringCover, const FVector&, CoverPosition);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartCoverSideMoving, float, SideMovementAmount);
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnBotDiedSignature, ASoldierAIController*)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSpottedSignature, FPlayerPositionData)
+DECLARE_DELEGATE_RetVal(bool, FOnWingBotsDecision)
 
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
 
@@ -30,8 +36,8 @@ class PROJECTREVIVAL_API ASoldierAIController : public AAIController
 public:
 	ASoldierAIController();
 
-	FVector GetPlayerPos() const { return PlayerPos; }
-	void SetPlayerPos(const FVector &NewPlayerPos) { PlayerPos=NewPlayerPos; }
+	FPlayerPositionData GetPlayerPos() const { return PlayerPos; }
+	void SetPlayerPos(const FPlayerPositionData &NewPlayerPos);
 	bool GetBIsFiring() const { return bIsFiring; }
 	void SetBIsFiring(bool bCond) { bIsFiring = bCond; }
 	bool GetBIsInCover() const { return bIsInCover; }
@@ -44,7 +50,12 @@ public:
 	FStartExitingCover StartExitingCoverDelegate;
 	UPROPERTY(BlueprintAssignable)
 	FStartCoverSideMoving StartCoverSideMovingDelegate;
-	
+	//Делегат для оповещения о смерти (Подключен)
+	FOnBotDiedSignature OnBotDied;
+	//Делегат для оповещения координатора о положении игрока (Подключен)
+	FOnPlayerSpottedSignature OnPlayerSpotted;
+	//Делегат для выбора действий ботов в крыльях (надо подключить к BehaviorTree)
+	FOnWingBotsDecision OnBotWingDecision;
 	void StartFiring();
 	// Функция, к которой должен быть привязан делегат класса Character
 	void StopFiring();
@@ -55,13 +66,15 @@ public:
 	void StartCoverSideMoving();
 	void StopCoverSideMoving();
 	void FindNewCover();
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
+	EWing BotWing;
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
 	UPRSoldierAIPerceptionComponent* PRPerceptionComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
-	FVector PlayerPos;
+	FPlayerPositionData PlayerPos;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
 	FVector CoverPos;
@@ -77,10 +90,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Respawn")
 	URespawnComponent* RespawnComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
-	EWing BotWing;
-
+	
 	bool bIsFiring;
 	bool bIsInCover;
 	bool bIsSideTurning;
@@ -88,7 +98,8 @@ protected:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
-
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 private:
 	AActor* GetFocusOnActor();
 };
+

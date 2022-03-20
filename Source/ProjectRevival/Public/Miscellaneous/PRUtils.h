@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "PlayerCharacter.h"
 #include "Player/PRPlayerState.h"
 
 class PRUtils
@@ -21,7 +22,7 @@ public:
 		const auto PlayerState1 = Controller1->GetPlayerState<APRPlayerState>();
 		const auto PlayerState2 = Controller2->GetPlayerState<APRPlayerState>();
 		
-		return PlayerState1 && PlayerState2 && PlayerState1->GetTeamId() != PlayerState2->GetTeamId();
+		return PlayerState1 && PlayerState2 && Cast<APlayerCharacter>(Controller2->GetCharacter());
 	}
 
 	static FText TextFromInt(int32 Number)

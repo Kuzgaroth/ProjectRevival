@@ -111,21 +111,6 @@ struct FGameData
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Game", meta=(ClampMin="1", ClampMax="100"))
 	int32 PlayersNum = 2;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Game", meta=(ClampMin="1", ClampMax="10"))
-	int32 RoundsNum = 4;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Game", meta=(ClampMin="3", ClampMax="300"))
-	int32 RoundTime = 10;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Teams")
-	FLinearColor DefaultTeamColor = FLinearColor::Red;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Teams")
-	TArray<FLinearColor> TeamColors;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Game", meta=(ClampMin="3", ClampMax="20"))
-    int32 RespawnTime = 1;
 };
 
 UENUM(BlueprintType)
@@ -535,4 +520,38 @@ DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
 struct FBTPlayerCheckDecoratorMemory
 {
 	bool bLastRawResult;
+};
+
+UENUM(BlueprintType)
+enum class EWing: uint8
+{
+	Left = 0,
+	Center = 1,
+	Right = 2
+};
+
+USTRUCT(BlueprintType)
+struct FPlayerPositionData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	AActor* PlayerActor;
+	UPROPERTY()
+	AActor* PlayerCover;
+	FPlayerPositionData(AActor* PActor, AActor* PCover)
+	{
+		PlayerActor = PActor;
+		PlayerCover = PCover;
+	}
+	FPlayerPositionData()
+	{
+		PlayerActor=nullptr;
+		PlayerCover=nullptr;
+	}
+	FORCEINLINE void operator=(const FPlayerPositionData& PlayerPos)
+	{
+		PlayerActor = PlayerPos.PlayerActor;
+		PlayerCover = PlayerPos.PlayerCover;
+	}
 };

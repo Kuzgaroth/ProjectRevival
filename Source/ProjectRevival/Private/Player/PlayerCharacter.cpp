@@ -270,10 +270,10 @@ void APlayerCharacter::OnCooldownExpired(const FActiveGameplayEffect& ExpiredEff
 void APlayerCharacter::OnDeath()
 {
 	Super::OnDeath();
-	if (Controller)
+	/*if (Controller)
 	{
 		Controller->ChangeState(NAME_Spectating);
-	}
+	}*/
 }
 
 void APlayerCharacter::BeginPlay()

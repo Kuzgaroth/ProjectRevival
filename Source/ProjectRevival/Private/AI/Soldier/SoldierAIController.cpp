@@ -51,7 +51,13 @@ ASoldierAIController::ASoldierAIController()
 	bIsFiring = false;
 	bIsInCover = false;
 	bIsSideTurning = false;
-	BotWing = EWing::Left;
+	BotWing = EWing::Center;
+}
+
+void ASoldierAIController::SetPlayerPos(const FPlayerPositionData& NewPlayerPos)
+{
+	OnPlayerSpotted.Broadcast(NewPlayerPos);
+	//PlayerPos=NewPlayerPos; 
 }
 
 void ASoldierAIController::OnPossess(APawn* InPawn)
@@ -83,9 +89,19 @@ void ASoldierAIController::BeginPlay()
 	Super::BeginPlay();
 }
 
+void ASoldierAIController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	OnBotDied.Clear();
+	OnPlayerSpotted.Clear();
+	if (OnBotWingDecision.IsBound()) OnBotWingDecision.Unbind();
+}
+
 void ASoldierAIController::StartFiring()
 {
-	UE_LOG(LogPRAIController, Log, TEXT("Shoot at Player pos X: %0.2f, Y: %0.2f, Z: %0.2f"), PlayerPos.X, PlayerPos.Y, PlayerPos.Z);
+	const float PlayerX = (PlayerPos.PlayerActor) ? PlayerPos.PlayerActor->GetActorLocation().X : 0;
+	const float PlayerY = (PlayerPos.PlayerActor) ? PlayerPos.PlayerActor->GetActorLocation().Y : 0;
+	UE_LOG(LogPRAIController, Log, TEXT("Shoot at Player pos X: %0.2f, Y: %0.2f, Z: %0.2f"), PlayerX, PlayerY);
 	PlayerPosDelegate.Broadcast(PlayerPos);
 }
 
@@ -133,8 +149,10 @@ void ASoldierAIController::FindNewCover()
 	const auto BlackboardComp = GetBlackboardComponent();
 	if (flag && BlackboardComp)
 	{
+		const float PlayerX = (PlayerPos.PlayerActor!=nullptr) ? PlayerPos.PlayerActor->GetActorLocation().X : 0;
+		const float PlayerY = (PlayerPos.PlayerActor!=nullptr) ? PlayerPos.PlayerActor->GetActorLocation().Y : 0;
 		UE_LOG(LogPRAIController, Log, TEXT("Cover pos was set X: %0.2f, Y: %0.2f"), CoverPos.X, CoverPos.Y);
-		UE_LOG(LogPRAIController, Log, TEXT("Player pos X: %0.2f, Y:%0.2f"), PlayerPos.X, PlayerPos.Y);
+		UE_LOG(LogPRAIController, Log, TEXT("Player pos X: %0.2f, Y:%0.2f"), PlayerX,PlayerY);
 		BlackboardComp->SetValueAsVector(CoverKeyname, CoverPos);
 	}
 	//MoveToLocation(CoverPos);
