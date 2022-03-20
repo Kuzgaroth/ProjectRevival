@@ -66,7 +66,7 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 	//GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
 	if (PerceivedActors.Num()==0)
 	{
-		UE_LOG(LogPRAIPerception, Log, TEXT("NO COVER FOUND"))
+		//UE_LOG(LogPRAIPerception, Log, TEXT("Cover: Empty Sight"))
 		return FVector::ZeroVector;
 	}
 	//UE_LOG(LogPRAIPerception, Log, TEXT("Cover: Not empty"))
@@ -85,7 +85,7 @@ FVector UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing)
 	for (const auto Actor : PerceivedActors)
 	{
 		//UE_LOG(LogPRAIPerception, Log, TEXT("Bool : %s"), Actor->ActorHasTag(TEXT("Cover")) ? TEXT("t") : TEXT("f"));
-		if (Actor && (Actor->ActorHasTag(TEXT("Cover"))||Actor->GetComponentsByTag(UStaticMeshComponent::StaticClass(),FName("Cover")).Num()!=0))
+		if (Actor && Actor->ActorHasTag(TEXT("Cover")))
 		{
 			float A = PlayerPos.Y - PawnPos.Y;
 			float B = PlayerPos.X - PawnPos.X;

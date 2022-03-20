@@ -4,6 +4,7 @@
 #include "AI/Services/FireService.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
+#include "AIWeaponComponent.h"
 #include "PRUtils.h"
 #include "Components/WeaponComponent.h"
 
@@ -20,7 +21,7 @@ void UFireService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 	const auto bHasAim = Blackboard && Blackboard->GetValueAsObject(EnemyActorKey.SelectedKeyName)!=nullptr;
 	if (Controller)
 	{
-		const auto WeaponComponent = PRUtils::GetCharacterComponent<UWeaponComponent>(Controller->GetPawn());
+		const auto WeaponComponent = PRUtils::GetCharacterComponent<UAIWeaponComponent>(Controller->GetPawn());
 		if (WeaponComponent)
 		{
 			bHasAim ? WeaponComponent->StartFire() : WeaponComponent->StopFire();
@@ -37,7 +38,7 @@ void UFireService::OnCeaseRelevant(UBehaviorTreeComponent& OwnerComp, uint8* Nod
 	const auto bHasAim = Blackboard && Blackboard->GetValueAsObject(EnemyActorKey.SelectedKeyName);
 	if (Controller)
 	{
-		const auto WeaponComponent = PRUtils::GetCharacterComponent<UWeaponComponent>(Controller->GetPawn());
+		const auto WeaponComponent = PRUtils::GetCharacterComponent<UAIWeaponComponent>(Controller->GetPawn());
 		if (WeaponComponent)
 		{
 			if (!bHasAim) WeaponComponent->StopFire();
