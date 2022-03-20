@@ -59,6 +59,7 @@ bool AAICoordinator::InitSpawn()
 	for (UChildActorComponent* Component : PlayerStartComponents)
 	{
 		Component->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+		Component->Mobility = EComponentMobility::Static;
 		Component->RegisterComponent();
 	}
 	int32 BotsInTotal = PlayerStartComponents.Num();
@@ -90,6 +91,7 @@ bool AAICoordinator::InitSpawn()
 		return PlayerStartComponent->ComponentTags.Find("Center") !=INDEX_NONE;
 	});
 	int32 LeftTmp=LeftWing, RightTmp = RightWing, CenterTmp = Center, AllSide = BotsInTotal;
+	UE_LOG(LogPRCoordinator, Display, TEXT("Bots in Center %d, in Left %d, in Right %d"), CenterWingStarts.Num(), LeftWingStarts.Num(), RightWingStarts.Num());
 	SpawnBotsBySide(LeftWingStarts, PlayerStartComponents, LeftTmp, AllSide, EWing::Left);
 	SpawnBotsBySide(RightWingStarts, PlayerStartComponents, RightTmp, AllSide, EWing::Right);
 	SpawnBotsBySide(CenterWingStarts, PlayerStartComponents, CenterTmp, AllSide, EWing::Center);
@@ -123,6 +125,7 @@ void AAICoordinator::SpawnBotsBySide(TArray<UChildActorComponent*>& SideComponen
 	{
 		if (NumSide==0) break;
 		SpawnBot(PlayerStartComponent->GetChildActor(), WingSide);
+		UE_LOG(LogPRCoordinator, Display, TEXT("Bot spawned at %s"), *(PlayerStartComponent->GetChildActor()->GetName()));
 		NumSide--;
 		NumAll--;
 		AllComponents.Remove(PlayerStartComponent);
@@ -148,6 +151,7 @@ void AAICoordinator::SpawnBot(AActor* PlayerStartActor, EWing WingSide)
 	// If the Pawn is destroyed as part of possession we have to abort
 	if (BotController->GetPawn() == nullptr)
 	{
+		UE_LOG(LogPRCoordinator, Warning, TEXT("Bot pawn wasn't spawn"));
 		BotController->FailedToSpawnPawn();
 	}
 	else
@@ -201,9 +205,12 @@ AAICharacter* AAICoordinator::SpawnCharacterForBot(AActor* PlayerStartActor, con
 {
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.Instigator = nullptr;
+	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	SpawnInfo.ObjectFlags |= RF_Transient;	// We never want to save default player pawns into a map
 	UClass* PawnClass = EnemyCharacterClass;
-	return GetWorld()->SpawnActor<AAICharacter>(PawnClass, Transform, SpawnInfo);
+	auto SpawnedPawn = GetWorld()->SpawnActor<AAICharacter>(PawnClass, Transform, SpawnInfo);
+	UE_LOG(LogPRCoordinator, Display, TEXT("Bot pawn is %s"), SpawnedPawn==nullptr ? *FString("_not spawned_") : *FString("_spawned_"));
+	return SpawnedPawn;
 }
 
 void AAICoordinator::OnTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
