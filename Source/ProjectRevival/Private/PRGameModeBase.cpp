@@ -26,7 +26,7 @@ void APRGameModeBase::StartPlay()
 {
 	Super::StartPlay();
 	
-	SpawnBots();
+	//SpawnBots();
 	
 	SetMatchState(EMatchState::InProgress);
 }

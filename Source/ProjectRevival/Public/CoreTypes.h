@@ -492,3 +492,11 @@ struct FBTPlayerCheckDecoratorMemory
 {
 	bool bLastRawResult;
 };
+
+UENUM(BlueprintType)
+enum class EWing: uint8
+{
+	Left = 0,
+	Center = 1,
+	Right = 2
+};
