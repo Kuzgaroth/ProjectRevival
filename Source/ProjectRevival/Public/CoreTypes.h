@@ -155,10 +155,13 @@ struct FPlayerAimZoomBlueprint
 	FVector CoverHighOffset = FVector(170.0, 120.0, 0.0);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	FVector CoverLowOffset = FVector(130.0, 20.0, 20.0);
+	FVector CoverHighCrouchOffset = FVector(170.0, 120.0, 120.0);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	FVector CoverLowMiddleOffset = FVector(70.0, -83.0, 70.0);
+	FVector CoverLowOffset = FVector(130.0, 20.0, 70.0);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
+	FVector CoverLowMiddleOffset = FVector(70.0, -83.0, 120.0);
 	
 	UPROPERTY()
 	FVector StartLoc;
@@ -198,7 +201,7 @@ public:
 	void TimelineProgress(float, FPlayerAimZoomBlueprint&);
 	
 	void CameraZoomIn(USpringArmComponent*&, FLeftSideViewBlueprint&, FPlayerAimZoomBlueprint&, UCameraComponent*&, FTimeline&, FCoverData&, FCameraCover&, UCameraCoverFunctions*&);
-	void CameraZoomOut(USpringArmComponent*&, FTimeline&, FPlayerAimZoomBlueprint&, FCoverData&);
+	void CameraZoomOut(USpringArmComponent*&, FTimeline&, FPlayerAimZoomBlueprint&, FCoverData&, FCameraCover&);
 	
 	USpringArmComponent* *LocalSpringArmComponent = nullptr;
 	UCameraComponent* *LocalCameraComponent = nullptr;
@@ -212,7 +215,7 @@ struct FLeftSideViewBlueprint
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timeline")
-	UCurveFloat* LeftSideFloat;
+	UCurveVector* LeftSideViewVector;
 
 	UPROPERTY()
 	bool Block = false;
@@ -224,10 +227,10 @@ struct FLeftSideViewBlueprint
 	bool CamPos = false;
 
 	UPROPERTY()
-	float EndPos = 0.0;
+	FVector EndPos = FVector(0.0);
 
 	UPROPERTY()
-	float StartPos = 0.0;
+	FVector StartPos = FVector(0.0);
 
 	UPROPERTY()
 	float Proverka = 0.0;
@@ -240,6 +243,9 @@ struct FLeftSideViewBlueprint
 
 	UPROPERTY()
 	FVector SavePosLeft = FVector(0.0);
+
+	UPROPERTY()
+	bool bIsFirstTimeChange = false;
 };
 
 UCLASS()
@@ -258,7 +264,7 @@ public:
 	void TimelineLeftSideView(float, FLeftSideViewBlueprint&, FPlayerAimZoomBlueprint&);
 	void CameraStop(FLeftSideViewBlueprint&, FPlayerAimZoomBlueprint&);
 	void CameraBlock();
-	void OnCameraMove(USpringArmComponent*&, UCameraComponent*&, FLeftSideViewBlueprint& LocalLeftSideViewBlueprint, FTimeline& LeftSideViewCurveTimeline, FCameraCover&, FCoverData&);
+	void OnCameraMove(USpringArmComponent*&, UCameraComponent*&, FLeftSideViewBlueprint& LocalLeftSideViewBlueprint, FTimeline& LeftSideViewCurveTimeline, FCameraCover&, FCoverData&, UCameraCoverFunctions*&);
 };
 
 USTRUCT(BlueprintType)
@@ -273,7 +279,7 @@ struct FCameraCover
 	FVector CameraCover = FVector(80.0, 0.0, -10.0);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	float Low = 70.0;
+	float Low = 120.0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
 	UCurveFloat* CoverFloat;
@@ -292,6 +298,9 @@ struct FCameraCover
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
 	float CoverYShift = 30.0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
+	UCurveFloat* CoverHighCoverCrouchCurve;
 
 	UPROPERTY()
 	float StartPos;
@@ -313,6 +322,15 @@ struct FCameraCover
 
 	UPROPERTY()
 	bool bIsTurning = false;
+
+	UPROPERTY()
+	bool bIsLow = false;
+
+	UPROPERTY()
+	bool bIsLowLong = false;
+
+	UPROPERTY()
+	bool bIsHighLong = true;
 };
 
 UCLASS()
@@ -322,16 +340,36 @@ class PROJECTREVIVAL_API UCameraCoverFunctions : public UObject
 public:
 	FTimeline CameraCoverTimeline;
 	FTimeline CameraCoverYShiftTimeline;
+	FTimeline CameraCoverLowTimeline;
 
 	FVector Start;
 	FVector End;
 
 	ECoverType CoverType;
 
-	void TimelineCover(float, UCameraCoverFunctions*&, USpringArmComponent*&, FCameraCover&, FLeftSideViewBlueprint&);
+	void TimelineCover(float, UCameraCoverFunctions*&, USpringArmComponent*&);
 	void TimelineCoverFieldOfView(float, UCameraComponent*&, FCameraCover&);
 	void TimelineCoverYShift(float, USpringArmComponent*&, FCameraCover&);
+	void TimelineCoverLow(float, UCameraCoverFunctions*&, USpringArmComponent*&);
+	void OnHighCoverLow(USpringArmComponent*&, UCameraCoverFunctions*&, FCameraCover&);
 };
+
+
+inline void UCameraCoverFunctions::OnHighCoverLow(USpringArmComponent*& SpringArmComponent, UCameraCoverFunctions*& CameraCoverFunctions, FCameraCover& CameraCover)
+{
+	CameraCoverFunctions->Start = CameraCoverFunctions->End = SpringArmComponent->SocketOffset;
+	if (CameraCover.bIsLow == false) { CameraCoverFunctions->End.Z -= CameraCover.Low; CameraCover.bIsLow = true; CameraCover.bIsLowLong = false; CameraCover.bIsHighLong = false;}
+	else { CameraCoverFunctions->End.Z += CameraCover.Low; CameraCover.bIsLow = false; CameraCover.bIsLowLong = false; CameraCover.bIsHighLong = false; }
+	CameraCoverFunctions->CameraCoverLowTimeline.PlayFromStart();
+}
+
+
+inline void UCameraCoverFunctions::TimelineCoverLow(float Value, UCameraCoverFunctions*& CameraCoverFunctions, USpringArmComponent*& SpringArmComponent)
+{
+	float NewLow = FMath::Lerp(CameraCoverFunctions->Start.Z, CameraCoverFunctions->End.Z, Value);
+	SpringArmComponent->SocketOffset.Z = NewLow;
+}
+
 
 
 inline void UPlayerAimZoomFunctions::TimelineFieldOfView(float Value, FPlayerAimZoomBlueprint& LocalPlayerAimZoomBlueprint)
@@ -353,6 +391,8 @@ inline void UPlayerAimZoomFunctions::CameraZoomIn(USpringArmComponent*& SpringAr
 	LocalSpringArmComponent = &SpringArmComponent;
 	
 	if (LocalPlayerAimZoomBlueprint.StartStartPos == FVector(0.0, 0.0, 0.0)) LocalPlayerAimZoomBlueprint.StartStartPos = SpringArmComponent->SocketOffset;
+	else if (CameraCover.bIsLow == true && CameraCover.bIsLowLong == false) { LocalPlayerAimZoomBlueprint.StartStartPos.Z -= CameraCover.Low;}
+	else if (CameraCover.bIsLow == false && CameraCover.bIsHighLong == false) { LocalPlayerAimZoomBlueprint.StartStartPos.Z += CameraCover.Low; CameraCover.bIsHighLong = true;}
 	SpringArmComponent->SocketOffset = LocalPlayerAimZoomBlueprint.StartStartPos;
 
 	LocalPlayerAimZoomBlueprint.StartLoc = SpringArmComponent->SocketOffset;
@@ -361,6 +401,8 @@ inline void UPlayerAimZoomFunctions::CameraZoomIn(USpringArmComponent*& SpringAr
 		if (CameraCoverFunctions->CoverType == ECoverType::High) LocalPlayerAimZoomBlueprint.EndLoc = FVector(SpringArmComponent->SocketOffset.X + LocalPlayerAimZoomBlueprint.CoverHighOffset.X, SpringArmComponent->SocketOffset.Y, SpringArmComponent->SocketOffset.Z + LocalPlayerAimZoomBlueprint.CoverHighOffset.Z);
 		else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == true) LocalPlayerAimZoomBlueprint.EndLoc = FVector(SpringArmComponent->SocketOffset.X + LocalPlayerAimZoomBlueprint.CoverLowOffset.X, SpringArmComponent->SocketOffset.Y, SpringArmComponent->SocketOffset.Z + LocalPlayerAimZoomBlueprint.CoverLowOffset.Z);
 		else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == false) LocalPlayerAimZoomBlueprint.EndLoc = FVector(SpringArmComponent->SocketOffset.X + LocalPlayerAimZoomBlueprint.CoverLowMiddleOffset.X, SpringArmComponent->SocketOffset.Y, SpringArmComponent->SocketOffset.Z + LocalPlayerAimZoomBlueprint.CoverLowMiddleOffset.Z);
+		if (CameraCoverFunctions->CoverType == ECoverType::High && CameraCover.bIsLow == true /*&& CameraCover.bIsLowLong == false*/) LocalPlayerAimZoomBlueprint.EndLoc.Z += CameraCover.Low / 2.0;
+		//else if (CameraCoverFunctions->CoverType == ECoverType::High && CameraCover.bIsLow == true && CameraCover.bIsLowLong == true) LocalPlayerAimZoomBlueprint.EndLoc.Z += 2 * CameraCover.Low;
 	}
 	else LocalPlayerAimZoomBlueprint.EndLoc = FVector(SpringArmComponent->SocketOffset.X + LocalPlayerAimZoomBlueprint.Offset.X, SpringArmComponent->SocketOffset.Y, SpringArmComponent->SocketOffset.Z + LocalPlayerAimZoomBlueprint.Offset.Z);
 	if (LeftSideViewBlueprint.CamPos == false)
@@ -379,12 +421,13 @@ inline void UPlayerAimZoomFunctions::CameraZoomIn(USpringArmComponent*& SpringAr
 	if (!(CoverData.IsInCover())) LocalPlayerAimZoomBlueprint.CurrentFieldOfView = LocalPlayerAimZoomBlueprint.FieldOfView;
 	else LocalPlayerAimZoomBlueprint.CurrentFieldOfView = CameraCover.CoverZoomFieldOfView;
 
+	if (CameraCover.bIsLow == true && CameraCover.bIsLowLong == false) CameraCover.bIsLowLong = true;
 	LocalPlayerAimZoomBlueprint.IsZooming = true;
 	LocalCurveTimeline.PlayFromStart();
 	
 }
 
-inline void UPlayerAimZoomFunctions::CameraZoomOut(USpringArmComponent*& SpringArmComponent, FTimeline& LocalCurveTimeline, FPlayerAimZoomBlueprint& LocalPlayerAimZoomBlueprint, FCoverData& CoverData)
+inline void UPlayerAimZoomFunctions::CameraZoomOut(USpringArmComponent*& SpringArmComponent, FTimeline& LocalCurveTimeline, FPlayerAimZoomBlueprint& LocalPlayerAimZoomBlueprint, FCoverData& CoverData, FCameraCover& CameraCover)
 {
 	LocalPlayerAimZoomBlueprint.EndLoc = LocalPlayerAimZoomBlueprint.StartLoc;
 	LocalPlayerAimZoomBlueprint.StartLoc = SpringArmComponent->SocketOffset;
@@ -398,9 +441,9 @@ inline void UPlayerAimZoomFunctions::CameraZoomOut(USpringArmComponent*& SpringA
 
 inline void ULeftSideViewFunctions::TimelineLeftSideView(float Value, FLeftSideViewBlueprint& LocalLeftSideViewBlueprint, FPlayerAimZoomBlueprint& LocalPlayerAimZoomBlueprint)
 {
-	float NewView = FMath::Lerp(LocalLeftSideViewBlueprint.StartPos, LocalLeftSideViewBlueprint.EndPos, Value);
-	(*LocalSpringArmComponent)->SocketOffset.Y = NewView;
-	if (((*LocalSpringArmComponent)->SocketOffset.Y >= LocalLeftSideViewBlueprint.EndPos && LocalLeftSideViewBlueprint.CamPos == true || (*LocalSpringArmComponent)->SocketOffset.Y <= LocalLeftSideViewBlueprint.EndPos && LocalLeftSideViewBlueprint.CamPos == false) && LocalLeftSideViewBlueprint.Repeat == false) { CameraStop(LocalLeftSideViewBlueprint, LocalPlayerAimZoomBlueprint); LocalLeftSideViewBlueprint.Repeat = true; }
+	FVector NewView = FMath::Lerp(LocalLeftSideViewBlueprint.StartPos, LocalLeftSideViewBlueprint.EndPos, Value);
+	(*LocalSpringArmComponent)->SocketOffset = NewView;
+	if (((*LocalSpringArmComponent)->SocketOffset.Y >= LocalLeftSideViewBlueprint.EndPos.Y && LocalLeftSideViewBlueprint.CamPos == true || (*LocalSpringArmComponent)->SocketOffset.Y <= LocalLeftSideViewBlueprint.EndPos.Y && LocalLeftSideViewBlueprint.CamPos == false) && LocalLeftSideViewBlueprint.Repeat == false) { CameraStop(LocalLeftSideViewBlueprint, LocalPlayerAimZoomBlueprint); LocalLeftSideViewBlueprint.Repeat = true; }
 }
 
 inline void ULeftSideViewFunctions::CameraStop(FLeftSideViewBlueprint& LocalLeftSideViewBlueprint, FPlayerAimZoomBlueprint& LocalPlayerAimZoomBlueprint)
@@ -422,7 +465,7 @@ inline void ULeftSideViewFunctions::CameraBlock()
 	LocalLeftSideViewBlueprintLocal->Block = false;
 }
 
-inline void ULeftSideViewFunctions::OnCameraMove(USpringArmComponent*& SpringArmComponent, UCameraComponent*& CameraComponent, FLeftSideViewBlueprint& LocalLeftSideViewBlueprint, FTimeline& LocalLeftSideViewCurveTimeline, FCameraCover& CameraCover, FCoverData& CoverData)
+inline void ULeftSideViewFunctions::OnCameraMove(USpringArmComponent*& SpringArmComponent, UCameraComponent*& CameraComponent, FLeftSideViewBlueprint& LocalLeftSideViewBlueprint, FTimeline& LocalLeftSideViewCurveTimeline, FCameraCover& CameraCover, FCoverData& CoverData, UCameraCoverFunctions*& CameraCoverFunctions)
 {
 	LocalSpringArmComponent = &SpringArmComponent;
 	LocalLeftSideViewBlueprintLocal = &LocalLeftSideViewBlueprint;
@@ -439,23 +482,33 @@ inline void ULeftSideViewFunctions::OnCameraMove(USpringArmComponent*& SpringArm
 		if (LocalLeftSideViewBlueprint.CamPos == false)
 		{
 			if (LocalLeftSideViewBlueprint.SavePosRight == FVector(0.0)) LocalLeftSideViewBlueprint.SavePosRight = SpringArmComponent->SocketOffset;
-			else SpringArmComponent->SocketOffset = LocalLeftSideViewBlueprint.SavePosRight;
+			else if (CameraCoverFunctions->CoverType == ECoverType::High && CameraCover.bIsLow == false) {LocalLeftSideViewBlueprint.SavePosRight.Z = SpringArmComponent->SocketOffset.Z; CameraCover.bIsHighLong = true; SpringArmComponent->SocketOffset = LocalLeftSideViewBlueprint.SavePosRight;}
+			else if (CameraCoverFunctions->CoverType == ECoverType::High && CameraCover.bIsLow == true) {LocalLeftSideViewBlueprint.SavePosRight.Z = SpringArmComponent->SocketOffset.Z; CameraCover.bIsLowLong = true; SpringArmComponent->SocketOffset = LocalLeftSideViewBlueprint.SavePosRight;}
+				else SpringArmComponent->SocketOffset = LocalLeftSideViewBlueprint.SavePosRight;
 		}
 		else if (LocalLeftSideViewBlueprint.SavePosLeft == FVector(0.0)) LocalLeftSideViewBlueprint.SavePosLeft = SpringArmComponent->SocketOffset;
+		else if (CameraCoverFunctions->CoverType == ECoverType::High && CameraCover.bIsLow == false) {LocalLeftSideViewBlueprint.SavePosLeft.Z = SpringArmComponent->SocketOffset.Z; CameraCover.bIsHighLong = true; SpringArmComponent->SocketOffset = LocalLeftSideViewBlueprint.SavePosLeft;}
+		else if (CameraCoverFunctions->CoverType == ECoverType::High && CameraCover.bIsLow == true) {LocalLeftSideViewBlueprint.SavePosLeft.Z = SpringArmComponent->SocketOffset.Z; CameraCover.bIsLowLong = true; SpringArmComponent->SocketOffset = LocalLeftSideViewBlueprint.SavePosLeft;}
 			else SpringArmComponent->SocketOffset = LocalLeftSideViewBlueprint.SavePosLeft;
 	}
 
-	LocalLeftSideViewBlueprint.StartPos = SpringArmComponent->SocketOffset.Y;
-	LocalLeftSideViewBlueprint.EndPos = LocalLeftSideViewBlueprint.StartPos - (SpringArmComponent->SocketOffset.Y + tan(CameraComponent->GetRelativeRotation().Yaw * PI / 180) * SpringArmComponent->TargetArmLength) * 2.f;
-	if (CameraCover.bIsShift == true && LocalLeftSideViewBlueprint.CamPos == false)
+	LocalLeftSideViewBlueprint.StartPos = LocalLeftSideViewBlueprint.EndPos = SpringArmComponent->SocketOffset;
+	LocalLeftSideViewBlueprint.EndPos.Y = LocalLeftSideViewBlueprint.StartPos.Y - (SpringArmComponent->SocketOffset.Y + tan(CameraComponent->GetRelativeRotation().Yaw * PI / 180) * SpringArmComponent->TargetArmLength) * 2.f;
+
+	if (CoverData.IsInCover())
 	{
-		LocalLeftSideViewBlueprint.EndPos += CameraCover.CoverYShift;
-		CameraCover.bIsShift = false;
-	}
-	else if (CameraCover.bIsShift == true && LocalLeftSideViewBlueprint.CamPos == true)
-	{
-		LocalLeftSideViewBlueprint.EndPos -= CameraCover.CoverYShift;
-		CameraCover.bIsShift = false;
+		if (CameraCover.bIsShift == true && LocalLeftSideViewBlueprint.CamPos == false)
+		{
+			LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift;
+			CameraCover.bIsShift = false;
+		}
+		else if (CameraCover.bIsShift == true && LocalLeftSideViewBlueprint.CamPos == true)
+		{
+			LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift;
+			CameraCover.bIsShift = false;
+		}
+
+		//if (LocalLeftSideViewBlueprint.bIsFirstTimeChange == false) {LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift; LocalLeftSideViewBlueprint.bIsFirstTimeChange = true;}
 	}
 	LocalLeftSideViewBlueprint.Block = true;
 	LocalLeftSideViewBlueprint.IsMoving = true;
@@ -464,7 +517,7 @@ inline void ULeftSideViewFunctions::OnCameraMove(USpringArmComponent*& SpringArm
 }
 
 
-inline void UCameraCoverFunctions::TimelineCover(float Value, UCameraCoverFunctions*& CameraCoverFunctions, USpringArmComponent*& SpringArmComponent, FCameraCover& CameraCover, FLeftSideViewBlueprint& LocalLeftSideViewBlueprint)
+inline void UCameraCoverFunctions::TimelineCover(float Value, UCameraCoverFunctions*& CameraCoverFunctions, USpringArmComponent*& SpringArmComponent)
 {
 	FVector NewLocation = FMath::Lerp(CameraCoverFunctions->Start, CameraCoverFunctions->End, Value);
 	SpringArmComponent->SocketOffset = NewLocation;

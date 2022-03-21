@@ -39,6 +39,9 @@ public:
 
 	UFUNCTION()
 	void TimelineCoverYShift(float Value);
+
+	UFUNCTION()
+	void TimelineCoverLow(float Value);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoomBlueprint PlayerAimZoom;
