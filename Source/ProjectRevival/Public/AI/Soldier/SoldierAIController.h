@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "Components/PRSoldierAIPerceptionComponent.h"
 #include "Components/RespawnComponent.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "SoldierAIController.generated.h"
 
 class ASoldierAIController;
@@ -39,9 +40,11 @@ public:
 	FPlayerPositionData GetPlayerPos() const { return PlayerPos; }
 	void SetPlayerPos(const FPlayerPositionData &NewPlayerPos);
 	bool GetBIsFiring() const { return bIsFiring; }
-	void SetBIsFiring(bool bCond) { bIsFiring = bCond; }
+	void SetBIsFiring(bool const bCond) { bIsFiring = bCond; }
 	bool GetBIsInCover() const { return bIsInCover; }
-	void SetBIsInCover(bool bCond) { bIsInCover = bCond; }
+	void SetBIsInCover(bool const bCond) { bIsInCover = bCond; }
+	bool GetBIsSideTurning() const { return bIsSideTurning; }
+	void SetBIsSideTurning(bool const bCond) {bIsSideTurning = bCond; }
 
 	FPlayerPosDelegate PlayerPosDelegate;
 	UPROPERTY(BlueprintAssignable)
@@ -86,7 +89,7 @@ protected:
 	FName FocusOnKeyName = "EnemyActor";
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
-	FName CoverKeyname = "CoverPos";
+	FName CoverKeyName = "CoverPos";
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Respawn")
 	URespawnComponent* RespawnComponent;

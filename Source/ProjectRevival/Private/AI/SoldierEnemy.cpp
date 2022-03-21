@@ -118,10 +118,10 @@ void ASoldierEnemy::Tick(float DeltaSeconds)
 void ASoldierEnemy::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	// Cast<ASoldierAIController>(GetController())->StartEnteringCoverDelegate.AddDynamic(this, &ASoldierEnemy::StartCoverSoldier);
-	// Cast<ASoldierAIController>(GetController())->StartExitingCoverDelegate.AddDynamic(this, &ASoldierEnemy::StopCoverSoldier);
-	// Cast<ASoldierAIController>(GetController())->StartCoverSideMovingDelegate.AddDynamic(this, &ASoldierEnemy::ChangeCoverSide);
-	// Cast<ASoldierAIController>(GetController())->PlayerPosDelegate.AddDynamic(this, &ASoldierEnemy::StartFiring);
+	Cast<ASoldierAIController>(GetController())->StartEnteringCoverDelegate.AddDynamic(this, &ASoldierEnemy::StartCoverSoldier);
+	Cast<ASoldierAIController>(GetController())->StartExitingCoverDelegate.AddDynamic(this, &ASoldierEnemy::StopCoverSoldier);
+	Cast<ASoldierAIController>(GetController())->StartCoverSideMovingDelegate.AddDynamic(this, &ASoldierEnemy::ChangeCoverSide);
+	Cast<ASoldierAIController>(GetController())->PlayerPosDelegate.AddDynamic(this, &ASoldierEnemy::StartFiring);
 }
 
 void ASoldierEnemy::OnHealthChanged(float CurrentHealth, float HealthDelta)
@@ -287,7 +287,7 @@ void ASoldierEnemy::StartCoverToFireFinish()
 {
 	CoverData.IsInFireTransition = false;
 	CoverData.IsFiring = true;
-	StartFiring(PlayerPosition);
+	StartFiring(PlayerCoordinates);
 }
 
 void ASoldierEnemy::StartCoverFromFire()
@@ -296,7 +296,7 @@ void ASoldierEnemy::StartCoverFromFire()
 	if (!CoverData.IsInCover()) {return;}
 	CoverData.IsFiring = false;
 	CoverData.IsInFireTransition = true;
-	//StartCoverFromFireForAnimDelegate.Broadcast();
+	StartCoverFromFireForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StartCoverFromFireFinish()
@@ -305,9 +305,9 @@ void ASoldierEnemy::StartCoverFromFireFinish()
 	StopFiring();
 }
 
-void ASoldierEnemy::StartFiring(const FVector& PlayerPos)
+void ASoldierEnemy::StartFiring(const FPlayerPositionData& PlayerPos)
 {
-	PlayerPosition = PlayerPos;
+	PlayerCoordinates = PlayerPos;
 	if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring && !bIsFiringBP && GetCoverIndex() >= 2)
 	{
 		StartCoverToFire();
@@ -380,8 +380,8 @@ TEnumAsByte<ECoverSide> ASoldierEnemy::CheckSideByNormal(FVector Forward, FVecto
 {
 	Forward.Normalize();
 	Normal = - Normal;
-	float CosNormal = Normal.CosineAngle2D(FVector(0, 1, 0));
-	float CosForward = Forward.CosineAngle2D(FVector(0, 1, 0));
+	const float CosNormal = Normal.CosineAngle2D(FVector(0, 1, 0));
+	const float CosForward = Forward.CosineAngle2D(FVector(0, 1, 0));
 	if (CosNormal >= CosForward) return Left;
 	else return Right;
 }

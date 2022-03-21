@@ -10,11 +10,11 @@
 #include "Soldier/SoldierAIController.h"
 #include "SoldierEnemy.generated.h"
 
-// DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartEnteringCoverForAnim);
-// DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCoverForAnim);
-// DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCoverSideMovingForAnim);
-// DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCoverToFireForAnim);
-// DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCoverFromFireForAnim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartEnteringCoverForAnim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCoverForAnim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCoverSideMovingForAnim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCoverToFireForAnim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCoverFromFireForAnim);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FThrowGrenade);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopEnteringCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopExitingCover);
@@ -32,16 +32,16 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void PossessedBy(AController* NewController) override;
 	
-	// UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	// FStartEnteringCoverForAnim StartEnteringCoverForAnimDelegate;
-	// UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	// FStartExitingCoverForAnim StartExitingCoverForAnimDelegate;
-	// UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	// FStartCoverSideMovingForAnim StartCoverSideMovingForAnimDelegate;
-	// UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	// FStartCoverToFireForAnim StartCoverToFireForAnimDelegate;
-	// UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	// FStartCoverToFireForAnim StartCoverFromFireForAnimDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FStartEnteringCoverForAnim StartEnteringCoverForAnimDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FStartExitingCoverForAnim StartExitingCoverForAnimDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FStartCoverSideMovingForAnim StartCoverSideMovingForAnimDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FStartCoverToFireForAnim StartCoverToFireForAnimDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FStartCoverToFireForAnim StartCoverFromFireForAnimDelegate;
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FThrowGrenade ThrowGrenadeDelegate;
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
@@ -109,9 +109,12 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	FCoverData CoverData;
+
+	UPROPERTY(BlueprintReadOnly)
+	FPlayerPositionData PlayerCoordinates;
 	
 	UFUNCTION()
-	virtual void StartFiring(const FVector& PlayerPos) override;
+	virtual void StartFiring(const FPlayerPositionData& PlayerPos) override;
 
 	UFUNCTION(BlueprintCallable)
 	virtual void StopFiring();

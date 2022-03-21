@@ -180,7 +180,7 @@ void AAICoordinator::ConnectController(ASoldierAIController* BotController, EWin
 
 void AAICoordinator::UpdatePlayerInfoFromBot(FPlayerPositionData PlayerPos)
 {
-	if (PlayerPos.PlayerActor!=nullptr) this->PlayerPosition = PlayerPos;
+	if (PlayerPos.GetActor()!=nullptr) this->PlayerPosition = PlayerPos;
 }
 
 bool AAICoordinator::MakeDecisionForWingBot() const

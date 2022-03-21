@@ -21,6 +21,6 @@ class PROJECTREVIVAL_API UPRSoldierAIPerceptionComponent : public UAIPerceptionC
 	GENERATED_BODY()
 
 public:
-	AActor* GetClosestEnemy() const;
+	FPlayerPositionData GetClosestEnemy() const;
 	bool GetBestCoverWing(EWing Wing, FVector& CoverPos);
 };

@@ -25,11 +25,12 @@ bool UBTD_IfPlayerInSight::CalcCondition(UBehaviorTreeComponent& OwnerComp, uint
 
 	const auto Actor = PerceptionComp->GetClosestEnemy();
 	
-	if (!Actor) return false;
-	UE_LOG(LogPRAIDecorators, Log, TEXT("Player Pos is set to: X = %0.2f, Y = %0.2f"), PerceptionComp->GetActorLocation(*Actor).X, PerceptionComp->GetActorLocation(*Actor).Y)
+	if (!Actor.GetActor()) return false;
+	const auto ActorLocation =  PerceptionComp->GetActorLocation(*Actor.GetActor());
+	UE_LOG(LogPRAIDecorators, Log, TEXT("Player Pos is set to: X = %0.2f, Y = %0.2f"), ActorLocation.X, ActorLocation.Y)
 
 	// Удалить когда будет написан координатор
-	Controller->SetPlayerPos(FPlayerPositionData(Actor, nullptr));
+	Controller->SetPlayerPos(FPlayerPositionData(Actor.GetActor(), nullptr));
 	return true;
 }
 

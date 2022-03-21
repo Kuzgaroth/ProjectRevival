@@ -335,15 +335,6 @@ struct FCoverPointsAndPossibility
 	
 };
 
-// Структура для распределения ботов по направлениям
-UENUM(BlueprintType)
-enum class EWing: uint8
-{
-	Left = 0,
-	Center = 1,
-	Right = 2
-};
-
 UCLASS()
 class PROJECTREVIVAL_API UCameraCoverFunctions : public UObject
 {
@@ -534,11 +525,12 @@ USTRUCT(BlueprintType)
 struct FPlayerPositionData
 {
 	GENERATED_BODY()
-
+private:
 	UPROPERTY()
 	AActor* PlayerActor;
 	UPROPERTY()
 	AActor* PlayerCover;
+public:
 	FPlayerPositionData(AActor* PActor, AActor* PCover)
 	{
 		PlayerActor = PActor;
@@ -548,6 +540,26 @@ struct FPlayerPositionData
 	{
 		PlayerActor=nullptr;
 		PlayerCover=nullptr;
+	}
+	void SetActor(AActor* PActor)
+	{
+		PlayerActor = PActor;
+	}
+	AActor* GetActor() const
+	{
+		return PlayerActor;
+	}
+	void SetCover(AActor* PCover)
+	{
+		PlayerCover = PCover;
+	}
+	AActor* GetCover() const
+	{
+		return PlayerCover;
+	}
+	FVector GetActorPosition() const
+	{
+		return (PlayerActor) ? PlayerActor->GetActorLocation() : FVector(0.0, 0.0, 0.0);
 	}
 	FORCEINLINE void operator=(const FPlayerPositionData& PlayerPos)
 	{

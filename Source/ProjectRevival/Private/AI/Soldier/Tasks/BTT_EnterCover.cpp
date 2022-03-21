@@ -2,7 +2,6 @@
 
 
 #include "AI/Soldier/Tasks/BTT_EnterCover.h"
-
 #include "Soldier/SoldierAIController.h"
 
 UBTT_EnterCover::UBTT_EnterCover()
