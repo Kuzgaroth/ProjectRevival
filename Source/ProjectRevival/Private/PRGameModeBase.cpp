@@ -121,6 +121,11 @@ void APRGameModeBase::GameOver()
 	SetMatchState(EMatchState::GameOver);
 }
 
+void APRGameModeBase::SetCurrentWorld(EChangeWorld NewWorld)
+{
+	CurrentWorld = NewWorld;
+}
+
 void APRGameModeBase::SetMatchState(EMatchState State)
 {
 	if (this->MatchState==State) return;

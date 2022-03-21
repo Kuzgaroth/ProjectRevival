@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "AI/Soldier/SoldierAIController.h"
+#include "GameFeature/ChangeWorld.h"
 #include "PRGameModeBase.generated.h"
 
 
@@ -30,6 +31,8 @@ public:
 	virtual bool SetPause(APlayerController* PC, FCanUnpause CanUnpauseDelegate) override;
 	virtual bool ClearPause() override;
 	void GameOver();
+	void SetCurrentWorld(EChangeWorld NewWorld);
+	EChangeWorld GetCurrentWorld() const{return CurrentWorld;};
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Game")
 	TSubclassOf<AAIController> AIControllerClass;
@@ -39,6 +42,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Game")
 	TSubclassOf<APawn> AIPawnClass;
+	
+	EChangeWorld CurrentWorld = EChangeWorld::OrdinaryWorld;
 private:
 	EMatchState MatchState = EMatchState::WaitingToStart;
 	
