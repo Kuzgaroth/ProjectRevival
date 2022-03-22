@@ -47,7 +47,7 @@ public:
 	virtual void OnDeath() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void PossessedBy(AController* NewController) override;
-	void StartFiring(const FVector& PlayerPos);
+	virtual void StartFiring(const FVector& PlayerPos);
 	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
@@ -58,7 +58,7 @@ protected:
 	
 	virtual void BeginPlay() override;
 	virtual void OnHealthChanged(float CurrentHealth, float HealthDelta) override;
+	virtual void UpdateHealthWidgetVisibility();
+	virtual void UpdateHStateBlackboardKey(uint8 EnumKey);
 private:
-	void UpdateHealthWidgetVisibility();
-	void UpdateHStateBlackboardKey(uint8 EnumKey);
 };

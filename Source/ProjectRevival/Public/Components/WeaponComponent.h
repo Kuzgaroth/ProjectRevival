@@ -23,12 +23,19 @@ public:
 	void Reload();
 	bool GetCurrentWeaponUIData(FWeaponUIData& UIData) const;
 	bool GetCurrentWeaponAmmoData(FAmmoData& AmmoData) const;
+	int32 GetCurrentWeaponClips() const;
+	int32 GetCurrentWeaponBullets() const;
+	int32 GetMaxWeaponClips() const;
+	int32 GetMaxWeaponBullets() const;
 	bool TryToAddAmmo(TSubclassOf<ABaseWeapon> WeaponType, int32 ClipsAmount);
 	bool CanFire();
 	bool CanEquip();
 	bool CanReload();
 	bool IsShooting();
+	bool IsWeaponBlocked() const { return bIsWeaponBlocked; }
+	void SetWeaponBlocked(const bool bIsBlocked) { bIsWeaponBlocked = bIsBlocked; }
 	TArray<UMaterialInstanceDynamic*> GetCurrentWeaponMaterials();
+	ABaseWeapon* GetCurrentWeapon();
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TArray<FWeaponData> WeaponDatas;
@@ -41,6 +48,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
 	UAnimMontage* EquipAnimMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category="Animations")
+	UAnimMontage* FireMontage;
 	
 	UPROPERTY()
 	ABaseWeapon* CurrentWeapon=nullptr;
@@ -61,6 +71,7 @@ private:
 	bool EquipAnimInProgress;
 	bool ReloadAnimInProgress;
 	bool ShootingInProgress;
+	bool bIsWeaponBlocked;
 	void SpawnWeapons();
 	void AttachWeaponToSocket(ABaseWeapon* Weapon, USceneComponent* CharacterMesh, const FName& SocketName);
 	
@@ -68,7 +79,7 @@ private:
 	void InitAnimations();
 	void OnEquipFinished(USkeletalMeshComponent* MeshComponent);
 	void OnReloadFinished(USkeletalMeshComponent* MeshComponent);
-
+	void OnShotMade();
 
 	void OnEmptyClip(ABaseWeapon* AmmoEmptyWeapon);
 	void ChangeClip();

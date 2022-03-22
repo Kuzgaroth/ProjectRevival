@@ -4,9 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "PRSoldierAIPerceptionComponent.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAIPerception, Log, All);
+
+// Структура для распределения ботов по направлениям
+
 
 /**
  * 
@@ -18,4 +22,5 @@ class PROJECTREVIVAL_API UPRSoldierAIPerceptionComponent : public UAIPerceptionC
 
 public:
 	AActor* GetClosestEnemy() const;
+	FVector GetBestCoverWing(EWing Wing);
 };

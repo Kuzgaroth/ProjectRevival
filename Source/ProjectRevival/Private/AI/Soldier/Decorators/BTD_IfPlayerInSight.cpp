@@ -7,7 +7,7 @@
 #include "Components/PRSoldierAIPerceptionComponent.h"
 #include "Soldier/SoldierAIController.h"
 
-DEFINE_LOG_CATEGORY(LogPRAIDecorators);
+//DEFINE_LOG_CATEGORY(LogPRAIDecorators);
 
 UBTD_IfPlayerInSight::UBTD_IfPlayerInSight()
 {
@@ -27,6 +27,9 @@ bool UBTD_IfPlayerInSight::CalcCondition(UBehaviorTreeComponent& OwnerComp, uint
 	
 	if (!Actor) return false;
 	UE_LOG(LogPRAIDecorators, Log, TEXT("Actor"))
+
+	// Удалить когда будет написан координатор
+	Controller->SetPlayerPos(FPlayerPositionData(Actor, nullptr));
 	return true;
 }
 
