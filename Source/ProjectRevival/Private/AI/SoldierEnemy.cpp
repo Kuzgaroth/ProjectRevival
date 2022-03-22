@@ -18,6 +18,9 @@
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Soldier/SoldierAIController.h"
+#include "ProjectRevival/Public/CoreTypes.h"
+
+DEFINE_LOG_CATEGORY(LogPRAISoldier)
 
 void ASoldierEnemy::BeginPlay()
 {
@@ -207,7 +210,7 @@ void ASoldierEnemy::StopCoverSoldier()
 	CoverData.StopCover();
 	bUseControllerRotationYaw = false;
 	CoverData.IsInCoverTransition = true;
-	// StartExitingCoverForAnimDelegate.Broadcast();
+	StartExitingCoverForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StopCoverSoldierFinish()
@@ -226,7 +229,7 @@ void ASoldierEnemy::ChangeCoverSide(const float Amount)
 	if (CoverData.IsTurning)
 	{
 		SideMoveAmount = Amount;
-		// StartCoverSideMovingForAnimDelegate.Broadcast();
+		StartCoverSideMovingForAnimDelegate.Broadcast();
 	}
 }
 
@@ -280,7 +283,7 @@ void ASoldierEnemy::StartCoverToFire()
 	if (CoverData.IsInTransition()) {return;}
 	if (!CoverData.IsInCover()) {return;}
 	CoverData.IsInFireTransition = true;
-	//StartCoverToFireForAnimDelegate.Broadcast();
+	StartCoverToFireForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StartCoverToFireFinish()
@@ -308,6 +311,7 @@ void ASoldierEnemy::StartCoverFromFireFinish()
 void ASoldierEnemy::StartFiring(const FPlayerPositionData& PlayerPos)
 {
 	PlayerCoordinates = PlayerPos;
+	UE_LOG(LogPRAISoldier, Log, TEXT("Bot started firing at X: %0.1f, Y: %0.1f"), PlayerCoordinates.GetActorPosition().X, PlayerCoordinates.GetActorPosition().Y)
 	if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring && !bIsFiringBP && GetCoverIndex() >= 2)
 	{
 		StartCoverToFire();
@@ -315,10 +319,10 @@ void ASoldierEnemy::StartFiring(const FPlayerPositionData& PlayerPos)
 	}
 	else if (CoverData.IsInCover() && bIsInCoverBP && CoverData.IsFiring && !bIsFiringBP)
 	{
-		WeaponComponent->StartFire();
+		RifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
+		RifleRef->StartFire();
 		bIsFiringBP = true;
 		StartFireDelegate.Broadcast();
-		RifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
 		if (RifleRef)
 		{
 			RifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
@@ -327,10 +331,10 @@ void ASoldierEnemy::StartFiring(const FPlayerPositionData& PlayerPos)
 	}
 	else if (!CoverData.IsInCover() && !bIsInCoverBP && !bIsFiringBP)
 	{
-		WeaponComponent->StartFire();
+		RifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
+		RifleRef->StartFire();
 		bIsFiringBP = true;
 		StartFireDelegate.Broadcast();
-		RifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
 		if (RifleRef)
 		{
 			RifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
@@ -422,13 +426,13 @@ void ASoldierEnemy::ThrowGrenadeCaller()
 	if (!CoverData.IsInTransition() && !CoverData.IsFiring && !bIsFiringBP && (GetCoverIndex() >= 2 || GetCoverIndex() == -1))
 	{
 		ThrowGrenadeDelegate.Broadcast();
-		UE_LOG(LogTemp, Log, TEXT("BROADCASTED GRENADE"))
+		UE_LOG(LogPRAISoldier, Log, TEXT("BROADCASTED GRENADE"))
 	}
 }
 
 void ASoldierEnemy::ThrowGrenade()
 {
-	UE_LOG(LogTemp, Log, TEXT("THROW GRENADE ACTIVATED"))
+	UE_LOG(LogPRAISoldier, Log, TEXT("THROW GRENADE ACTIVATED"))
 	AbilitySystemComponent->TryActivateAbilityByClass(GameplayAbilities.FindRef(EGASInputActions::GrenadeThrow));
 }
 

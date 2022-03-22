@@ -3,6 +3,7 @@
 
 #include "Weapon/SoldierRifleWeapon.h"
 
+#include "BaseCharacter.h"
 #include "NiagaraComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -20,7 +21,7 @@ void ASoldierRifleWeapon::ShootRowInternal()
 	--CurrentBurstShot;
 	if (CurrentBurstShot <= 0)
 	{
-		Cast<UWeaponComponent>(GetOwner())->StopFire();
+		Cast<ABaseCharacter>(GetOwner())->GetWeaponComponent()->StopFire();
 	}
 	GetWorld()->GetTimerManager().SetTimer(ShotTimerHandle, this, &ASoldierRifleWeapon::MakeShotInternal, BurstBulletsDelay, true);
 	MakeShotInternal();
