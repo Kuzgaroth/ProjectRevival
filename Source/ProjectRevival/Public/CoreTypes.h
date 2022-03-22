@@ -13,6 +13,10 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnClipEmptySignature, ABaseWeapon*);
 
 // Log Categories
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAISystem, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIPerception, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAISoldier, Log, All);
 
 USTRUCT(BlueprintType)
 struct FAmmoData
@@ -335,15 +339,6 @@ struct FCoverPointsAndPossibility
 	
 };
 
-// Структура для распределения ботов по направлениям
-UENUM(BlueprintType)
-enum class EWing: uint8
-{
-	Left = 0,
-	Center = 1,
-	Right = 2
-};
-
 UCLASS()
 class PROJECTREVIVAL_API UCameraCoverFunctions : public UObject
 {
@@ -514,10 +509,62 @@ inline void UCameraCoverFunctions::TimelineCoverYShift(float Value, USpringArmCo
 	if (abs(NewView) >= abs(CameraCover.EndPos)) CameraCover.IsShifting = false;
 }
 
-
-DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
-
 struct FBTPlayerCheckDecoratorMemory
 {
 	bool bLastRawResult;
+};
+
+UENUM(BlueprintType)
+enum class EWing: uint8
+{
+	Left = 0,
+	Center = 1,
+	Right = 2
+};
+
+USTRUCT(BlueprintType)
+struct FPlayerPositionData
+{
+	GENERATED_BODY()
+private:
+	UPROPERTY()
+	AActor* PlayerActor;
+	UPROPERTY()
+	AActor* PlayerCover;
+public:
+	FPlayerPositionData(AActor* PActor, AActor* PCover)
+	{
+		PlayerActor = PActor;
+		PlayerCover = PCover;
+	}
+	FPlayerPositionData()
+	{
+		PlayerActor=nullptr;
+		PlayerCover=nullptr;
+	}
+	void SetActor(AActor* PActor)
+	{
+		PlayerActor = PActor;
+	}
+	AActor* GetActor() const
+	{
+		return PlayerActor;
+	}
+	void SetCover(AActor* PCover)
+	{
+		PlayerCover = PCover;
+	}
+	AActor* GetCover() const
+	{
+		return PlayerCover;
+	}
+	FVector GetActorPosition() const
+	{
+		return (PlayerActor) ? PlayerActor->GetActorLocation() : FVector(0.0, 0.0, 0.0);
+	}
+	FORCEINLINE void operator=(const FPlayerPositionData& PlayerPos)
+	{
+		PlayerActor = PlayerPos.PlayerActor;
+		PlayerCover = PlayerPos.PlayerCover;
+	}
 };
