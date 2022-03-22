@@ -2,6 +2,8 @@
 
 
 #include "Components/HealthComponent.h"
+
+#include "PlayerCharacter.h"
 #include "Camera/CameraShakeBase.h"
 #include "PRGameModeBase.h"
 
@@ -99,6 +101,6 @@ void UHealthComponent::Killed(AController* KillerController)
 	const auto Player = Cast<APawn>(GetOwner());
 	const auto VictimController = Player ? Player->Controller : nullptr;
 
-	GameMode->Killed(KillerController, VictimController);
+	if (Player->IsA<APlayerCharacter>()) GameMode->GameOver();
 }
 

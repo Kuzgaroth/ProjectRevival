@@ -2,6 +2,8 @@
 
 
 #include "AbilitySystem/Abilities/ChangeWorldAbility.h"
+
+#include "PRGameModeBase.h"
 #include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 
 void UChangeWorldAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
@@ -13,6 +15,13 @@ void UChangeWorldAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Unable to get Owner Actor"))
 		K2_EndAbility();
 	}
+	auto GameMode = Cast<APRGameModeBase>(Owner->GetWorld()->GetAuthGameMode());
+	if (!GameMode)
+	{
+		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Incorrect gamemode!!!"))
+		K2_EndAbility();
+	}
+	GameMode->SetCurrentWorld(GameMode->GetCurrentWorld()==OrdinaryWorld ? OtherWorld : OrdinaryWorld);
 	ChangeWorldTask=UChangeWorldTask_SpawnSphere::ChangeWorldInit(this,ChangeWorldShere,TraceSpawnDistance);
 	auto SpawnedSphereActor = ChangeWorldTask->StartTask(*ActorInfo->OwnerActor);
 	if(SpawnedSphereActor)
