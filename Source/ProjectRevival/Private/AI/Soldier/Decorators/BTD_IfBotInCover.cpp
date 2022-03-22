@@ -4,7 +4,7 @@
 #include "AI/Soldier/Decorators/BTD_IfBotInCover.h"
 #include "Soldier/SoldierAIController.h"
 
-DEFINE_LOG_CATEGORY(LogPRAIDecorators);
+
 
 UBTD_IfBotInCover::UBTD_IfBotInCover()
 {

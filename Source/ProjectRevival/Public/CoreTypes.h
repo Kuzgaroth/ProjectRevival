@@ -13,6 +13,10 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnClipEmptySignature, ABaseWeapon*);
 
 // Log Categories
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAISystem, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIPerception, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAISoldier, Log, All);
 
 USTRUCT(BlueprintType)
 struct FAmmoData
@@ -504,9 +508,6 @@ inline void UCameraCoverFunctions::TimelineCoverYShift(float Value, USpringArmCo
 	SpringArmComponent->SocketOffset.Y = NewView;
 	if (abs(NewView) >= abs(CameraCover.EndPos)) CameraCover.IsShifting = false;
 }
-
-
-DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
 
 struct FBTPlayerCheckDecoratorMemory
 {

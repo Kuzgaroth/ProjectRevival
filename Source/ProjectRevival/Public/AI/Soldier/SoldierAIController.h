@@ -21,8 +21,6 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnBotDiedSignature, ASoldierAIController*)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSpottedSignature, FPlayerPositionData)
 DECLARE_DELEGATE_RetVal(bool, FOnWingBotsDecision)
 
-DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
-
 class UPRAIPerceptionComponent;
 class URespawnComponent;
 

@@ -8,11 +8,12 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "RespawnComponent.h"
 #include "SoldierEnemy.h"
-#include "GameFeature/CoverObject.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "Perception/AISenseConfig_Hearing.h"
 #include "Perception/AISenseConfig_Sight.h"
 
-DEFINE_LOG_CATEGORY(LogPRAIController)
+DEFINE_LOG_CATEGORY(LogPRAIController);
+DEFINE_LOG_CATEGORY(LogPRAIDecorators);
 
 ASoldierAIController::ASoldierAIController()
 {

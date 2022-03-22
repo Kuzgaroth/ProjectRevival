@@ -7,8 +7,6 @@
 #include "Components/PRSoldierAIPerceptionComponent.h"
 #include "Soldier/SoldierAIController.h"
 
-//DEFINE_LOG_CATEGORY(LogPRAIDecorators);
-
 UBTD_IfPlayerInSight::UBTD_IfPlayerInSight()
 {
 	NodeName = "Check If Player in Sight";
