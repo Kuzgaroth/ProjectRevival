@@ -21,7 +21,7 @@ void ASoldierRifleWeapon::ShootRowInternal()
 	--CurrentBurstShot;
 	if (CurrentBurstShot <= 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Owner of SoldierRifle is: %s"), *GetOwner()->GetName());
+		UE_LOG(LogTemp, Log, TEXT("Owner of SoldierRifle is: %s"), *GetOwner()->GetName());
 		Cast<ABaseCharacter>(GetOwner())->GetWeaponComponent()->StopFire();
 	}
 	GetWorld()->GetTimerManager().SetTimer(ShotTimerHandle, this, &ASoldierRifleWeapon::MakeShotInternal, BurstBulletsDelay, true);
