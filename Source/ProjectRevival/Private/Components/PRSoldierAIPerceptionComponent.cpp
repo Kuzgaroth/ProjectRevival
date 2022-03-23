@@ -60,9 +60,10 @@ FPlayerPositionData UPRSoldierAIPerceptionComponent::GetClosestEnemy() const
 	return PlayerPos;
 }
 
-bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& CoverPos)
+bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& CoverPos, FVector& CoverOwnerPos)
 {
 	TArray<AActor*> PerceivedActors;
+	FVector BestCoverOwnerPos = CoverOwnerPos;
 	FVector BestCoverPos;
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName(TEXT("Cover")), PerceivedActors);
 	//GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
@@ -82,7 +83,8 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 	const auto PawnPos = Pawn->GetActorLocation();
 	const auto PlayerPos = (Controller->GetPlayerPos().GetActor()!=nullptr) ? Controller->GetPlayerPos().GetActor()->GetActorLocation():FVector::ZeroVector;
 	float BestDist = MAX_FLT;
-	auto StartingCoverPos = CoverPos;
+	FVector StartingCoverPos = CoverPos;
+	FVector CoverPosTemp = CoverPos;
 	
 	for (const auto Actor : PerceivedActors)
 	{
@@ -91,38 +93,41 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 		{
 			UE_LOG(LogPRAIPerception, Log, TEXT("Actor Has Cover Tag"))
 			const auto Cover = Cast<IIChangingWorldActor>(Actor);
-			if (Cover && Cover->TryToFindCoverPoint(PlayerPos, CoverPos))
+			if (Cover && Cover->TryToFindCoverPoint(PlayerPos, CoverPosTemp))
 			{
 				float A = PlayerPos.Y - PawnPos.Y;
 				float B = PlayerPos.X - PawnPos.X;
 				float C = PlayerPos.Y * B - PawnPos.X * A;
-				UE_LOG(LogPRAIPerception, Log, TEXT("Cover pos X: %0.2f, Y: %0.2f"), CoverPos.X, CoverPos.Y)
-				float LineEquation = A * CoverPos.X + B * CoverPos.Y + C;
-				float DistToLine = abs(A * CoverPos.X + B * CoverPos.Y + C) / sqrt(A * A + B * B);
+				UE_LOG(LogPRAIPerception, Log, TEXT("Cover pos X: %0.2f, Y: %0.2f"), CoverPosTemp.X, CoverPosTemp.Y)
+				float LineEquation = A * CoverPosTemp.X + B * CoverPosTemp.Y + C;
+				float DistToLine = abs(A * CoverPosTemp.X + B * CoverPosTemp.Y + C) / sqrt(A * A + B * B);
 				UE_LOG(LogPRAIPerception, Log, TEXT("Dist to Line: %0.2f"), DistToLine)
 				UE_LOG(LogPRAIPerception, Log, TEXT("Line Equation: %0.2f"), LineEquation)
 				if (Wing == EWing::Left)
 				{
-					if (LineEquation > 0.0f && DistToLine > 400.0f && BestDist > FVector::Dist(PawnPos, CoverPos))
+					if (LineEquation > 0.0f && DistToLine > 400.0f && BestDist > FVector::Dist(PawnPos, CoverPosTemp))
 					{
-						BestDist = FVector::Dist(PawnPos, CoverPos);
-						BestCoverPos = CoverPos;
+						BestDist = FVector::Dist(PawnPos, CoverPosTemp);
+						BestCoverOwnerPos = Actor->GetActorLocation();
+						BestCoverPos = CoverPosTemp;
 					}
 				}
-				else if (Wing == EWing::Center && BestDist > FVector::Dist(PawnPos, CoverPos))
+				else if (Wing == EWing::Center && BestDist > FVector::Dist(PawnPos, CoverPosTemp))
 				{
 					if (DistToLine <= 400.0f)
 					{
-						BestDist = FVector::Dist(PawnPos, CoverPos);
-						BestCoverPos = CoverPos;
+						BestDist = FVector::Dist(PawnPos, CoverPosTemp);
+						BestCoverOwnerPos = Actor->GetActorLocation();
+						BestCoverPos = CoverPosTemp;
 					}
 				}
-				else if (Wing == EWing::Right && BestDist > FVector::Dist(PawnPos, CoverPos))
+				else if (Wing == EWing::Right && BestDist > FVector::Dist(PawnPos, CoverPosTemp))
 				{
-					if (LineEquation < 0.0f && DistToLine > 400.0f && BestDist > FVector::Dist(PawnPos, CoverPos))
+					if (LineEquation < 0.0f && DistToLine > 400.0f && BestDist > FVector::Dist(PawnPos, CoverPosTemp))
 					{
-						BestDist = FVector::Dist(PawnPos, CoverPos);
-						BestCoverPos = CoverPos;
+						BestDist = FVector::Dist(PawnPos, CoverPosTemp);
+						BestCoverOwnerPos = Actor->GetActorLocation();
+						BestCoverPos = CoverPosTemp;
 					}
 				}
 			}
@@ -130,9 +135,13 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 	}
 	if (StartingCoverPos == BestCoverPos)
 	{
+		UE_LOG(LogPRAISoldier, Log, TEXT("GetBestCoverWing v1 not found"))
 		return false;
 	} else
 	{
+		UE_LOG(LogPRAISoldier, Log, TEXT("GetBestCoverWing v2 found"))
+		CoverOwnerPos = BestCoverOwnerPos;
+		CoverPos = CoverPosTemp;
 		return true;
 	}
 }

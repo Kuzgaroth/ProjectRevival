@@ -75,7 +75,7 @@ void ASoldierAIController::OnPossess(APawn* InPawn)
 		Cast<ASoldierEnemy>(GetPawn())->StopEnteringCoverDelegate.AddDynamic(this, &ASoldierAIController::StopEnteringCover);
 		Cast<ASoldierEnemy>(GetPawn())->StopExitingCoverDelegate.AddDynamic(this, &ASoldierAIController::StopExitingCover);
 		Cast<ASoldierEnemy>(GetPawn())->StopCoverSideMovingDelegate.AddDynamic(this, &ASoldierAIController::StopCoverSideMoving);
-		Cast<ASoldierEnemy>(GetPawn())->StartFireDelegate.AddDynamic(this, &ASoldierAIController::StartFiring);
+		// Cast<ASoldierEnemy>(GetPawn())->StartFireDelegate.AddDynamic(this, &ASoldierAIController::StartFiring);
 		Cast<ASoldierEnemy>(GetPawn())->StopFireDelegate.AddDynamic(this, &ASoldierAIController::StopFiring);
 	}
 }
@@ -109,27 +109,32 @@ void ASoldierAIController::StartFiring()
 
 void ASoldierAIController::StopFiring()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StopFiring() was called"));
 	SetBIsFiring(false);
 }
 
 void ASoldierAIController::StartEnteringCover()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StartEnteringCover() was called"));
 	UE_LOG(LogPRAIController, Log, TEXT("%i Cover pos X: %0.2f, Y: %0.2f"), BotWing, CoverPos.X, CoverPos.Y);
-	StartEnteringCoverDelegate.Broadcast(CoverPos);
+	StartEnteringCoverDelegate.Broadcast(CoverPos, CoverOwnerPos);
 }
 
 void ASoldierAIController::StopEnteringCover()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StopEnteringCover() was called"));
 	SetBIsInCover(true);
 }
 
 void ASoldierAIController::StartExitingCover()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StartExitingCover() was called"));
 	StartExitingCoverDelegate.Broadcast();
 }
 
 void ASoldierAIController::StopExitingCover()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StopExitingCover() was called"));
 	SetBIsInCover(false);
 }
 
@@ -147,7 +152,10 @@ void ASoldierAIController::StopCoverSideMoving()
 
 void ASoldierAIController::FindNewCover()
 {
-	bool const bFlag = PRPerceptionComponent->GetBestCoverWing(BotWing, CoverPos);
+	UE_LOG(LogPRAISoldier, Warning, TEXT("Bot doing this is %s"), *GetPawn()->GetName())
+	UE_LOG(LogPRAISoldier, Warning, TEXT("CoverOwnerPos input is %s"), *CoverOwnerPos.ToString())
+	bool const bFlag = PRPerceptionComponent->GetBestCoverWing(BotWing, CoverPos, CoverOwnerPos);
+	UE_LOG(LogPRAISoldier, Warning, TEXT("CoverOwnerPos output is %s"), *CoverOwnerPos.ToString())
 	const auto BlackboardComp = GetBlackboardComponent();
 	if (bFlag && BlackboardComp)
 	{

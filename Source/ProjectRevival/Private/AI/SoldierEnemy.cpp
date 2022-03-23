@@ -149,43 +149,63 @@ void ASoldierEnemy::UpdateHealthWidgetVisibility()
 	HealthWidgetComponent->SetVisibility(Distance<HealthVisibilityDistance, true);
 }
 
-void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos)
+void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, const FVector& CoverOwnerPos)
 {
-	TArray<FHitResult> Hits;
-	const bool TraceResult = UKismetSystemLibrary::LineTraceMulti(GetWorld(), GetActorLocation(),
-		FVector(CoverPos.X, CoverPos.Y, CoverPos.Z + 1.0), UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),
-		false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, Hits, true);
-	if (!TraceResult)
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartCoverSoldier() was called"));
+	FHitResult HitResult;
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.bIgnoreTouches = true;
+	CollisionParams.AddIgnoredActor(this);
+	UE_LOG(LogPRAISoldier, Log, TEXT("But how much time do that shit triggers in total hmmph"));
+	UE_LOG(LogPRAISoldier, Log, TEXT("CoverPos: %s"), *CoverPos.ToString());
+	UE_LOG(LogPRAISoldier, Log, TEXT("CoverOwnerPos: %s"), *CoverOwnerPos.ToString());
+	GetWorld()->LineTraceSingleByChannel(HitResult,CoverPos,CoverOwnerPos,ECollisionChannel::ECC_Visibility, CollisionParams);
+	if (HitResult.bBlockingHit)
 	{
-		return;
+		UE_LOG(LogPRAISoldier, Log, TEXT("If that occured..."));
+		UE_LOG(LogPRAISoldier, Log, TEXT("The blocking hit was: %s"), *HitResult.GetActor()->GetName());
+		UE_LOG(LogPRAISoldier, Log, TEXT("... and that didn't. Than Line trace is fucked up"));
 	}
-	
-	FHitResult CoverHit = Hits.Last();
-	CoverData.CoverObject = CoverHit.GetActor();
-	if (!CoverData.CoverObject)
-	{
-		CleanCoverData();
-		return;
-	}
-	
-	const auto AISoldierController = Cast<ASoldierAIController>(GetController());
-	if (!AISoldierController)
+	else
 	{
 		CleanCoverData();
 		return;
 	}
+	CoverData.CoverObject = HitResult.GetActor();
+	// TArray <FHitResult> Hits;
+	// const bool TraceResult = UKismetSystemLibrary::LineTraceMulti(GetWorld(), GetActorLocation(),
+	//                                                               FVector(CoverPos.X, CoverPos.Y, CoverPos.Z + 1.0), UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),
+	//                                                               false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, Hits, true);
+	// if (!TraceResult)
+	// {
+	// 	return;
+	// }
+	//
+	// FHitResult CoverHit = Hits.Last();
+	// CoverData.CoverObject = CoverHit.GetActor();
+	// if (!CoverData.CoverObject)
+	// {
+	// 	CleanCoverData();
+	// 	return;
+	// }
+	//
+	// const auto AISoldierController = Cast<ASoldierAIController>(GetController());
+	// if (!AISoldierController)
+	// {
+	// 	CleanCoverData();
+	// 	return;
+	// }
 	
 	WeaponComponent->StopFire();
-	AISoldierController->MoveToActor(CoverData.CoverObject);
 
 	CoverData.CoverObject->ActorHasTag(FName(TEXT("High"))) ? CoverData.CoverType = High : CoverData.CoverType = Low;
-	CoverData.CoverSide = CheckSideByNormal(GetActorForwardVector(), CoverHit.Normal);
+	CoverData.CoverSide = CheckSideByNormal(GetActorForwardVector(), HitResult.Normal);
 	CoverData.CoverPart = GetCoverPart(0);
 	CoverData.IsInCoverTransition = true;
 	
-	const bool Sup = Super::StartCover_Internal(CoverHit);
-	if (!Sup)
+	if (!Super::StartCover_Internal(HitResult))
 	{
+		GetCharacterMovement()->SetPlaneConstraintEnabled(false);
 		CleanCoverData();
 		return;
 	}
@@ -195,6 +215,7 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos)
 
 void ASoldierEnemy::StartCoverSoldierFinish()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartCoverSoldierFinish() was called"));
 	CoverData.IsInCoverTransition = false;
 	bIsInCoverBP = true;
 	StopEnteringCoverDelegate.Broadcast();
@@ -202,6 +223,7 @@ void ASoldierEnemy::StartCoverSoldierFinish()
 
 void ASoldierEnemy::StopCoverSoldier()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StopCoverSoldier() was called"));
 	const bool Sup = Super::StopCover_Internal();
 	if (!Sup)
 	{
@@ -210,11 +232,12 @@ void ASoldierEnemy::StopCoverSoldier()
 	CoverData.StopCover();
 	bUseControllerRotationYaw = false;
 	CoverData.IsInCoverTransition = true;
-	StartExitingCoverForAnimDelegate.Broadcast();
+	// StartExitingCoverForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StopCoverSoldierFinish()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StopCoverSoldierFinish() was called"));
 	CleanCoverData();
 	bIsInCoverBP = false;
 	StopExitingCoverDelegate.Broadcast();
@@ -222,19 +245,28 @@ void ASoldierEnemy::StopCoverSoldierFinish()
 
 void ASoldierEnemy::ChangeCoverSide(const float Amount)
 {
-	
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: ChangeCoverSide() was called"));
 	if (CoverData.IsInTransition()) {return;}
 	if (!CoverData.IsInCover()){return;}
-		CoverData.TurnStart(Amount);
-	if (CoverData.IsTurning)
+	SideMoveAmount = Amount;
+	if (SideMoveAmount == 0)
 	{
-		SideMoveAmount = Amount;
-		StartCoverSideMovingForAnimDelegate.Broadcast();
+		CoverData.IsTurning = true;
+	}
+	else
+	{
+		CoverData.TurnStart(Amount);
+		if (!CoverData.IsTurning)
+		{
+			ChangeCoverSideFinish();
+			// StartCoverSideMovingForAnimDelegate.Broadcast();
+		}
 	}
 }
 
 void ASoldierEnemy::ChangeCoverSideFinish()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: ChangeCoverSideFinish() was called"));
 	CoverData.IsTurning = false;
 	switch (CoverData.CoverSide)
 	{
@@ -251,17 +283,25 @@ void ASoldierEnemy::ChangeCoverSideFinish()
 	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 	this->AddMovementInput(Direction, SideMoveAmount);
 	FHitResult HitResult;
-	Super::CoverTrace(HitResult);
-	if (HitResult.GetActor()->ActorHasTag(FName(TEXT("High"))) && CoverData.CoverType == Low) {CoverData.IsSwitchingCoverType=true;}
-	if (HitResult.GetActor()->ActorHasTag(FName(TEXT("Low"))) && CoverData.CoverType == High) {CoverData.IsSwitchingCoverType=true;}
-	if (!CoverData.IsSwitchingCoverType)
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.bIgnoreTouches = true;
+	CollisionParams.AddIgnoredActor(this);
+	GetWorld()->LineTraceSingleByChannel(HitResult,GetActorLocation(),GetActorForwardVector()*RootDelta+GetActorLocation(),ECollisionChannel::ECC_Visibility, CollisionParams);
+	if (HitResult.bBlockingHit) 
 	{
-		StopCoverSideMovingDelegate.Broadcast();
+		CoverData.CoverObject = HitResult.GetActor();
+		if (CoverData.CoverObject->ActorHasTag(FName(TEXT("High"))) && CoverData.CoverType == Low) {CoverData.IsSwitchingCoverType = true;}
+		if (CoverData.CoverObject->ActorHasTag(FName(TEXT("Low"))) && CoverData.CoverType == High) {CoverData.IsSwitchingCoverType = true;}
+		if (!CoverData.IsSwitchingCoverType)
+		{
+			StopCoverSideMovingDelegate.Broadcast();
+		}
 	}
 }
 
 void ASoldierEnemy::ChangeCoverTypeFinish()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: ChangeCoverTypeFinish() was called"));
 	CoverData.IsSwitchingCoverType = false;
 	switch (CoverData.CoverType)
 	{
@@ -279,15 +319,17 @@ void ASoldierEnemy::ChangeCoverTypeFinish()
 
 void ASoldierEnemy::StartCoverToFire()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartCoverToFire() was called"));
 	if (GetCoverIndex() < 2) {return;}
 	if (CoverData.IsInTransition()) {return;}
 	if (!CoverData.IsInCover()) {return;}
 	CoverData.IsInFireTransition = true;
-	StartCoverToFireForAnimDelegate.Broadcast();
+	// StartCoverToFireForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StartCoverToFireFinish()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartCoverToFireFinish() was called"));
 	CoverData.IsInFireTransition = false;
 	CoverData.IsFiring = true;
 	StartFiring(PlayerCoordinates);
@@ -295,23 +337,26 @@ void ASoldierEnemy::StartCoverToFireFinish()
 
 void ASoldierEnemy::StartCoverFromFire()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartCoverFromFire() was called"));
 	if (CoverData.IsInTransition()) {return;}
 	if (!CoverData.IsInCover()) {return;}
 	CoverData.IsFiring = false;
 	CoverData.IsInFireTransition = true;
-	StartCoverFromFireForAnimDelegate.Broadcast();
+	// StartCoverFromFireForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StartCoverFromFireFinish()
 {	
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartCoverFromFireFinish() was called"));
 	CoverData.IsInFireTransition = false;
 	StopFiring();
 }
 
 void ASoldierEnemy::StartFiring(const FPlayerPositionData& PlayerPos)
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartFiring() was called"));
 	PlayerCoordinates = PlayerPos;
-	UE_LOG(LogPRAISoldier, Log, TEXT("Bot started firing at X: %0.1f, Y: %0.1f"), PlayerCoordinates.GetActorPosition().X, PlayerCoordinates.GetActorPosition().Y)
+	// UE_LOG(LogPRAISoldier, Log, TEXT("Bot started firing at X: %0.1f, Y: %0.1f"), PlayerCoordinates.GetActorPosition().X, PlayerCoordinates.GetActorPosition().Y)
 	if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring && !bIsFiringBP && GetCoverIndex() >= 2)
 	{
 		StartCoverToFire();
@@ -345,6 +390,7 @@ void ASoldierEnemy::StartFiring(const FPlayerPositionData& PlayerPos)
 
 void ASoldierEnemy::StopFiring()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StopFiring() was called"));
 	if (CoverData.IsInCover() && bIsInCoverBP && CoverData.IsFiring && bIsFiringBP)
 	{
 		StartCoverFromFire();
@@ -380,6 +426,7 @@ ECoverType ASoldierEnemy::CheckCover()
 	return Super::CoverTrace(HitResult);
 }
 
+//Takes Actor forward vector and object normal to calculate from which side it enteres.
 TEnumAsByte<ECoverSide> ASoldierEnemy::CheckSideByNormal(FVector Forward, FVector Normal)
 {
 	Forward.Normalize();
