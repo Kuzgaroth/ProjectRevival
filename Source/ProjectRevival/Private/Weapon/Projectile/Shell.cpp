@@ -1,13 +1,9 @@
 // Project Revival. All Rights Reserved
 
-
 #include "Shell.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
-DEFINE_LOG_CATEGORY(LogCustom);
-
-// Sets default values
 AShell::AShell()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -23,23 +19,19 @@ AShell::AShell()
 	CollisionComponent->bReturnMaterialOnMove = true;
 	
 	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovementComponent");
-	MovementComponent->InitialSpeed = 500.0f;
+	MovementComponent->InitialSpeed = Speed;
 }
 
-UStaticMeshComponent* AShell::GetMesh() const
-{
-	if(MeshComponent) return MeshComponent;
-	else return nullptr;
-}
-
-// Called when the game starts or when spawned
 void AShell::BeginPlay()
 {
-	UE_LOG(LogCustom, Error, TEXT("Shell BeginPlay"));
+	GEngine->AddOnScreenDebugMessage(-1,4.f,FColor::Yellow, __FUNCTION__);
 	Super::BeginPlay();
 	
 	check(MovementComponent);
-	//MovementComponent->Velocity = MovementDirection * MovementComponent->InitialSpeed;
+	check(CollisionComponent);
+	check(MeshComponent);
+	
+	MovementComponent->Velocity = this->GetActorRightVector() * MovementComponent->InitialSpeed;
 	CollisionComponent->IgnoreActorWhenMoving(GetOwner(), true);
 	SetLifeSpan(LifeSeconds);
 }

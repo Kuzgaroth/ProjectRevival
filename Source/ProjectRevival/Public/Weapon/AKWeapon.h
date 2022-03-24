@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Weapon/RifleWeapon.h"
 #include "Shell.h"
+#include "Magazine.h"
+#include "Weapon/RifleWeapon.h"
 #include "AKWeapon.generated.h"
 
 class ABaseProjectile;
@@ -22,18 +23,14 @@ public:
 	virtual void MakeShot() override;
 	
 	UFUNCTION()
-	void AttachMagazine(ABaseWeapon* Weapon, USceneComponent* CharacterMesh, const FName& SocketName);
-
+	void SpawnShell() const;
 	UFUNCTION()
-	void DetachMagazine();
-
-	UFUNCTION()
-	void SpawnShell();
+	void SpawnMagazine() const;
 protected:
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, Category = "Magazine")
-	AActor* Magazine;
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
+	TSubclassOf<AMagazine> Magazine;
 	
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, Category = "Magazine")
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
 	USceneComponent* AttachPoint;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Projectile")
@@ -42,18 +39,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Projectile")
 	TSubclassOf<AShell> AmmoShell;
 	
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, Category = "Animations")
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Animations")
 	UAnimMontage* ShutterMovement;
 	
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, Category = "Magazine")
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
 	FName ArmSocketName = "middle_01_l";
 	
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, Category = "Magazine")
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
 	FName ShutterSocketName = "gate";
 	
-	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, Category = "Magazine")
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
 	FName MagazineSocketName = "extended_magazine";
 private:
+	
 	//UPROPERTY(VisibleAnywhere,BlueprintReadWrite, Category = "Animations")
 	//UAnimNotify* AttachMagazine;
 };
