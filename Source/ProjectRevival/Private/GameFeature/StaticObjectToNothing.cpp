@@ -324,6 +324,7 @@ bool AStaticObjectToNothing::TryToFindCoverPoint(FVector PlayerPos, FVector& Cov
 			DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
 			if(HitResult.Actor==this&& CoverStruct.PointIsNotTaken.Contains(box)&&CoverStruct.PointIsNotTaken[box])
 			{
+				CoverStruct.PointIsNotTaken[box]=false;
 				CoverPos=TraceStart;
 				return true;
 			}

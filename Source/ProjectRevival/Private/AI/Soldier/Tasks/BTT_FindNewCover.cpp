@@ -46,7 +46,7 @@ EBTNodeResult::Type UBTT_FindNewCover::ExecuteTask(UBehaviorTreeComponent& Owner
 	for (const auto Actor : PerceivedActors)
 	{
 		//UE_LOG(LogPRAIPerception, Log, TEXT("Bool : %s"), Actor->ActorHasTag(TEXT("Cover")) ? TEXT("t") : TEXT("f"));
-		if (Actor && (Actor->ActorHasTag(TEXT("Cover"))||Actor->GetComponentsByTag(UStaticMeshComponent::StaticClass(),FName("Cover")).Num()!=0))
+		if (Actor && Actor->ActorHasTag(TEXT("Cover")))
 		{
 			float A = PlayerPos.Y - PawnPos.Y;
 			float B = PlayerPos.X - PawnPos.X;
