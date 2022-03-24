@@ -120,7 +120,7 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 						BestCoverOwnerPos = Actor->GetActorLocation();
 						BestCoverPos = CoverPosTemp;
 					}
-				}
+				} 
 				else if (Wing == EWing::Right && BestDist > FVector::Dist(PawnPos, CoverPosTemp))
 				{
 					if (LineEquation < 0.0f && DistToLine > 400.0f && BestDist > FVector::Dist(PawnPos, CoverPosTemp))
