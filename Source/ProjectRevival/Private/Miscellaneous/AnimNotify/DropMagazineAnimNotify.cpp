@@ -2,16 +2,19 @@
 
 
 #include "DropMagazineAnimNotify.h"
+#include "AKWeapon.h"
+#include "BaseCharacter.h"
 
 void UDropMagazineAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
-	if(MeshComp != nullptr && MeshComp->GetOwner() != nullptr)
-	{
-		Super::Notify(MeshComp, Animation);
-		AActor* Actor = Cast<AActor>(MeshComp->GetOwner());
-		if(Actor != nullptr)
-		{
-			GEngine->AddOnScreenDebugMessage(-1,4.f,FColor::Red,__FUNCTION__);
-		}
-	}
+	if(!MeshComp || !MeshComp->GetOwner()) return;
+	
+	ABaseCharacter* Character = Cast<ABaseCharacter>(MeshComp->GetOwner());
+	if(!Character) return;
+	
+	AKWeapon* Weapon = Cast<AKWeapon>(Character->GetWeaponComponent()->GetCurrentWeapon());
+	if(!Weapon) return;
+	
+	Super::Notify(MeshComp, Animation);
+	Weapon->Drop();
 }

@@ -24,7 +24,6 @@ AShell::AShell()
 
 void AShell::BeginPlay()
 {
-	GEngine->AddOnScreenDebugMessage(-1,4.f,FColor::Yellow, __FUNCTION__);
 	Super::BeginPlay();
 	
 	check(MovementComponent);

@@ -4,8 +4,6 @@
 #include "Miscellaneous/AnimNotify/RemoveMagazineAnimNotify.h"
 #include "AKWeapon.h"
 #include "BaseCharacter.h"
-#include "Engine.h"
-#include "GameFramework/Character.h"
 
 void URemoveMagazineAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
@@ -18,5 +16,5 @@ void URemoveMagazineAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSe
 	if(!Weapon) return;
 	
 	Super::Notify(MeshComp, Animation);
-	Weapon->SpawnMagazine();
+	Weapon->Remove();
 }

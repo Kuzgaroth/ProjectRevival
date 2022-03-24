@@ -21,20 +21,39 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void MakeShot() override;
+	UFUNCTION()
+	void SpawnShell(FName SocketName) const;
+	UFUNCTION()
+	void SpawnMagazine(FName SocketName);
+	UFUNCTION()
+	void AttachMagazine(USceneComponent* ParentMesh, FName SocketName);
 	
+	//функции, которые вызываются в соответствующих AnimNotify:
+	//RemoveMagazineAnimNotify
 	UFUNCTION()
-	void SpawnShell() const;
+	void Remove();
+	//DropMagazineAnimNotify
 	UFUNCTION()
-	void SpawnMagazine() const;
+	void Drop();
+	//TakeMagazineAnimNotify
+	UFUNCTION()
+	void Take();
+	//LockMagazineAnimNotify
+	UFUNCTION()
+	void Lock();
+	
 protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
-	TSubclassOf<AMagazine> Magazine;
+	AMagazine* Magazine;
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
-	USceneComponent* AttachPoint;
+	TSubclassOf<AActor> MagazineClass;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Projectile")
 	TSubclassOf<ABaseProjectile> ProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
+	USkeletalMeshComponent* MagazineMeshComponent;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Projectile")
 	TSubclassOf<AShell> AmmoShell;
@@ -49,9 +68,10 @@ protected:
 	FName ShutterSocketName = "gate";
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
-	FName MagazineSocketName = "extended_magazine";
-private:
+	FName MagazineSocketName = "magazine_end";
 	
+private:
 	//UPROPERTY(VisibleAnywhere,BlueprintReadWrite, Category = "Animations")
 	//UAnimNotify* AttachMagazine;
 };
+

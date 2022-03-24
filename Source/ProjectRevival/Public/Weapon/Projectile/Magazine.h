@@ -6,7 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Magazine.generated.h"
 
-class USphereComponent;
+DECLARE_LOG_CATEGORY_EXTERN(LogCustom, Log, All);
+
 class UProjectileMovementComponent;
 
 UCLASS()
@@ -20,15 +21,12 @@ public:
 	UFUNCTION()
 	void AttachMagazine(USceneComponent* ParentMesh, const FName& SocketName);
 	UFUNCTION()
-	void DetachMagazine(USceneComponent* ParentMesh, const FName& SocketName);
-	
+	void DetachMagazine();
+	UFUNCTION()
+	USkeletalMeshComponent* GetMeshComponent();
 protected:
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
-	//UStaticMeshComponent* MeshComponent;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
-	USkeletalMeshComponent* SkeletalMeshComponent;
-	UPROPERTY(VisibleDefaultsOnly,					Category="Components")
-	USphereComponent* CollisionComponent;
+	USkeletalMeshComponent* MeshComponent;
 	UPROPERTY(VisibleDefaultsOnly,					Category="Components")
 	UProjectileMovementComponent* MovementComponent;
 	

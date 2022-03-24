@@ -1,51 +1,49 @@
 // Project Revival. All Rights Reserved
 
 #include "Magazine.h"
-#include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+
+DEFINE_LOG_CATEGORY(LogCustom);
 
 AMagazine::AMagazine()
 {
-	GEngine->AddOnScreenDebugMessage(-1,4.f,FColor::Green, __FUNCTION__);
 	PrimaryActorTick.bCanEverTick = false;
-			
-	SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("SkeletalComponent");
-	RootComponent = SkeletalMeshComponent;
 	
-	CollisionComponent = CreateDefaultSubobject<USphereComponent>("SphereComponent");
-	CollisionComponent->SetupAttachment(RootComponent);
-	CollisionComponent->InitSphereRadius(30.0f);
-	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	CollisionComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	CollisionComponent->bReturnMaterialOnMove = true;
-	
+	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("SkeletalMeshComponent");
+	MeshComponent->SetVisibility(true);
+	RootComponent = MeshComponent;
+
 	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovementComponent");
-	MovementComponent->InitialSpeed = 0.0f;
+	MovementComponent->bSimulationEnabled = false;
+	MovementComponent->InitialSpeed = 0.f;
 }
 
 void AMagazine::AttachMagazine(USceneComponent* ParentMesh, const FName& SocketName)
 {
-	GEngine->AddOnScreenDebugMessage(-1,4.f,FColor::Green, __FUNCTION__);
-	if (!ParentMesh) return;
+	if (!ParentMesh || !RootComponent)
+	{
+		UE_LOG(LogCustom,Error,TEXT("AMagazine::AttachMagazine"));
+		return;
+	}
 	const FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::SnapToTarget, false);
 	RootComponent->AttachToComponent(ParentMesh, AttachmentTransformRules, SocketName);
 }
 
-void AMagazine::DetachMagazine(USceneComponent* ParentMesh, const FName& SocketName)
+void AMagazine::DetachMagazine()
 {
-	GEngine->AddOnScreenDebugMessage(-1,4.f,FColor::Green, __FUNCTION__);
 	this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	MovementComponent->bSimulationEnabled = true;
 	SetLifeSpan(LifeSeconds);
+}
+
+USkeletalMeshComponent* AMagazine::GetMeshComponent()
+{
+	if(MeshComponent) return MeshComponent;
+	else return nullptr;
 }
 
 void AMagazine::BeginPlay()
 {
-	GEngine->AddOnScreenDebugMessage(-1,4.f,FColor::Green, __FUNCTION__);
 	Super::BeginPlay();
-
-	check(MovementComponent);
-	check(CollisionComponent);
-	check(SkeletalMeshComponent);
-
-	CollisionComponent->IgnoreActorWhenMoving(GetOwner(), true);
+	check(MeshComponent);
 }
