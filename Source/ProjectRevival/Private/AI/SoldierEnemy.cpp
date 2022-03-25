@@ -156,18 +156,18 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, const FVector& Co
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.bIgnoreTouches = true;
 	CollisionParams.AddIgnoredActor(this);
-	UE_LOG(LogPRAISoldier, Log, TEXT("But how much time do that shit triggers in total hmmph"));
-	UE_LOG(LogPRAISoldier, Log, TEXT("CoverPos: %s"), *CoverPos.ToString());
-	UE_LOG(LogPRAISoldier, Log, TEXT("CoverOwnerPos: %s"), *CoverOwnerPos.ToString());
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: CoverPos: %s"), *CoverPos.ToString());
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: CoverOwnerPos: %s"), *CoverOwnerPos.ToString());
 	GetWorld()->LineTraceSingleByChannel(HitResult,CoverPos,CoverOwnerPos,ECollisionChannel::ECC_Visibility, CollisionParams);
 	if (HitResult.bBlockingHit)
 	{
-		UE_LOG(LogPRAISoldier, Log, TEXT("If that occured..."));
-		UE_LOG(LogPRAISoldier, Log, TEXT("The blocking hit was: %s"), *HitResult.GetActor()->GetName());
-		UE_LOG(LogPRAISoldier, Log, TEXT("... and that didn't. Than Line trace is fucked up"));
+		UE_LOG(LogPRAISoldier, Log, TEXT("Character: If that occured..."));
+		UE_LOG(LogPRAISoldier, Log, TEXT("Character: The blocking hit was: %s"), *HitResult.GetActor()->GetName());
+		UE_LOG(LogPRAISoldier, Log, TEXT("Character: ... and that didn't. Than Line trace is fucked up"));
 	}
 	else
 	{
+		UE_LOG(LogPRAISoldier, Log, TEXT("Character: CoverOwnerPos turned to be clear"))
 		CleanCoverData();
 		return;
 	}
@@ -199,7 +199,7 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, const FVector& Co
 	WeaponComponent->StopFire();
 
 	CoverData.CoverObject->ActorHasTag(FName(TEXT("High"))) ? CoverData.CoverType = High : CoverData.CoverType = Low;
-	CoverData.CoverSide = CheckSideByNormal(GetActorForwardVector(), HitResult.Normal);
+	CoverData.CoverSide = Right;
 	CoverData.CoverPart = GetCoverPart(0);
 	CoverData.IsInCoverTransition = true;
 	
