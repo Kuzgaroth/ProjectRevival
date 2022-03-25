@@ -5,6 +5,7 @@
 
 #include <string>
 
+#include "PlayerCharacter.h"
 #include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
 #include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 #include "Kismet/GameplayStatics.h"
@@ -55,7 +56,7 @@ void AStaticObjectToNothing::BeginPlay()
 	if (World==OrdinaryWorld)
 	{
 		isApearing=true;
-		if(VisualCurve)
+		if(VisualCurve&&MeshesMaterials.Num()>0)
 		{
 			for (const auto Material : MeshesMaterials)
 			{
@@ -71,7 +72,7 @@ void AStaticObjectToNothing::BeginPlay()
 	}
 	else
 	{
-		if(VisualCurve)
+		if(VisualCurve&&MeshesMaterials.Num()>0)
 		{
 			for (const auto Material : MeshesMaterials)
 			{
@@ -86,6 +87,7 @@ void AStaticObjectToNothing::BeginPlay()
 		ClearComponentTags(SuperMesh);
 	}
 	SuperMesh->OnComponentBeginOverlap.AddDynamic(this,&AStaticObjectToNothing::OnMeshComponentCollision);
+	SuperMesh->OnComponentEndOverlap.AddDynamic(this,&AStaticObjectToNothing::OnMeshComponentEndCollision);
 }
 
 // Called every frame
@@ -216,6 +218,21 @@ void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* Overl
 	if(Cast<AChangeWorldSphereActor>(OtherActor))
 	{
 		Changing();
+	}
+	auto Player=Cast<APlayerCharacter>(OtherActor);
+	if(Player&& SuperMesh->GetCollisionProfileName()=="OverlapAll")
+	{
+		Player->SetChangeWorldPossibility(false);
+	}
+}
+
+void AStaticObjectToNothing::OnMeshComponentEndCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	auto Player=Cast<APlayerCharacter>(OtherActor);
+	if(Player)
+	{
+		Player->SetChangeWorldPossibility(true);
 	}
 }
 

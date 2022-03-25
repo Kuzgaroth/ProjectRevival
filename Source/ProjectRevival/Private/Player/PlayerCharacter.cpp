@@ -19,6 +19,7 @@
 #include "GameFeature/StaticObjectToNothing.h"
 #include "Kismet/GameplayStatics.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
+#include "Sound/SoundCue.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -81,6 +82,7 @@ void APlayerCharacter::MoveForward(float Amount)
 	if (CoverData.IsInCover() || CoverData.IsInTransition() || CoverData.IsFiring) return;
 	bIsMovingForward = Amount>0;
 	PlayerMovementComponent->MoveForward(Amount);
+
 }
 
 void APlayerCharacter::MoveRight(float Amount) 
@@ -370,6 +372,21 @@ void APlayerCharacter::TimelineCover(float Value)
 void APlayerCharacter::TimelineCoverLow(float Value)
 {
 	CameraCoverFunctions->TimelineCoverLow(Value, CameraCoverFunctions, SpringArmComponent);
+}
+
+void APlayerCharacter::SetChangeWorldPossibility(bool newValue)
+{
+	WorldCanBeChanged=newValue;
+}
+
+bool APlayerCharacter::CheckIfWorldCanBeChanged() const
+{
+	if(!WorldCanBeChanged)
+	{
+		if(WorldCantBeChangedPhrase)
+			UGameplayStatics::SpawnSound2D(GetWorld(),WorldCantBeChangedPhrase);
+	}
+	return WorldCanBeChanged;
 }
 
 

@@ -42,6 +42,12 @@ public:
 
 	UFUNCTION()
 	void TimelineCoverLow(float Value);
+
+	UFUNCTION()
+	void SetChangeWorldPossibility(bool newValue);
+
+	UFUNCTION()
+	bool CheckIfWorldCanBeChanged() const;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoomBlueprint PlayerAimZoom;
@@ -77,6 +83,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	USceneComponent* CameraSocket;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="Phrases")
+	USoundCue* WorldCantBeChangedPhrase;
+
+	
+	bool WorldCanBeChanged=true;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data) override;
