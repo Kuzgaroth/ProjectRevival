@@ -163,7 +163,8 @@ bool ASoldierAIController::FindNewCover()
 		const auto PlayerCoordinates = PlayerPos.GetActorPosition();
 		UE_LOG(LogPRAIController, Log, TEXT("Controller: Player pos X: %0.2f, Y: %0.2f"), PlayerCoordinates.X, PlayerCoordinates.Y);
 		UE_LOG(LogPRAIController, Log, TEXT("Controller: Cover pos was set X: %0.2f, Y: %0.2f"), CoverPos.X, CoverPos.Y);
-		BlackboardComp->SetValueAsVector(CoverKeyName, CoverPos);
+		BlackboardComp->SetValueAsVector(CoverPosKeyName, CoverPos);
+		BlackboardComp->SetValueAsObject(CoverRefKeyName, CoverRef);
 		return true;
 	}
 	return false;

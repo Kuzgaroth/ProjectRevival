@@ -94,7 +94,10 @@ protected:
 	FName FocusOnKeyName = "EnemyActor";
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
-	FName CoverKeyName = "CoverPos";
+	FName CoverPosKeyName = "CoverPos";
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	FName CoverRefKeyName = "CoverRef";
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Respawn")
 	URespawnComponent* RespawnComponent;
