@@ -149,7 +149,7 @@ void ASoldierEnemy::UpdateHealthWidgetVisibility()
 	HealthWidgetComponent->SetVisibility(Distance<HealthVisibilityDistance, true);
 }
 
-void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, const FVector& CoverOwnerPos)
+void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, AActor* CoverRef)
 {
 	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartCoverSoldier() was called"));
 	FHitResult HitResult;
@@ -157,8 +157,9 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, const FVector& Co
 	CollisionParams.bIgnoreTouches = true;
 	CollisionParams.AddIgnoredActor(this);
 	UE_LOG(LogPRAISoldier, Log, TEXT("Character: CoverPos: %s"), *CoverPos.ToString());
-	UE_LOG(LogPRAISoldier, Log, TEXT("Character: CoverOwnerPos: %s"), *CoverOwnerPos.ToString());
-	GetWorld()->LineTraceSingleByChannel(HitResult,CoverPos,CoverOwnerPos,ECollisionChannel::ECC_Visibility, CollisionParams);
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: CoverRef name is %s"), *CoverRef->GetName());
+	CoverData.CoverObject = CoverRef;
+	GetWorld()->LineTraceSingleByChannel(HitResult,CoverPos, CoverRef->GetActorLocation(),ECollisionChannel::ECC_Visibility, CollisionParams);
 	if (HitResult.bBlockingHit)
 	{
 		UE_LOG(LogPRAISoldier, Log, TEXT("Character: If that occured..."));
@@ -171,7 +172,7 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, const FVector& Co
 		CleanCoverData();
 		return;
 	}
-	CoverData.CoverObject = HitResult.GetActor();
+	
 	// TArray <FHitResult> Hits;
 	// const bool TraceResult = UKismetSystemLibrary::LineTraceMulti(GetWorld(), GetActorLocation(),
 	//                                                               FVector(CoverPos.X, CoverPos.Y, CoverPos.Z + 1.0), UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),
@@ -198,6 +199,7 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, const FVector& Co
 	
 	WeaponComponent->StopFire();
 
+	CoverData.CoverObject = CoverRef;
 	CoverData.CoverObject->ActorHasTag(FName(TEXT("High"))) ? CoverData.CoverType = High : CoverData.CoverType = Low;
 	CoverData.CoverSide = Right;
 	CoverData.CoverPart = GetCoverPart(0);

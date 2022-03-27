@@ -20,5 +20,5 @@ class PROJECTREVIVAL_API UPRSoldierAIPerceptionComponent : public UAIPerceptionC
 
 public:
 	FPlayerPositionData GetClosestEnemy() const;
-	bool GetBestCoverWing(EWing Wing, FVector& CoverPos, FVector& CoverOwnerPos);
+	bool GetBestCoverWing(EWing Wing, FVector& CoverPos, AActor*& CoverRef);
 };

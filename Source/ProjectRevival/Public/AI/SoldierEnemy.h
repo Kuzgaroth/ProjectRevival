@@ -66,7 +66,7 @@ public:
 	FCoverData& GetCoverData();
 
 	UFUNCTION()
-	void StartCoverSoldier(const FVector& CoverPos, const FVector& CoverOwnerPos);
+	void StartCoverSoldier(const FVector& CoverPos, AActor* CoverRef);
 
 	UFUNCTION(BlueprintCallable)
 	void StartCoverSoldierFinish();

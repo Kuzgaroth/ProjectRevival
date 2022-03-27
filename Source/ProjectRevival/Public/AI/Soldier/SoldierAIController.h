@@ -13,7 +13,7 @@ class ASoldierAIController;
 
 // Объявление делегата передачи положения игрока
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerPosDelegate, const FPlayerPositionData&, PlayerPosition);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStartEnteringCover, const FVector&, CoverPosition, const FVector&, CoverOwnerPosition);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStartEnteringCover, const FVector&, CoverPosition, AActor*, CoverReference);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartCoverSideMoving, float, SideMovementAmount);
 
@@ -70,7 +70,7 @@ public:
 	void StartCoverSideMoving();
 	UFUNCTION()
 	void StopCoverSideMoving();
-	void FindNewCover();
+	bool FindNewCover();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
 	EWing BotWing;
@@ -85,7 +85,7 @@ protected:
 	FVector CoverPos;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
-	FVector CoverOwnerPos;
+	AActor* CoverRef;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
 	float SideMovementAmount;

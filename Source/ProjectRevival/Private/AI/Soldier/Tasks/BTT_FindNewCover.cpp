@@ -16,8 +16,7 @@ EBTNodeResult::Type UBTT_FindNewCover::ExecuteTask(UBehaviorTreeComponent& Owner
 {
 	const auto Controller = Cast<ASoldierAIController>(OwnerComp.GetAIOwner());
 	if (!Controller) return EBTNodeResult::Failed;
-	
-	Controller->FindNewCover();
-	UE_LOG(LogPRAIDecorators, Log, TEXT("Cover is in search"));
+	UE_LOG(LogPRAIDecorators, Log, TEXT("Cover is in search"))
+	if (!Controller->FindNewCover()) return EBTNodeResult::Failed;
 	return EBTNodeResult::Succeeded;
 }

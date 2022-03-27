@@ -308,9 +308,12 @@ bool AStaticObjectToNothing::CheckIsChangeAbleObjIsCover()
 
 bool AStaticObjectToNothing::TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos)
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: Input PlayerPos is %s"), *PlayerPos.ToString())
+	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: Input CoverPos  is %s"), *CoverPos.ToString())
 	if(CoverStruct.CoverPositions.Num()==0) return false;
 	for(auto covpos:CoverStruct.CoverPositions)
 	{
+		UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: foreach covpos is %s"), *covpos->GetComponentLocation().ToString())
 		FVector TraceStart=covpos->GetComponentLocation();
 		FVector TraceEnd=PlayerPos;
 		FHitResult HitResult;

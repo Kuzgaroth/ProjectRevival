@@ -116,8 +116,8 @@ void ASoldierAIController::StopFiring()
 void ASoldierAIController::StartEnteringCover()
 {
 	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StartEnteringCover() was called"));
-	UE_LOG(LogPRAIController, Log, TEXT("%i Cover pos X: %0.2f, Y: %0.2f"), BotWing, CoverPos.X, CoverPos.Y);
-	StartEnteringCoverDelegate.Broadcast(CoverPos, CoverOwnerPos);
+	UE_LOG(LogPRAIController, Log, TEXT("Controller: %i Cover pos X: %0.2f, Y: %0.2f"), BotWing, CoverPos.X, CoverPos.Y);
+	StartEnteringCoverDelegate.Broadcast(CoverPos, CoverRef);
 }
 
 void ASoldierAIController::StopEnteringCover()
@@ -150,20 +150,21 @@ void ASoldierAIController::StopCoverSideMoving()
 	SetBIsSideTurning(false);
 }
 
-void ASoldierAIController::FindNewCover()
+bool ASoldierAIController::FindNewCover()
 {
-	UE_LOG(LogPRAISoldier, Warning, TEXT("Bot doing this is %s"), *GetPawn()->GetName())
-	UE_LOG(LogPRAISoldier, Warning, TEXT("CoverOwnerPos input is %s"), *CoverOwnerPos.ToString())
-	bool const bFlag = PRPerceptionComponent->GetBestCoverWing(BotWing, CoverPos, CoverOwnerPos);
-	UE_LOG(LogPRAISoldier, Warning, TEXT("CoverOwnerPos output is %s"), *CoverOwnerPos.ToString())
+	UE_LOG(LogPRAISoldier, Warning, TEXT("Controller: Bot doing this is %s"), *GetPawn()->GetName())
+	bool const bFlag = PRPerceptionComponent->GetBestCoverWing(BotWing, CoverPos, CoverRef);
 	const auto BlackboardComp = GetBlackboardComponent();
 	if (bFlag && BlackboardComp)
 	{
+		UE_LOG(LogPRAISoldier, Warning, TEXT("Controller: CoverOwnerPos output is %s"), *CoverRef->GetName())
 		const auto PlayerCoordinates = PlayerPos.GetActorPosition();
-		UE_LOG(LogPRAIController, Log, TEXT("Player pos X: %0.2f, Y: %0.2f"), PlayerCoordinates.X, PlayerCoordinates.Y);
-		UE_LOG(LogPRAIController, Log, TEXT("Cover pos was set X: %0.2f, Y: %0.2f"), CoverPos.X, CoverPos.Y);
+		UE_LOG(LogPRAIController, Log, TEXT("Controller: Player pos X: %0.2f, Y: %0.2f"), PlayerCoordinates.X, PlayerCoordinates.Y);
+		UE_LOG(LogPRAIController, Log, TEXT("Controller: Cover pos was set X: %0.2f, Y: %0.2f"), CoverPos.X, CoverPos.Y);
 		BlackboardComp->SetValueAsVector(CoverKeyName, CoverPos);
+		return true;
 	}
+	return false;
 	//MoveToLocation(CoverPos);
 }
 
