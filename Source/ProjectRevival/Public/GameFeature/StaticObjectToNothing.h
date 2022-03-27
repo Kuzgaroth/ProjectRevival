@@ -6,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "ChangeWorld.h"
 #include "Interfaces/IChangingWorldActor.h"
+#include "UObject/UObjectGlobals.h"
+#include "CoreTypes.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "StaticObjectToNothing.generated.h"
 
 class UBoxComponent;
@@ -39,6 +42,12 @@ protected:
     virtual void TimeLineFloatReturn(float Value);
     FOnTimelineFloat InterpFunction;
 
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	FCoverPointsAndPossibility CoverStruct;
+
+
+	
 	virtual void LoadComponentTags(UStaticMeshComponent* supermesh) override;
 
 
@@ -58,9 +67,6 @@ public:
 	TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
 	
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USceneComponent* SceneComponent;
-
 	UFUNCTION()
 	void OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, 
 					  AActor* OtherActor, 
@@ -74,10 +80,28 @@ public:
 					  AActor* OtherActor, 
 					  UPrimitiveComponent* OtherComp, 
 					  int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void OnCoverPointComponentCollision(UPrimitiveComponent* OverlappedComponent, 
+					  AActor* OtherActor, 
+					  UPrimitiveComponent* OtherComp, 
+					  int32 OtherBodyIndex, 
+					  bool bFromSweep, 
+					  const FHitResult &SweepResult);
+
+	UFUNCTION()
+	void OnCoverPointComponentExit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void BlockCoverPoint(const UBoxComponent* CoverPoint);
+
+	UFUNCTION()
+	void FreeCoverPoint(const UBoxComponent* CoverPoint);
 	
 	void Changing() override;
 	
 	virtual void ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld) override;
 	
 	virtual bool CheckIsChangeAbleObjIsCover() override;
+	virtual bool TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos) override;
 };
