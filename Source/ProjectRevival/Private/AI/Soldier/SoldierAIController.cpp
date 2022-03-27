@@ -106,6 +106,7 @@ void ASoldierAIController::StartFiring()
 	const auto PlayerCoordinates = PlayerPos.GetActorPosition();
 	UE_LOG(LogPRAIController, Log, TEXT("Shoot at Player pos X: %0.2f, Y: %0.2f, Z: %0.2f"), PlayerCoordinates.X, PlayerCoordinates.Y);
 	PlayerPosDelegate.Broadcast(PlayerPos);
+	SetBIsFiring(true);
 }
 
 void ASoldierAIController::StopFiring()
