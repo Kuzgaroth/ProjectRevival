@@ -2,8 +2,6 @@
 
 
 #include "AI/Soldier/Tasks/BTT_FindNewCover.h"
-
-#include "PRAIPerceptionComponent.h"
 #include "AI/Soldier/SoldierAIController.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 
