@@ -233,24 +233,30 @@ void AStaticObjectToNothing::ChangeVisibleWorld(EChangeAllMapEditorVisibility Vi
 void AStaticObjectToNothing::ShowChangeWorldObjectByAbility()
 {
 	SuperMesh->SetRenderCustomDepth(true);
-	if(MeshesMaterials.Num()!=0)
-		for (const auto Material : MeshesMaterials)
-		{
-			auto reqwar=(MaxCurveValue-MinCurveValue)/TransparencyLevel;
-			reqwar=MaxCurveValue-reqwar;
-			Material->SetScalarParameterValue("Amount",reqwar);
-		}
+	if(SuperMesh->GetCollisionProfileName()=="OverlapAll")
+	{
+		if(MeshesMaterials.Num()!=0)
+			for (const auto Material : MeshesMaterials)
+			{
+				auto reqwar=(MaxCurveValue-MinCurveValue)/TransparencyLevel;
+				reqwar=MaxCurveValue-reqwar;
+				Material->SetScalarParameterValue("Amount",reqwar);
+			}
+	}
 	
 }
 
 void AStaticObjectToNothing::HideChangeWorldObjectByAbility()
 {
 	SuperMesh->SetRenderCustomDepth(false);
-	if(MeshesMaterials.Num()!=0)
-		for (const auto Material : MeshesMaterials)
-		{
-			Material->SetScalarParameterValue("Amount",MaxCurveValue);
-		}
+	if(SuperMesh->GetCollisionProfileName()=="OverlapAll")
+	{
+		if(MeshesMaterials.Num()!=0)
+			for (const auto Material : MeshesMaterials)
+			{
+				Material->SetScalarParameterValue("Amount",MaxCurveValue);
+			}
+	}
 }
 
 void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -325,15 +331,12 @@ void AStaticObjectToNothing::TimeLineFloatReturn(float Value)
 		{
 			
 			Material->SetScalarParameterValue("Amount",Value);
-			Material->SetVectorParameterValue("Color",FLinearColor::Blue);
 		}
 		else
 		{
 			float val=MinCurveValue-Value;
 			val=MaxCurveValue+val;
-			
 			Material->SetScalarParameterValue("Amount",val);
-			Material->SetVectorParameterValue("Color",FLinearColor::Red);
 		}
 	}
 	
