@@ -14,6 +14,12 @@ class PROJECTREVIVAL_API UBTT_FindNewCover : public UBTTaskNode
 {
 	GENERATED_BODY()
 	UBTT_FindNewCover();
-	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
 	
+	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
+	FBlackboardKeySelector AimLocationKey;
+
 };

@@ -25,5 +25,9 @@ class PROJECTREVIVAL_API UChangeWorldAbility : public UPRGameplayAbility
 	TSubclassOf<AActor> ChangeWorldShere;
 	UPROPERTY(EditAnywhere,Category="Trace Params")
 	float TraceSpawnDistance=1500.0f;
+	UPROPERTY(EditAnywhere,Category="Trace Params")
+	bool FreezePlayerDurindAbility=false;
 	void FinishAbility();
+
+	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const override;
 };
