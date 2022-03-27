@@ -50,6 +50,10 @@ protected:
 	
 	virtual void LoadComponentTags(UStaticMeshComponent* supermesh) override;
 
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	float TransparencyLevel=5.0f;
+	
+
 
 
 public:	
@@ -66,6 +70,9 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
 	
+	void ShowChangeWorldObjectByAbility();
+	void HideChangeWorldObjectByAbility();
+
 
 	UFUNCTION()
 	void OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, 

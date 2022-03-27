@@ -46,13 +46,14 @@ bool UChangeWorldAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Ha
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
 	const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
 {
+
 	
 	auto Player=Cast<APlayerCharacter>(ActorInfo->OwnerActor.Get());
 	if(Player)
 	{
-		return Player->CheckIfWorldCanBeChanged();
+		return Player->CheckIfWorldCanBeChanged()&&	Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
 	}
-	return false;
+	return 	Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
 	
 }
 

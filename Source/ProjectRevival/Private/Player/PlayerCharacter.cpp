@@ -374,8 +374,9 @@ void APlayerCharacter::TimelineCoverLow(float Value)
 	CameraCoverFunctions->TimelineCoverLow(Value, CameraCoverFunctions, SpringArmComponent);
 }
 
-void APlayerCharacter::SetChangeWorldPossibility(bool newValue)
+void APlayerCharacter::SetChangeWorldPossibility(bool newValue, AStaticObjectToNothing* overlappedAct)
 {
+	OverlappedChangeWActor=overlappedAct;
 	WorldCanBeChanged=newValue;
 }
 
@@ -385,6 +386,11 @@ bool APlayerCharacter::CheckIfWorldCanBeChanged() const
 	{
 		if(WorldCantBeChangedPhrase)
 			UGameplayStatics::SpawnSound2D(GetWorld(),WorldCantBeChangedPhrase);
+		if(OverlappedChangeWActor)
+		{
+			OverlappedChangeWActor->ShowChangeWorldObjectByAbility();
+		}
+		
 	}
 	return WorldCanBeChanged;
 }

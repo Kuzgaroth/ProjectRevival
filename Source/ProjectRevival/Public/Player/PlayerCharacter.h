@@ -6,6 +6,7 @@
 #include "BaseCharacterMovementComponent.h"
 #include "Player/BaseCharacter.h"
 #include "Components/TimelineComponent.h"
+#include "GameFeature/StaticObjectToNothing.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "PlayerCharacter.generated.h"
 
@@ -44,7 +45,7 @@ public:
 	void TimelineCoverLow(float Value);
 
 	UFUNCTION()
-	void SetChangeWorldPossibility(bool newValue);
+	void SetChangeWorldPossibility(bool newValue,AStaticObjectToNothing* overlappedAct);
 
 	UFUNCTION()
 	bool CheckIfWorldCanBeChanged() const;
@@ -89,6 +90,7 @@ protected:
 
 	
 	bool WorldCanBeChanged=true;
+	AStaticObjectToNothing* OverlappedChangeWActor;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data) override;

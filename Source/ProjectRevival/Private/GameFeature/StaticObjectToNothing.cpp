@@ -230,6 +230,29 @@ void AStaticObjectToNothing::ChangeVisibleWorld(EChangeAllMapEditorVisibility Vi
 	}
 }
 
+void AStaticObjectToNothing::ShowChangeWorldObjectByAbility()
+{
+	SuperMesh->SetRenderCustomDepth(true);
+	if(MeshesMaterials.Num()!=0)
+		for (const auto Material : MeshesMaterials)
+		{
+			auto reqwar=(MaxCurveValue-MinCurveValue)/TransparencyLevel;
+			reqwar=MaxCurveValue-reqwar;
+			Material->SetScalarParameterValue("Amount",reqwar);
+		}
+	
+}
+
+void AStaticObjectToNothing::HideChangeWorldObjectByAbility()
+{
+	SuperMesh->SetRenderCustomDepth(false);
+	if(MeshesMaterials.Num()!=0)
+		for (const auto Material : MeshesMaterials)
+		{
+			Material->SetScalarParameterValue("Amount",MaxCurveValue);
+		}
+}
+
 void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -240,7 +263,8 @@ void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* Overl
 	auto Player=Cast<APlayerCharacter>(OtherActor);
 	if(Player&& SuperMesh->GetCollisionProfileName()=="OverlapAll")
 	{
-		Player->SetChangeWorldPossibility(false);
+		Player->SetChangeWorldPossibility(false,this);
+		
 	}
 }
 
@@ -250,7 +274,8 @@ void AStaticObjectToNothing::OnMeshComponentEndCollision(UPrimitiveComponent* Ov
 	auto Player=Cast<APlayerCharacter>(OtherActor);
 	if(Player)
 	{
-		Player->SetChangeWorldPossibility(true);
+		Player->SetChangeWorldPossibility(true,nullptr);
+		HideChangeWorldObjectByAbility();
 	}
 }
 
@@ -298,13 +323,17 @@ void AStaticObjectToNothing::TimeLineFloatReturn(float Value)
 	{
 		if(isApearing)
 		{
+			
 			Material->SetScalarParameterValue("Amount",Value);
+			Material->SetVectorParameterValue("Color",FLinearColor::Blue);
 		}
 		else
 		{
 			float val=MinCurveValue-Value;
 			val=MaxCurveValue+val;
+			
 			Material->SetScalarParameterValue("Amount",val);
+			Material->SetVectorParameterValue("Color",FLinearColor::Red);
 		}
 	}
 	
