@@ -26,12 +26,9 @@ public:
 	UFUNCTION()
 	void SpawnMagazine(FName SocketName);
 	UFUNCTION()
-	void AttachMagazine(USceneComponent* ParentMesh, FName SocketName);
+	void AttachMagazine(AMagazine* Magazine, USceneComponent* ParentMesh, FName SocketName);
 	
 	//функции, которые вызываются в соответствующих AnimNotify:
-	//RemoveMagazineAnimNotify
-	UFUNCTION()
-	void Remove();
 	//DropMagazineAnimNotify
 	UFUNCTION()
 	void Drop();
@@ -43,8 +40,8 @@ public:
 	void Lock();
 	
 protected:
-	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
-	AMagazine* Magazine;
+	UPROPERTY()
+	TArray<AMagazine*> Magazines;
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
 	TSubclassOf<AActor> MagazineClass;
@@ -68,10 +65,6 @@ protected:
 	FName ShutterSocketName = "gate";
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
-	FName MagazineSocketName = "magazine_end";
-	
-private:
-	//UPROPERTY(VisibleAnywhere,BlueprintReadWrite, Category = "Animations")
-	//UAnimNotify* AttachMagazine;
+	FName MagazineSocketName = "magazine_endSocket";
 };
 

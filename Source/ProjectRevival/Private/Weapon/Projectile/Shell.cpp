@@ -1,7 +1,6 @@
 // Project Revival. All Rights Reserved
 
 #include "Shell.h"
-#include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 AShell::AShell()
@@ -11,13 +10,6 @@ AShell::AShell()
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
 	RootComponent = MeshComponent;
 	
-	CollisionComponent = CreateDefaultSubobject<USphereComponent>("SphereComponent");
-	CollisionComponent->SetupAttachment(RootComponent);
-	CollisionComponent->InitSphereRadius(15.0f);
-	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	CollisionComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	CollisionComponent->bReturnMaterialOnMove = true;
-	
 	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovementComponent");
 	MovementComponent->InitialSpeed = Speed;
 }
@@ -25,12 +17,11 @@ AShell::AShell()
 void AShell::BeginPlay()
 {
 	Super::BeginPlay();
-	
 	check(MovementComponent);
-	check(CollisionComponent);
 	check(MeshComponent);
 	
-	MovementComponent->Velocity = this->GetActorRightVector() * MovementComponent->InitialSpeed;
-	CollisionComponent->IgnoreActorWhenMoving(GetOwner(), true);
+	FVector Direction = this->GetActorRightVector();
+	Direction.Set(Direction.X, Direction.Y, Direction.Z + Rotation * FMath::RandRange(1 - Dispersion, 1 + Dispersion));
+	MovementComponent->Velocity = Direction * MovementComponent->InitialSpeed; 
 	SetLifeSpan(LifeSeconds);
 }

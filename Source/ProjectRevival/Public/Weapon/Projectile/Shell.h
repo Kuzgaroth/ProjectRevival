@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Shell.generated.h"
 
-class USphereComponent;
+//class USphereComponent;
 class UProjectileMovementComponent;
 
 UCLASS()
@@ -17,10 +17,7 @@ class PROJECTREVIVAL_API AShell : public AActor
 public:
 	AShell();
 	
-protected:
-	UPROPERTY(VisibleDefaultsOnly,					Category="Components")
-	USphereComponent* CollisionComponent;
-	
+protected:	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
 	UStaticMeshComponent* MeshComponent;
 
@@ -33,5 +30,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite,	Category="InternalState")
 	float Speed = 1000.f;
 
+	//Отклонение траектории гильз от правого вектора меша оружия
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite,	Category="InternalState")
+	float Rotation = 1.f;
+
+	//Случайный разброс
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite,	Category="InternalState")
+	float Dispersion = 0.2f;
+	
 	virtual void BeginPlay() override;
 };

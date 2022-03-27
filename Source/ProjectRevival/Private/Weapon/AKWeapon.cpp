@@ -2,36 +2,27 @@
 
 #include "AKWeapon.h"
 #include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 
 AKWeapon::AKWeapon()
 {
-	RootComponent = WeaponMesh;
-	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MagazineMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("MagazineMeshComponent");
 	MagazineClass = AMagazine::StaticClass();
+	
+	RootComponent = WeaponMesh;
+	
+	MagazineMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("MagazineMeshComponent");
+	MagazineMeshComponent->SetupAttachment(RootComponent);
 }
 
 void AKWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	check(WeaponMesh);
-
-	if(this)
-	{    
-		const FRotator Rotation = this->GetActorRotation();
-		const FVector Location = this->WeaponMesh->GetSocketLocation(MagazineSocketName);
-		Magazine = GetWorld()->SpawnActor<AMagazine>(MagazineClass, Location, Rotation);
-		if(Magazine)
-		{
-			MagazineMeshComponent = Magazine->GetMeshComponent();
-			MagazineMeshComponent->SetupAttachment(RootComponent);
-			check(MagazineMeshComponent);
-		}
-	}
-	else
-	{
-		UE_LOG(LogCustom,Error,TEXT("AKWeapon::BeginPlay()"));
-	}
+	check(MagazineMeshComponent);
+	
+	AMagazine* Magazine = NewObject<AMagazine>();
+	Magazines.Add(Magazine);
+	//MagazineMeshComponent = Magazines.Last()->GetMeshComponent();
 }
 
 void AKWeapon::Tick(float DeltaTime)
@@ -42,6 +33,11 @@ void AKWeapon::Tick(float DeltaTime)
 void AKWeapon::MakeShot()
 {
 	Super::MakeShot();
+	if (!GetWorld() || IsAmmoEmpty())
+	{
+		StopFire();
+		return;
+	}
 	if(ShutterMovement)
 	{
 		this->WeaponMesh->PlayAnimation(ShutterMovement, false);
@@ -67,74 +63,71 @@ void AKWeapon::SpawnMagazine(FName SocketName)
 	}
 	
     const ACharacter* Character = Cast<ACharacter>(this->GetOwner());         
-	const FRotator Rotation = this->GetActorRotation();
-	const FVector Location = Character->GetMesh()->GetSocketLocation(SocketName);
-             
-	Magazine = GetWorld()->SpawnActor<AMagazine>(MagazineClass, Location, Rotation);
-	if(Magazine)
+	FRotator Rotation = this->GetActorRotation(); //Rotation.Yaw-=90.f;
+	//const FVector Location = Character->GetMesh()->GetSocketLocation(SocketName);
+	AMagazine* TempMagazine = GetWorld()->SpawnActor<AMagazine>(MagazineClass,
+		Character->GetMesh()->GetSocketLocation(SocketName), Rotation);
+	Magazines.Add(TempMagazine);
+	if(Magazines.Last())
 	{
 		if(SocketName == ArmSocketName)
 		{
-			AttachMagazine(Character->GetMesh(), ArmSocketName);
+			AttachMagazine(Magazines.Last(), Character->GetMesh(), ArmSocketName);
 		}
 		else
 		{
-			AttachMagazine(this->WeaponMesh, MagazineSocketName);
+			AttachMagazine(Magazines.Last(),this->RootComponent, MagazineSocketName);
 		}
 	}
 }
 
-void AKWeapon::AttachMagazine(USceneComponent* ParentMesh, FName SocketName)
+void AKWeapon::AttachMagazine(AMagazine* Magazine, USceneComponent* ParentMesh, FName SocketName)
 {
 	if (!ParentMesh || !Magazine)
 	{
-		UE_LOG(LogCustom,Error,TEXT("AKWeapon::AttachMagazine()"));
+		UE_LOG(LogCustom, Error, TEXT("AKWeapon::AttachMagazine()"));
 		return;
 	}
-	//Magazine->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	const FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::SnapToTarget, false);
 	Magazine->AttachToComponent(ParentMesh, AttachmentTransformRules, SocketName);
 }
 
-void AKWeapon::Remove()
+void AKWeapon::Take()
 {
-	const ACharacter* Character = Cast<ACharacter>(this->GetOwner());
-	if(!GetWorld() || !Character)
-	{
-		UE_LOG(LogCustom,Error,TEXT("AKWeapon::Remove()"));
-		return;
-	}
-	AttachMagazine(Character->GetMesh(), ArmSocketName);
+	UE_LOG(LogCustom, Error, TEXT("AKWeapon::Take()"));
+	SpawnMagazine(ArmSocketName);
 }
 
 void AKWeapon::Drop()
 {
-	Magazine->GetMeshComponent()->SetVisibility(false);
-	
+	UE_LOG(LogCustom, Error, TEXT("AKWeapon::Drop()"));
 	if(!Cast<ACharacter>(this->GetOwner()) || !GetWorld())
  	{
 		UE_LOG(LogCustom,Error,TEXT("AKWeapon::Drop()"));
 		return;
 	}
-	const ACharacter* Character = Cast<ACharacter>(this->GetOwner());
-	const FRotator Rotation = Magazine->GetMeshComponent()->GetComponentRotation();
-	const FVector Location = Character->GetMesh()->GetSocketLocation(ArmSocketName);
-	AMagazine* TempMagazine = GetWorld()->SpawnActor<AMagazine>(MagazineClass, Location, Rotation);
-	TempMagazine->DetachMagazine();
-}
-
-void AKWeapon::Take()
-{
-	Magazine->GetMeshComponent()->SetVisibility(true);
+	if(Magazines.Num() > 1)
+	{
+		Magazines[Magazines.Num() - 2]->DetachMagazine();
+		MagazineMeshComponent = Magazines.Last()->GetMeshComponent();
+	}
+	else
+	{
+		UE_LOG(LogCustom,Error,TEXT("Magazines.Num() = %f"), Magazines.Num());
+	}
 }
 
 void AKWeapon::Lock()
 {
+	UE_LOG(LogCustom, Error, TEXT("AKWeapon::Lock()"));
 	if(!GetWorld() || !this)
 	{
 		UE_LOG(LogCustom,Error,TEXT("AKWeapon::Lock()"));
 		return;
 	}
-	AttachMagazine(this->WeaponMesh, MagazineSocketName);
-	Magazine->GetMeshComponent()->SetVisibility(true);
+	if(Magazines.Last() != nullptr)
+	{
+		AttachMagazine(Magazines.Last(), this->WeaponMesh, MagazineSocketName);
+	}
+	UE_LOG(LogCustom,Error,TEXT("Magazines.Num() = %f"), Magazines.Num());
 }

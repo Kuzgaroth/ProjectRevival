@@ -16,5 +16,5 @@ void URemoveMagazineAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSe
 	if(!Weapon) return;
 	
 	Super::Notify(MeshComp, Animation);
-	Weapon->Remove();
+	//Weapon->Remove();
 }
