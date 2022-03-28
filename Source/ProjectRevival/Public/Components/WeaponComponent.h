@@ -31,6 +31,7 @@ public:
 	bool CanFire();
 	bool CanEquip();
 	bool CanReload();
+	UFUNCTION(BlueprintCallable)
 	bool IsShooting();
 	bool IsWeaponBlocked() const { return bIsWeaponBlocked; }
 	void SetWeaponBlocked(const bool bIsBlocked) { bIsWeaponBlocked = bIsBlocked; }
