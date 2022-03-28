@@ -33,6 +33,4 @@ protected:
 	float LifeSeconds = 10.f;
 
 	virtual void BeginPlay() override;
-private:
-	FVector Scale;
 };

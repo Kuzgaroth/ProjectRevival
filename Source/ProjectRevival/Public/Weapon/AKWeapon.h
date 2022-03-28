@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Shell.h"
 #include "Magazine.h"
+#include "Trace/Detail/EventNode.h"
 #include "Weapon/RifleWeapon.h"
 #include "AKWeapon.generated.h"
 
@@ -65,5 +66,7 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
 	FName MagazineSocketName = "magazine_endSocket";
+private:
+	FVector MagazineScale;
 };
 

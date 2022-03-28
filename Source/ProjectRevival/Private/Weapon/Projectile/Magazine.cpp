@@ -3,18 +3,14 @@
 #include "Magazine.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
-DEFINE_LOG_CATEGORY(LogCustom);
-
 AMagazine::AMagazine()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	
-	Scale.X = 1.0; Scale.Y = 1.0; Scale.Z = 1.0;
 	
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("SkeletalMeshComponent");
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	MeshComponent->SetSimulatePhysics(false);
-	MeshComponent->SetWorldScale3D(Scale);
 	
 	RootComponent = MeshComponent;
 
@@ -25,17 +21,12 @@ AMagazine::AMagazine()
 
 void AMagazine::DetachMagazine()
 {
-	
-	this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	
-	//SimulatePhysics don't work with ProjectileMovementComponent, but looks pretty cool:
-	//MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	//MeshComponent->SetSimulatePhysics(true);
-	
-	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	MeshComponent->SetWorldScale3D(Scale);
+	const FDetachmentTransformRules TransformRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld,
+		EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, true);
+	this->DetachFromActor(TransformRules);
 	
 	MovementComponent->bSimulationEnabled = true;
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	MovementComponent->Velocity = -this->GetActorUpVector() * MovementComponent->InitialSpeed; 
 	SetLifeSpan(LifeSeconds);
 }
