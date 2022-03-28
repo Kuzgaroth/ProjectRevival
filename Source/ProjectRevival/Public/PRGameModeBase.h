@@ -3,13 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PlayerCharacter.h"
 #include "GameFramework/GameModeBase.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "AI/Soldier/SoldierAIController.h"
 #include "GameFeature/ChangeWorld.h"
 #include "PRGameModeBase.generated.h"
 
-
+class USaveGame;
+class UPRSaveGame;
 class AAIController;
 
 UCLASS()
@@ -33,7 +35,8 @@ public:
 	void GameOver();
 	void SetCurrentWorld(EChangeWorld NewWorld);
 	EChangeWorld GetCurrentWorld() const{return CurrentWorld;}
-	void WriteSaveGame();
+	void WriteSaveGame(FName CheckpointName);
+	void ClearSaveGame();
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Game")
 	TSubclassOf<AAIController> AIControllerClass;
@@ -43,8 +46,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Game")
 	TSubclassOf<APawn> AIPawnClass;
+	UPROPERTY(EditDefaultsOnly, Category="SaveSystem")
+	FName FirstCheckpointName;
 	
 	EChangeWorld CurrentWorld = EChangeWorld::OrdinaryWorld;
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+	virtual void RestartPlayer(AController* NewPlayer) override;
 private:
 	EMatchState MatchState = EMatchState::WaitingToStart;
 	
@@ -55,4 +62,10 @@ private:
 	
 	void SetMatchState(EMatchState State);
 	void LoadSaveGame();
+	void SaveFinished(const FString&, const int32, bool);
+	void LoadFinished(const FString&, const int32, USaveGame*);
+	UPROPERTY(Transient)
+	APlayerCharacter* PlayerPawn;
+	UPROPERTY()
+	UPRSaveGame* SaveGame;
 };

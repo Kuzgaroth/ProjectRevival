@@ -27,8 +27,12 @@ void ACheckpointActor::BeginPlay()
 
 void ACheckpointActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	
 	Super::EndPlay(EndPlayReason);
+}
+
+AActor* ACheckpointActor::GetPlayerStartForCheckpoint()
+{
+	return PlayerStartComponent->GetChildActor();
 }
 
 void ACheckpointActor::OnTriggerSave(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -36,7 +40,9 @@ void ACheckpointActor::OnTriggerSave(UPrimitiveComponent* OverlappedComponent, A
 {
 	const auto GameMode = GetWorld()->GetAuthGameMode<APRGameModeBase>();
 	if (!GameMode) return;
+	GameMode->WriteSaveGame(CheckpointName);
 	
 	TriggerComponent->OnComponentBeginOverlap.Clear();
+	Destroy();
 }
 

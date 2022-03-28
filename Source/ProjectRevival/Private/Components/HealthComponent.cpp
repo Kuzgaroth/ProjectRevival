@@ -13,7 +13,7 @@ UHealthComponent::UHealthComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	
+	SetHealth(MaxHealth);
 }
 
 bool UHealthComponent::TryToAddHealth(float HealthAmount)
@@ -35,7 +35,7 @@ void UHealthComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	SetHealth(MaxHealth);
+	
 	const auto Owner = GetOwner();
 	if (Owner)
 	{
@@ -75,7 +75,8 @@ void UHealthComponent::SetHealth(float NewHealth)
 	const auto NextHealth=FMath::Clamp<float>(NewHealth, 0.0f, MaxHealth);
 	const auto HealthDelta = NextHealth- Health;
 	Health = NextHealth;
-	OnHealthChanged.Broadcast(Health, HealthDelta);
+	if (OnHealthChanged.IsBound())
+		OnHealthChanged.Broadcast(Health, HealthDelta);
 }
 
 void UHealthComponent::PlayCameraShake()

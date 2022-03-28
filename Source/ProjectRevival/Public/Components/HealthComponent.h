@@ -27,6 +27,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category="Health")
 	FORCEINLINE float GetHealthPercentage() const {return Health/MaxHealth;};
+	void SetHealth(float NewHealth);
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(ClampMin="50", ClampMax="300"))
 	float MaxHealth;
@@ -54,7 +55,7 @@ private:
 	void OnTakeAnyDamageHandle(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 	FTimerHandle HealTimerHandle;
 	void HealUpdate();
-	void SetHealth(float NewHealth);
+	
 	void PlayCameraShake();
 	void Killed(AController* KillerController);
 };

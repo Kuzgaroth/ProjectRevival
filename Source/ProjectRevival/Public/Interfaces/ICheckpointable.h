@@ -4,21 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "ISaveableObject.generated.h"
+#include "ICheckpointable.generated.h"
 
 
 UINTERFACE(MinimalAPI)
-class UISaveableObject : public UInterface
+class UICheckpointable : public UInterface
 {
 	GENERATED_BODY()
 };
 
 
-
-class PROJECTREVIVAL_API IISaveableObject
+class PROJECTREVIVAL_API IICheckpointable
 {
 	GENERATED_BODY()
 
-
 public:
+	virtual AActor* GetPlayerStartForCheckpoint();
 };

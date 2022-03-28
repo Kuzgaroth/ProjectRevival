@@ -36,7 +36,8 @@ public:
 	void SetWeaponBlocked(const bool bIsBlocked) { bIsWeaponBlocked = bIsBlocked; }
 	TArray<UMaterialInstanceDynamic*> GetCurrentWeaponMaterials();
 	ABaseWeapon* GetCurrentWeapon();
-	TArray<AActor*> GetAllWeapons();
+	TArray<FAmmoData> GetAllWeapons();
+	void SetWeponData(FAmmoData NewAmmoData);
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TArray<FWeaponData> WeaponDatas;

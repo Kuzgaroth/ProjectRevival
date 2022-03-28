@@ -239,7 +239,7 @@ void APlayerCharacter::Landed(const FHitResult& Hit)
 	Super::Landed(Hit);
 }
 
-TArray<AActor*> APlayerCharacter::GetPlayerWeapons() const
+TArray<FAmmoData> APlayerCharacter::GetPlayerWeapons() const
 {
 	return WeaponComponent->GetAllWeapons();
 }

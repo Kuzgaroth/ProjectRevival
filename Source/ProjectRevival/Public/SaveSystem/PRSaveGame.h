@@ -6,13 +6,24 @@
 #include "GameFramework/SaveGame.h"
 #include "PRSaveGame.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogPRSaveSystem, All, All)
+
 USTRUCT()
 struct FCheckPointSaveData
 {
 	GENERATED_BODY()
 
 	UPROPERTY()
-	FGuid CheckpointId;
+	FName CheckpointName;
+
+	FCheckPointSaveData()
+	{
+		CheckpointName = NAME_None;
+	}
+	FCheckPointSaveData(FName Name)
+	{
+		CheckpointName = Name;
+	}
 };
 
 USTRUCT()
@@ -21,10 +32,21 @@ struct FWeaponSaveData
 	GENERATED_BODY()
 	
 	UPROPERTY()
-	float CurrentClips;
+	int32 CurrentClips;
 
 	UPROPERTY()
-	float CurrentAmmo;
+	int32 CurrentAmmo;
+	FWeaponSaveData()
+	{
+		CurrentAmmo = CurrentClips =0;
+	}
+	FWeaponSaveData(float Ammo, float Clips)
+	{
+		CurrentClips = Clips;
+		CurrentAmmo = Ammo;
+	}
+
+	TArray<uint8> ByteArray;
 };
 
 USTRUCT()
@@ -33,7 +55,7 @@ struct FPlayerSaveData
 	GENERATED_BODY()
 	
 	UPROPERTY()
-	FGuid LastCheckpointReached;
+	FCheckPointSaveData LastCheckpointReached;
 	//WeaponsSaveData
 	UPROPERTY()
 	TArray<FWeaponSaveData> WeaponSaveDatas;

@@ -16,6 +16,7 @@ ABaseWeapon::ABaseWeapon()
 	PrimaryActorTick.bCanEverTick = false;
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("WeaponMesh");
 	RootComponent = WeaponMesh;
+	CurrentAmmo = DefaultAmmo;
 }
 
 
@@ -23,8 +24,7 @@ void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	check(WeaponMesh);
-	CurrentAmmo = DefaultAmmo;
-
+	
 	SetupDynMaterialsFromMesh(this, DynamicMaterials);
 }
 
@@ -162,6 +162,11 @@ void ABaseWeapon::DecreaseAmmo()
 bool ABaseWeapon::IsAmmoEmpty() const
 {
 	return !CurrentAmmo.bInfiniteAmmo && CurrentAmmo.Clips==0 && IsClipEmpty();
+}
+
+void ABaseWeapon::SetAmmoData(FAmmoData NewAmmoData)
+{
+	CurrentAmmo = NewAmmoData;
 }
 
 bool ABaseWeapon::IsClipEmpty() const
