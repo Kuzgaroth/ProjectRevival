@@ -62,6 +62,14 @@ ABaseWeapon* UWeaponComponent::GetCurrentWeapon()
 	return nullptr;
 }
 
+TArray<AActor*> UWeaponComponent::GetAllWeapons()
+{
+	TArray<AActor*> WeaponsArray;
+	for (ABaseWeapon* Weapon : Weapons)
+		WeaponsArray.Add(Weapon);
+	return WeaponsArray;
+}
+
 bool UWeaponComponent::GetCurrentWeaponUIData(FWeaponUIData& UIData) const
 {
 	if (CurrentWeapon)

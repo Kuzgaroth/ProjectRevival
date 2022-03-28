@@ -129,6 +129,7 @@ public:
 	virtual void OnTurn() override;
 	virtual void Falling() override;
 	virtual void Landed(const FHitResult& Hit) override;
+	TArray<AActor*> GetPlayerWeapons() const;
 	UFUNCTION(BlueprintCallable)
 	FCoverData& GetCoverData();
 	

@@ -15,7 +15,6 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Components/BaseCharacterMovementComponent.h"
-#include "ProjectRevival/ProjectRevival.h"
 #include "GameFeature/StaticObjectToNothing.h"
 #include "Kismet/GameplayStatics.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
@@ -238,6 +237,11 @@ void APlayerCharacter::Landed(const FHitResult& Hit)
 {
 	bWantsToRun=false;
 	Super::Landed(Hit);
+}
+
+TArray<AActor*> APlayerCharacter::GetPlayerWeapons() const
+{
+	return WeaponComponent->GetAllWeapons();
 }
 
 bool APlayerCharacter::IsRunning() const

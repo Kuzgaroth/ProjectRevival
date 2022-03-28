@@ -32,7 +32,8 @@ public:
 	virtual bool ClearPause() override;
 	void GameOver();
 	void SetCurrentWorld(EChangeWorld NewWorld);
-	EChangeWorld GetCurrentWorld() const{return CurrentWorld;};
+	EChangeWorld GetCurrentWorld() const{return CurrentWorld;}
+	void WriteSaveGame();
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Game")
 	TSubclassOf<AAIController> AIControllerClass;
@@ -53,4 +54,5 @@ private:
 	void LogPlayerInfo();
 	
 	void SetMatchState(EMatchState State);
+	void LoadSaveGame();
 };

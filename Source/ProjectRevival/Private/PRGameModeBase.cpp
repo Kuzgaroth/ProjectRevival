@@ -126,10 +126,20 @@ void APRGameModeBase::SetCurrentWorld(EChangeWorld NewWorld)
 	CurrentWorld = NewWorld;
 }
 
+void APRGameModeBase::WriteSaveGame()
+{
+	
+}
+
 void APRGameModeBase::SetMatchState(EMatchState State)
 {
 	if (this->MatchState==State) return;
 	this->MatchState = State;
 
 	OnMatchStateChanged.Broadcast(this->MatchState);
+}
+
+void APRGameModeBase::LoadSaveGame()
+{
+	
 }

@@ -49,6 +49,8 @@ private:
 	UPROPERTY()
 	FPlayerPositionData PlayerPosition;
 	FTimerHandle PlayerInfoTimerHandle;
+	UPROPERTY(EditInstanceOnly, Category="Checkpoint")
+	FGuid AttachedCheckpointGuid;
 	
 	bool InitSpawn();
 	UFUNCTION()
