@@ -45,7 +45,6 @@ void AKWeapon::MakeShot()
 		return;
 	}
 	SpawnShell(ShutterSocketName);
-	
 	Magazines.Last()->GetMeshComponent()->SetRelativeScale3D(MagazineScale);
 }
 
@@ -133,8 +132,9 @@ void AKWeapon::Lock()
 	}
 	if(Magazines.Last() != nullptr)
 	{
-		const FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::SnapToTarget, false);
-		Magazines.Last()->AttachToComponent(this->RootComponent, AttachmentTransformRules, MagazineSocketName);
+		//const FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::SnapToTarget, false);
+		Magazines.Last()->AttachToComponent(this->RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+			MagazineSocketName);
 		
 		MagazineMeshComponent->SetVisibility(true);
 	}
