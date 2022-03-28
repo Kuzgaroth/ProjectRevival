@@ -21,12 +21,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void MakeShot() override;
+	
 	UFUNCTION()
 	void SpawnShell(FName SocketName) const;
 	UFUNCTION()
 	void SpawnMagazine(FName SocketName);
-	UFUNCTION()
-	void AttachMagazine(AMagazine* Magazine, USceneComponent* ParentMesh, FName SocketName);
 	
 	//функции, которые вызываются в соответствующих AnimNotify:
 	//DropMagazineAnimNotify
@@ -59,7 +58,7 @@ protected:
 	UAnimMontage* ShutterMovement;
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
-	FName ArmSocketName = "middle_01_l";
+	FName ArmSocketName = "left_arm_socket";
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
 	FName ShutterSocketName = "gate";

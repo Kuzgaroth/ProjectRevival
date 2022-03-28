@@ -7,6 +7,7 @@
 AKWeapon::AKWeapon()
 {
 	MagazineClass = AMagazine::StaticClass();
+	AmmoShell = AShell::StaticClass();
 	
 	RootComponent = WeaponMesh;
 	
@@ -20,9 +21,12 @@ void AKWeapon::BeginPlay()
 	check(WeaponMesh);
 	check(MagazineMeshComponent);
 	
-	AMagazine* Magazine = NewObject<AMagazine>();
-	Magazines.Add(Magazine);
-	//MagazineMeshComponent = Magazines.Last()->GetMeshComponent();
+	if(!UGameplayStatics::GetPlayerCharacter(GetWorld(), 0) || !GetWorld())
+	{
+		UE_LOG(LogCustom,Error,TEXT("Unable to spawn magazine"));
+		return;
+	}
+	SpawnMagazine(MagazineSocketName); 
 }
 
 void AKWeapon::Tick(float DeltaTime)
@@ -38,11 +42,9 @@ void AKWeapon::MakeShot()
 		StopFire();
 		return;
 	}
-	if(ShutterMovement)
-	{
-		this->WeaponMesh->PlayAnimation(ShutterMovement, false);
-	}
 	SpawnShell(ShutterSocketName);
+	UE_LOG(LogCustom, Log,TEXT("Magazines.Num() = %d"), Magazines.Num());
+	UE_LOG(LogCustom,Error,TEXT("Scale = %f"), Magazines.Last()->GetActorScale().X);
 }
 
 void AKWeapon::SpawnShell(FName SocketName) const
@@ -56,70 +58,84 @@ void AKWeapon::SpawnShell(FName SocketName) const
 
 void AKWeapon::SpawnMagazine(FName SocketName)
 {
-	if(!Cast<ACharacter>(this->GetOwner()) || !GetWorld())
-	{
-		UE_LOG(LogCustom,Error,TEXT("AKWeapon::SpawnMagazine()"));
-		return;
-	}
+	ACharacter* Character = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0); 
+	USceneComponent* Parent;
+	FRotator Rotation;
+	FVector Location;
 	
-    const ACharacter* Character = Cast<ACharacter>(this->GetOwner());         
-	FRotator Rotation = this->GetActorRotation(); //Rotation.Yaw-=90.f;
-	//const FVector Location = Character->GetMesh()->GetSocketLocation(SocketName);
-	AMagazine* TempMagazine = GetWorld()->SpawnActor<AMagazine>(MagazineClass,
-		Character->GetMesh()->GetSocketLocation(SocketName), Rotation);
-	Magazines.Add(TempMagazine);
-	if(Magazines.Last())
+	if(SocketName == ArmSocketName)
 	{
-		if(SocketName == ArmSocketName)
+		if(Character->GetMesh())
 		{
-			AttachMagazine(Magazines.Last(), Character->GetMesh(), ArmSocketName);
+			UE_LOG(LogCustom, Log,TEXT("Character = %s"), *Character->GetName()); 
+			Rotation = Character->GetMesh()->GetSocketRotation(SocketName);
+			Location = Character->GetMesh()->GetSocketLocation(SocketName);
+			Parent = Character->GetMesh();
 		}
 		else
 		{
-			AttachMagazine(Magazines.Last(),this->RootComponent, MagazineSocketName);
+			UE_LOG(LogCustom,Error,TEXT("AKWeapon::SpawnMagazine(): !Character->GetMesh()"));
+			return;
 		}
 	}
-}
-
-void AKWeapon::AttachMagazine(AMagazine* Magazine, USceneComponent* ParentMesh, FName SocketName)
-{
-	if (!ParentMesh || !Magazine)
+	else
 	{
-		UE_LOG(LogCustom, Error, TEXT("AKWeapon::AttachMagazine()"));
-		return;
+		Rotation = this->GetActorRotation();
+		Location = this->RootComponent->GetSocketLocation(SocketName);
+		Parent = this->RootComponent;
 	}
-	const FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::SnapToTarget, false);
-	Magazine->AttachToComponent(ParentMesh, AttachmentTransformRules, SocketName);
+	
+	AMagazine* SpawnedMagazine = GetWorld()->SpawnActor<AMagazine>(MagazineClass, Location, Rotation);
+	if (SpawnedMagazine)
+	{
+		SpawnedMagazine->SetOwner(this);
+		const FVector TempScale(1, 1, 1);
+		SpawnedMagazine->GetMeshComponent()->SetWorldScale3D(TempScale);
+		Magazines.Add(SpawnedMagazine);
+		UE_LOG(LogCustom, Log,TEXT("Magazines.Num() = %d"), Magazines.Num());
+		UE_LOG(LogCustom, Log,TEXT("Magazines.Last = %s"), *Magazines.Last()->GetName()); 
+		
+		const FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::KeepWorld, false);
+		SpawnedMagazine->AttachToComponent(Parent, AttachmentTransformRules, SocketName);
+	}
+	else
+	{
+		UE_LOG(LogCustom,Error,TEXT("AKWeapon::SpawnMagazine(): !SpawnedMagazine"));
+	}
 }
 
 void AKWeapon::Take()
 {
-	UE_LOG(LogCustom, Error, TEXT("AKWeapon::Take()"));
+	if(!UGameplayStatics::GetPlayerCharacter(GetWorld(), 0) || !GetWorld())
+ 	{
+ 		UE_LOG(LogCustom,Error,TEXT("Unable to spawn magazine"));
+ 		return;
+ 	}
+	
 	SpawnMagazine(ArmSocketName);
 }
 
 void AKWeapon::Drop()
 {
-	UE_LOG(LogCustom, Error, TEXT("AKWeapon::Drop()"));
-	if(!Cast<ACharacter>(this->GetOwner()) || !GetWorld())
+	UE_LOG(LogCustom,Log,TEXT("AKWeapon::Drop()"));
+	
+	if(!GetWorld())
  	{
 		UE_LOG(LogCustom,Error,TEXT("AKWeapon::Drop()"));
 		return;
 	}
+	
 	if(Magazines.Num() > 1)
 	{
-		Magazines[Magazines.Num() - 2]->DetachMagazine();
-		MagazineMeshComponent = Magazines.Last()->GetMeshComponent();
-	}
-	else
-	{
-		UE_LOG(LogCustom,Error,TEXT("Magazines.Num() = %f"), Magazines.Num());
+		Magazines.Last(1)->DetachMagazine();
+		MagazineMeshComponent->SetVisibility(false);
 	}
 }
 
 void AKWeapon::Lock()
 {
-	UE_LOG(LogCustom, Error, TEXT("AKWeapon::Lock()"));
+	UE_LOG(LogCustom,Log,TEXT("AKWeapon::Lock()"));
+	
 	if(!GetWorld() || !this)
 	{
 		UE_LOG(LogCustom,Error,TEXT("AKWeapon::Lock()"));
@@ -127,7 +143,9 @@ void AKWeapon::Lock()
 	}
 	if(Magazines.Last() != nullptr)
 	{
-		AttachMagazine(Magazines.Last(), this->WeaponMesh, MagazineSocketName);
+		const FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::SnapToTarget, false);
+		Magazines.Last()->AttachToComponent(this->RootComponent, AttachmentTransformRules, MagazineSocketName);
+		
+		MagazineMeshComponent->SetVisibility(true);
 	}
-	UE_LOG(LogCustom,Error,TEXT("Magazines.Num() = %f"), Magazines.Num());
 }
