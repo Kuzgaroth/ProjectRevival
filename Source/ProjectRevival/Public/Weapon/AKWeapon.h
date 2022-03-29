@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Shell.h"
 #include "Magazine.h"
-#include "Trace/Detail/EventNode.h"
 #include "Weapon/RifleWeapon.h"
 #include "AKWeapon.generated.h"
 
@@ -39,6 +38,9 @@ public:
 	UFUNCTION()
 	void Lock();
 	
+	UFUNCTION(BlueprintCallable)
+	float GetAnimRate() const { return AnimationRate; };
+	
 protected:
 	UPROPERTY()
 	TArray<AMagazine*> Magazines;
@@ -48,7 +50,6 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Projectile")
 	TSubclassOf<ABaseProjectile> ProjectileClass;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
 	USkeletalMeshComponent* MagazineMeshComponent;
 	
@@ -56,7 +57,8 @@ protected:
 	TSubclassOf<AShell> AmmoShell;
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Animations")
-	UAnimMontage* ShutterMovement;
+	UAnimSequence* ShutterMovement;
+
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
 	FName ArmSocketName = "left_arm_socket";
@@ -66,6 +68,9 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
 	FName MagazineSocketName = "magazine_endSocket";
+
+	UPROPERTY(BlueprintReadOnly, Category = "Animations")
+	float AnimationRate;
 private:
 	FVector MagazineScale;
 };

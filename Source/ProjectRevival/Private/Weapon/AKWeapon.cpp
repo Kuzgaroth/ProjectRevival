@@ -10,9 +10,9 @@ AKWeapon::AKWeapon()
 	AmmoShell = AShell::StaticClass();
 	
 	RootComponent = WeaponMesh;
-	
 	MagazineMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("MagazineMeshComponent");
 	MagazineMeshComponent->SetupAttachment(RootComponent);
+
 
 	MagazineScale.X = 1.0; MagazineScale.Y = 1.0; MagazineScale.Z = 1.0;
 }
@@ -21,7 +21,13 @@ void AKWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	check(WeaponMesh);
+	if(ShutterMovement != nullptr)
+		AnimationRate = this->TimeBetweenShots / ShutterMovement->GetPlayLength();
+	else
+		UE_LOG(LogActor,Error,TEXT("ShutterMovement = nullptr"));
+
 	check(MagazineMeshComponent);
+
 	
 	if(!UGameplayStatics::GetPlayerCharacter(GetWorld(), 0) || !GetWorld())
 	{
@@ -137,5 +143,6 @@ void AKWeapon::Lock()
 			MagazineSocketName);
 		
 		MagazineMeshComponent->SetVisibility(true);
+
 	}
 }

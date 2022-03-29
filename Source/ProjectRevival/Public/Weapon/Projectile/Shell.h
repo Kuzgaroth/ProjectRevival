@@ -29,14 +29,14 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite,	Category="InternalState")
 	float Speed = 1000.f;
-
-	//Отклонение траектории гильз от правого вектора меша оружия
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite,	Category="InternalState")
-	float Rotation = 1.f;
-
-	//Случайный разброс
+	float RotationXY = 0.3f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite,	Category="InternalState")
-	float Dispersion = 0.2f;
+	float RotationZ = 0.4f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite,	Category="InternalState")
+	float Dispersion = 10.f;
 	
 	virtual void BeginPlay() override;
 };
