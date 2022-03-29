@@ -50,12 +50,15 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Projectile")
 	TSubclassOf<ABaseProjectile> ProjectileClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
+	USkeletalMeshComponent* MagazineMeshComponent;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Projectile")
 	TSubclassOf<AShell> AmmoShell;
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Animations")
 	UAnimSequence* ShutterMovement;
+
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Magazine")
 	FName ArmSocketName = "left_arm_socket";

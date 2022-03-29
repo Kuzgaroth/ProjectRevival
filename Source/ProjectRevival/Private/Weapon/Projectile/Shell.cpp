@@ -1,7 +1,6 @@
 // Project Revival. All Rights Reserved
 
 #include "Shell.h"
-
 #include "BaseCharacter.h"
 #include "WeaponComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -15,7 +14,6 @@ AShell::AShell()
 	RootComponent = MeshComponent;
 	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovementComponent");
 	MovementComponent->InitialSpeed = Speed;
-
 }
 
 void AShell::BeginPlay()
