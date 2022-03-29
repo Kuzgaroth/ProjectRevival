@@ -151,7 +151,7 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 	{
 		UE_LOG(LogPRAISoldier, Log, TEXT("Perception: GetBestCoverWing v2 was found"))
 		CoverRef = BestCoverRef;
-		CoverPos = CoverPosTemp;
+		CoverPos = BestCoverPos;
 		if (CoverRef)
 		{
 			UE_LOG(LogPRAISoldier, Log, TEXT("Perception: PerceptionCoverRef class is %s"), *CoverRef->GetName());
