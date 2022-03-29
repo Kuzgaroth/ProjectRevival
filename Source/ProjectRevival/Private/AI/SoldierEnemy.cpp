@@ -179,12 +179,12 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, AActor* CoverRef)
 	CoverData.CoverSide = Right;
 	CoverData.CoverPart = GetCoverPart(0);
 
-	ASoldierAIController* Controller = Cast<ASoldierAIController>(GetController());
-	if (!Controller)
-	{
-		CleanCoverData();
-		return;
-	} //here must be rotation added
+	// ASoldierAIController* Controller = Cast<ASoldierAIController>(GetController());
+	// if (!Controller)
+	// {
+	// 	CleanCoverData();
+	// 	return;
+	// } //here must be rotation added
 
 	if (!Super::StartCover_Internal(HitResult))
 	{
