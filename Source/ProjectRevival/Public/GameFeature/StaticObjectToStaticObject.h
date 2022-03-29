@@ -90,8 +90,6 @@ public:
 					  int32 OtherBodyIndex, 
 					  bool bFromSweep, 
 					  const FHitResult &SweepResult);
-
-	virtual bool TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos) override;
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	FCoverPointsAndPossibility CoverStructForOrdinaryWObject;
@@ -104,5 +102,9 @@ public:
 	
 	virtual void ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld) override;
 	virtual bool CheckIsChangeAbleObjIsCover() override;
+	virtual bool TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos) override;
+	
+	//this func might cause problems in the future but we'll see
+	virtual void SetLastCoverPointStatus(bool bIsFree) override;
 
 };

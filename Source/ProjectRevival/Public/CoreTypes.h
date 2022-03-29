@@ -335,6 +335,9 @@ struct FCoverPointsAndPossibility
 	UPROPERTY(EditInstanceOnly,BlueprintReadWrite,Category="CoverPointsData")
 	bool CanBeTakenAsCover=true;
 
+	UPROPERTY()
+	USceneComponent* LastCoverPosition;
+	
 	TMap<UBoxComponent*,bool> PointIsNotTaken;
 	TArray<FVector> PositionsOfCoverPoints;
 	
