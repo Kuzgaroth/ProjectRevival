@@ -162,9 +162,8 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, AActor* CoverRef)
 	GetWorld()->LineTraceSingleByChannel(HitResult,CoverPos, CoverRef->GetActorLocation(),ECollisionChannel::ECC_Visibility, CollisionParams);
 	if (HitResult.bBlockingHit)
 	{
-		UE_LOG(LogPRAISoldier, Log, TEXT("Character: If that occured..."));
-		UE_LOG(LogPRAISoldier, Log, TEXT("Character: The blocking hit was: %s"), *HitResult.GetActor()->GetName());
-		UE_LOG(LogPRAISoldier, Log, TEXT("Character: ... and that didn't. Than Line trace is fucked up"));
+		UE_LOG(LogPRAISoldier, Log, TEXT("Character: The blocking hit objest was: %s"), *HitResult.GetActor()->GetName());
+		UE_LOG(LogPRAISoldier, Log, TEXT("Character: The blocking hit normal was: %s"), *HitResult.Normal.ToString());
 	}
 	else
 	{
@@ -173,45 +172,28 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, AActor* CoverRef)
 		return;
 	}
 	
-	// TArray <FHitResult> Hits;
-	// const bool TraceResult = UKismetSystemLibrary::LineTraceMulti(GetWorld(), GetActorLocation(),
-	//                                                               FVector(CoverPos.X, CoverPos.Y, CoverPos.Z + 1.0), UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),
-	//                                                               false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, Hits, true);
-	// if (!TraceResult)
-	// {
-	// 	return;
-	// }
-	//
-	// FHitResult CoverHit = Hits.Last();
-	// CoverData.CoverObject = CoverHit.GetActor();
-	// if (!CoverData.CoverObject)
-	// {
-	// 	CleanCoverData();
-	// 	return;
-	// }
-	//
-	// const auto AISoldierController = Cast<ASoldierAIController>(GetController());
-	// if (!AISoldierController)
-	// {
-	// 	CleanCoverData();
-	// 	return;
-	// }
-	
 	WeaponComponent->StopFire();
 
 	CoverData.CoverObject = CoverRef;
 	CoverData.CoverObject->ActorHasTag(FName(TEXT("High"))) ? CoverData.CoverType = High : CoverData.CoverType = Low;
 	CoverData.CoverSide = Right;
 	CoverData.CoverPart = GetCoverPart(0);
-	CoverData.IsInCoverTransition = true;
-	
+
+	ASoldierAIController* Controller = Cast<ASoldierAIController>(GetController());
+	if (!Controller)
+	{
+		CleanCoverData();
+		return;
+	} //here must be rotation added
+
 	if (!Super::StartCover_Internal(HitResult))
 	{
 		GetCharacterMovement()->SetPlaneConstraintEnabled(false);
 		CleanCoverData();
 		return;
 	}
-	bUseControllerRotationYaw = false; //We can delete this line cause this parameter is already set permanently in constructor
+	bUseControllerRotationYaw = false;
+	CoverData.IsInCoverTransition = true;
 	// StartEnteringCoverForAnimDelegate.Broadcast();
 }
 
