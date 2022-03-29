@@ -10,9 +10,6 @@ AKWeapon::AKWeapon()
 	AmmoShell = AShell::StaticClass();
 	
 	RootComponent = WeaponMesh;
-	
-	MagazineMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("MagazineMeshComponent");
-	MagazineMeshComponent->SetupAttachment(RootComponent);
 
 	MagazineScale.X = 1.0; MagazineScale.Y = 1.0; MagazineScale.Z = 1.0;
 }
@@ -21,13 +18,18 @@ void AKWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	check(WeaponMesh);
-	check(MagazineMeshComponent);
+	
+	if(ShutterMovement != nullptr)
+		AnimationRate = this->TimeBetweenShots / ShutterMovement->GetPlayLength();
+	else
+		UE_LOG(LogActor,Error,TEXT("ShutterMovement = nullptr"));
 	
 	if(!UGameplayStatics::GetPlayerCharacter(GetWorld(), 0) || !GetWorld())
 	{
 		UE_LOG(LogActor,Error,TEXT("Unable to spawn magazine"));
 		return;
 	}
+	
 	SpawnMagazine(MagazineSocketName); 
 }
 
@@ -38,14 +40,8 @@ void AKWeapon::Tick(float DeltaTime)
 
 void AKWeapon::MakeShot()
 {
-	Super::MakeShot();
-	if (!GetWorld() || IsAmmoEmpty())
-	{
-		StopFire();
-		return;
-	}
+	Super::MakeShot();	
 	SpawnShell(ShutterSocketName);
-	Magazines.Last()->GetMeshComponent()->SetRelativeScale3D(MagazineScale);
 }
 
 void AKWeapon::SpawnShell(FName SocketName) const
@@ -119,7 +115,6 @@ void AKWeapon::Drop()
 	if(Magazines.Num() > 1)
 	{
 		Magazines.Last(1)->DetachMagazine();
-		MagazineMeshComponent->SetVisibility(false);
 	}
 }
 
@@ -132,10 +127,7 @@ void AKWeapon::Lock()
 	}
 	if(Magazines.Last() != nullptr)
 	{
-		//const FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::SnapToTarget, false);
 		Magazines.Last()->AttachToComponent(this->RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
 			MagazineSocketName);
-		
-		MagazineMeshComponent->SetVisibility(true);
 	}
 }

@@ -36,6 +36,7 @@ public:
 	bool IsWeaponBlocked() const { return bIsWeaponBlocked; }
 	void SetWeaponBlocked(const bool bIsBlocked) { bIsWeaponBlocked = bIsBlocked; }
 	TArray<UMaterialInstanceDynamic*> GetCurrentWeaponMaterials();
+	UFUNCTION(BlueprintCallable)
 	ABaseWeapon* GetCurrentWeapon();
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")

@@ -1,6 +1,9 @@
 // Project Revival. All Rights Reserved
 
 #include "Shell.h"
+
+#include "BaseCharacter.h"
+#include "WeaponComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -12,6 +15,7 @@ AShell::AShell()
 	RootComponent = MeshComponent;
 	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovementComponent");
 	MovementComponent->InitialSpeed = Speed;
+
 }
 
 void AShell::BeginPlay()
@@ -19,9 +23,11 @@ void AShell::BeginPlay()
 	Super::BeginPlay();
 	check(MovementComponent);
 	check(MeshComponent);
-	
-	FVector Direction = this->GetActorRightVector();
-	Direction.Set(Direction.X, Direction.Y, Direction.Z + Rotation * FMath::RandRange(1 - Dispersion, 1 + Dispersion));
-	MovementComponent->Velocity = Direction * MovementComponent->InitialSpeed + UGameplayStatics::GetPlayerPawn(GetWorld(),0)->GetVelocity(); 
+	FVector Direction = Cast<ABaseCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0))->GetActorRightVector();
+	const FVector DeltaVector =  (-1) * Cast<ABaseCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0))->GetActorForwardVector()
+		* FMath::RandRange(RotationXY - Dispersion, RotationXY + Dispersion);
+	Direction = Direction + DeltaVector;
+	Direction.Z += FMath::RandRange(-Dispersion, Dispersion) + RotationZ;
+	MovementComponent->Velocity = MovementComponent->InitialSpeed * Direction; 
 	SetLifeSpan(LifeSeconds);
 }
