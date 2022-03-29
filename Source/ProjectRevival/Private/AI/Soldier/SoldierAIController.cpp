@@ -49,6 +49,7 @@ ASoldierAIController::ASoldierAIController()
 	bIsInCover = false;
 	bIsSideTurning = false;
 	bIsCoverChangeAllowed = true;
+	bIsDecisionMakingAllowed = true;
 }
 
 void ASoldierAIController::SetPlayerPos(const FPlayerPositionData &NewPlayerPos)
@@ -188,6 +189,23 @@ void ASoldierAIController::OnCoverTimerFired()
 	SetBIsCoverChangeAllowed(true);
 	GetWorld()->GetTimerManager().ClearTimer(BTCoverTimerHandle);
 	UE_LOG(LogPRAIController, Log, TEXT("Cover Change Cooldown Ended"));
+}
+
+void ASoldierAIController::StartGeneralTimer()
+{
+	if (GetBIsDecisionMakingAllowed())
+	{
+		SetBIsDecisionMakingAllowed(false);
+		GetWorld()->GetTimerManager().SetTimer(BTGeneralTimerHandle, this, &ASoldierAIController::OnGeneralTimerFired, 0.5f, false, -1);
+		UE_LOG(LogPRAIController, Log, TEXT("Decision making cooldown started"));
+	}
+}
+
+void ASoldierAIController::OnGeneralTimerFired()
+{
+	SetBIsDecisionMakingAllowed(true);
+	GetWorld()->GetTimerManager().ClearTimer(BTGeneralTimerHandle);
+	UE_LOG(LogPRAIController, Log, TEXT("Decision making cooldown ended"));
 }
 
 AActor* ASoldierAIController::GetFocusOnActor()

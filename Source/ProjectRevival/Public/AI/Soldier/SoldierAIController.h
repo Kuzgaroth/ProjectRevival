@@ -45,6 +45,8 @@ public:
 	void SetBIsSideTurning(bool const bCond) {bIsSideTurning = bCond; }
 	bool GetBIsCoverChangeAllowed() const { return bIsCoverChangeAllowed; }
 	void SetBIsCoverChangeAllowed(bool const bCond) {bIsCoverChangeAllowed = bCond; }
+	bool GetBIsDecisionMakingAllowed() const { return bIsDecisionMakingAllowed; }
+	void SetBIsDecisionMakingAllowed(bool const bCond) { bIsDecisionMakingAllowed = bCond; }
 
 	FPlayerPosDelegate PlayerPosDelegate;
 	UPROPERTY(BlueprintAssignable)
@@ -75,6 +77,8 @@ public:
 	bool FindNewCover();
 	void StartCoverTimer();
 	void OnCoverTimerFired();
+	void StartGeneralTimer();
+	void OnGeneralTimerFired();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
 	EWing BotWing;
@@ -110,11 +114,13 @@ protected:
 	URespawnComponent* RespawnComponent;
 	
 	FTimerHandle BTCoverTimerHandle;
+	FTimerHandle BTGeneralTimerHandle;
 	
 	bool bIsFiring;
 	bool bIsInCover;
 	bool bIsSideTurning;
 	bool bIsCoverChangeAllowed;
+	bool bIsDecisionMakingAllowed;
 	
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaSeconds) override;
