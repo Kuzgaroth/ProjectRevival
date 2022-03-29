@@ -14,15 +14,15 @@ ACheckpointActor::ACheckpointActor()
 	TriggerComponent = CreateDefaultSubobject<UBoxComponent>("SaveTrigger");
 	TriggerComponent->SetupAttachment(RootComponent);
 	PlayerStartComponent = CreateDefaultSubobject<UChildActorComponent>("PlayerStartPoint");
-	PlayerStartComponent->SetChildActorClass(APlayerStart::StaticClass());
+	
 	PlayerStartComponent->SetupAttachment(RootComponent);
-	TriggerComponent->OnComponentBeginOverlap.AddDynamic(this, &ACheckpointActor::OnTriggerSave);
+	
 }
 
 void ACheckpointActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	TriggerComponent->OnComponentBeginOverlap.AddDynamic(this, &ACheckpointActor::OnTriggerSave);
 }
 
 void ACheckpointActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -30,9 +30,25 @@ void ACheckpointActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
+void ACheckpointActor::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	PlayerStartComponent->SetChildActorClass(APlayerStart::StaticClass());
+}
+
 AActor* ACheckpointActor::GetPlayerStartForCheckpoint()
 {
 	return PlayerStartComponent->GetChildActor();
+}
+
+bool ACheckpointActor::HasName(FName Name)
+{
+	return Name==this->CheckpointName;
+}
+
+bool ACheckpointActor::IsFirstCheckpointOnMap()
+{
+	return IsFirstCheckPoint();
 }
 
 void ACheckpointActor::OnTriggerSave(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

@@ -48,7 +48,7 @@ protected:
 	TSubclassOf<UCameraShakeBase> CameraShake;
 	
 	virtual void BeginPlay() override;
-
+	
 private:
 	float Health;
 	UFUNCTION()

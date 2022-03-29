@@ -14,11 +14,10 @@
 #include "WeaponComponent.h"
 #include "Interfaces/ICheckpointable.h"
 #include "Kismet/GameplayStatics.h"
-#include "SaveSystem/PRSaveGame.h"
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogGamePrModeBase, All, All);
-DEFINE_LOG_CATEGORY(LogPRSaveSystem)
+
 
 APRGameModeBase::APRGameModeBase()
 {
@@ -31,8 +30,6 @@ APRGameModeBase::APRGameModeBase()
 void APRGameModeBase::StartPlay()
 {
 	Super::StartPlay();
-	
-	//SpawnBots();
 	
 	SetMatchState(EMatchState::InProgress);
 }
@@ -78,6 +75,7 @@ void APRGameModeBase::InitGame(const FString& MapName, const FString& Options, F
 	if (!SaveGame) return;
 	TArray<AActor*> PassedCoordinators;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAICoordinator::StaticClass(), PassedCoordinators);
+	UE_LOG(LogPRSaveSystem, Display, TEXT("----Destroying coordinators----"))
 	for (auto CheckpointName: SaveGame->ReachedCheckpoints)
 	{
 		auto PendingCoordinators = PassedCoordinators.FilterByPredicate([&](AActor* Actor)
@@ -88,7 +86,26 @@ void APRGameModeBase::InitGame(const FString& MapName, const FString& Options, F
 		{
 			return Actor->ActorHasTag(CheckpointName.CheckpointName);
 		});
-		for (AActor* PendingCoordinator : PendingCoordinators) PendingCoordinator->Destroy(true);
+		for (AActor* PendingCoordinator : PendingCoordinators)
+		{
+			UE_LOG(LogPRSaveSystem, Display, TEXT("Destroying %s"), *PendingCoordinator->GetName())
+			PendingCoordinator->Destroy(true);
+		}
+	}
+	
+	TArray<AActor*> Checkpoints; 
+	UGameplayStatics::GetAllActorsWithInterface(GetWorld(), UICheckpointable::StaticClass(),Checkpoints);
+	UE_LOG(LogPRSaveSystem, Display, TEXT("----Destroying reached checkpoints----"))
+	for (int32 It=0;It<SaveGame->ReachedCheckpoints.Num();It++)
+	{
+		if (SaveGame->ReachedCheckpoints[It].CheckpointName==SaveGame->PlayerSaveData.LastCheckpointReached.CheckpointName) continue;;
+		const auto Checkpoint = Checkpoints.FindByPredicate([&](AActor* Item)
+		{
+			const auto ItemInterface = Cast<IICheckpointable>(Item);
+			return ItemInterface && ItemInterface->HasName(SaveGame->ReachedCheckpoints[It].CheckpointName);
+		});
+		UE_LOG(LogPRSaveSystem, Display, TEXT("Destroying %s"), *(*Checkpoint)->GetName())
+		(*Checkpoint)->Destroy(true);
 	}
 }
 
@@ -98,37 +115,46 @@ void APRGameModeBase::RestartPlayer(AController* NewPlayer)
 	{
 		return;
 	}
-	
+	UE_LOG(LogPRSaveSystem, Display, TEXT("----Spawning player at checkpoint----"))
 	TArray<AActor*> Checkpoints; /*One actually*/
-	AActor* PlayerStart;
 	FName CheckpointName;
 	if (SaveGame)
 	{
+		UE_LOG(LogPRSaveSystem, Display, TEXT("----Spawning player at particular checkpoint----"))
 		CheckpointName = SaveGame->PlayerSaveData.LastCheckpointReached.CheckpointName;
+		UGameplayStatics::GetAllActorsWithTag(GetWorld(),CheckpointName ,Checkpoints);
 	}
 	else
 	{
-		CheckpointName = FirstCheckpointName;
+		UE_LOG(LogPRSaveSystem, Display, TEXT("----Spawning player at first checkpoint----"))
+		UGameplayStatics::GetAllActorsWithInterface(GetWorld(), UICheckpointable::StaticClass(),Checkpoints);
+		Checkpoints.FilterByPredicate([](AActor* Checkpoint)
+		{
+			const auto CheckpointInterface = Cast<IICheckpointable>(Checkpoint);
+			return CheckpointInterface && CheckpointInterface->IsFirstCheckpointOnMap();
+		});
 	}
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(),CheckpointName ,Checkpoints);
+	
 	if (Checkpoints.Num()<1) return;
-	auto CheckpointInterface = Cast<IICheckpointable>(Checkpoints[0]);
+	const auto CheckpointInterface = Cast<IICheckpointable>(Checkpoints[0]);
 	if (!CheckpointInterface) return;
-	PlayerStart = CheckpointInterface->GetPlayerStartForCheckpoint();
+	AActor* PlayerStart = CheckpointInterface->GetPlayerStartForCheckpoint();
 	
 	RestartPlayerAtPlayerStart(NewPlayer, PlayerStart);
-	PlayerPawn = Cast<APlayerCharacter>(NewPlayer->GetPawn());
 	Checkpoints[0]->Destroy(true);
-	if (SaveGame)
+	PlayerPawn = Cast<APlayerCharacter>(NewPlayer->GetPawn());
+	UE_LOG(LogPRSaveSystem, Display, TEXT("----Player spawn process ended----"));
+	/*if (SaveGame)
 	{
+		UE_LOG(LogPRSaveSystem, Display, TEXT("----Loading player save data----"))
 		PlayerPawn->GetHealthComponent()->SetHealth(SaveGame->PlayerSaveData.HP);
-		/*for (FWeaponSaveData WeaponSaveData : SaveGame->PlayerSaveData.WeaponSaveDatas)
+		for (FWeaponSaveData WeaponSaveData : SaveGame->PlayerSaveData.WeaponSaveDatas)
 		{
 			FMemoryReader MemReader(SaveGame->PlayerSaveData.WeaponSaveDatas[0].ByteArray);
 			FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
 			Ar.ArIsSaveGame = true;
 			FAmmoData::StaticStruct()->Serialize(Ar);
-		}*/
+		}
 		
 		FAmmoData NewAmmoData;
 		NewAmmoData.Bullets = SaveGame->PlayerSaveData.WeaponSaveDatas[0].CurrentAmmo;
@@ -137,42 +163,12 @@ void APRGameModeBase::RestartPlayer(AController* NewPlayer)
 		PlayerPawn->GetWeaponComponent()->SetWeponData(NewAmmoData);
 		
 	}
-}
-
-void APRGameModeBase::SpawnBots()
-{
-	if (!GetWorld()) return;
-
-	for (int32 i=0;i<GameData.PlayersNum-1;++i)
-	{
-		FActorSpawnParameters SpawnInfo;
-		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		const auto AIPRController = GetWorld()->SpawnActor<AAIController>(AIControllerClass, SpawnInfo);
-		
-		RestartPlayer(AIPRController);
-	}
-	ResetPlayers();
-}
-
-void APRGameModeBase::ResetPlayers()
-{
-	if (!GetWorld()) return;
-
-	for (auto It = GetWorld()->GetControllerIterator(); It;++It)
-	{
-		ResetOnePlayer(It->Get());
-	}
+	UE_LOG(LogPRSaveSystem, Display, TEXT("----Load process ended----"))*/
 }
 
 void APRGameModeBase::ResetOnePlayer(AController* Controller)
 {
-	if (Controller && Controller->GetPawn())
-	{
-		Controller->GetPawn()->Reset();
-	}
-	RestartPlayer(Controller);
 }
-
 
 void APRGameModeBase::LogPlayerInfo()
 {
@@ -202,6 +198,7 @@ void APRGameModeBase::SetCurrentWorld(EChangeWorld NewWorld)
 
 void APRGameModeBase::WriteSaveGame(FName CheckpointName)
 {
+	UE_LOG(LogPRSaveSystem, Display, TEXT("---- Save process started ----"))
 	if (!SaveGame) SaveGame = Cast<UPRSaveGame>(UGameplayStatics::CreateSaveGameObject(UPRSaveGame::StaticClass()));
 	
 	const auto AsyncDelegate = FAsyncSaveGameToSlotDelegate::CreateUObject(this, &APRGameModeBase::SaveFinished);
@@ -221,6 +218,11 @@ void APRGameModeBase::ClearSaveGame()
 	UGameplayStatics::DeleteGameInSlot("SaveSlot",0);
 }
 
+UPRSaveGame* APRGameModeBase::GetSaveFromLoader()
+{
+	return SaveGame;
+}
+
 void APRGameModeBase::SetMatchState(EMatchState State)
 {
 	if (this->MatchState==State) return;
@@ -237,7 +239,7 @@ void APRGameModeBase::LoadSaveGame()
 
 void APRGameModeBase::SaveFinished(const FString& SlotName, const int32 UserIndex, bool SaveResult)
 {
-	
+	UE_LOG(LogPRSaveSystem, Display, TEXT("----Save process finished----"))
 	//Logic after save is finished
 }
 

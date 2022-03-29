@@ -8,3 +8,13 @@ AActor* IICheckpointable::GetPlayerStartForCheckpoint()
 {
 	return nullptr;
 }
+
+bool IICheckpointable::HasName(FName CheckpointName)
+{
+	return false;
+}
+
+bool IICheckpointable::IsFirstCheckpointOnMap()
+{
+	return false;
+}

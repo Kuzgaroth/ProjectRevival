@@ -20,6 +20,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void PostInitializeComponents() override;
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* TriggerComponent;
 	UPROPERTY(EditInstanceOnly)
@@ -32,7 +33,10 @@ protected:
 public:	
 	FORCEINLINE bool IsFirstCheckPoint() const {return FirstCheckPoint;}
 	virtual AActor* GetPlayerStartForCheckpoint() override;
+	virtual bool HasName(FName Name) override;
+	virtual bool IsFirstCheckpointOnMap() override;
 private:
+	UFUNCTION()
 	void OnTriggerSave(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 };

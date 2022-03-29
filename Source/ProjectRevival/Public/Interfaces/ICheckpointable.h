@@ -20,4 +20,6 @@ class PROJECTREVIVAL_API IICheckpointable
 
 public:
 	virtual AActor* GetPlayerStartForCheckpoint();
+	virtual bool HasName(FName CheckpointName);
+	virtual bool IsFirstCheckpointOnMap();
 };

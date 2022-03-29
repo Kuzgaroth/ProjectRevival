@@ -8,6 +8,7 @@
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "AI/Soldier/SoldierAIController.h"
 #include "GameFeature/ChangeWorld.h"
+#include "Interfaces/ISaveLoader.h"
 #include "PRGameModeBase.generated.h"
 
 class USaveGame;
@@ -15,7 +16,7 @@ class UPRSaveGame;
 class AAIController;
 
 UCLASS()
-class PROJECTREVIVAL_API APRGameModeBase : public AGameModeBase
+class PROJECTREVIVAL_API APRGameModeBase : public AGameModeBase, public IISaveLoader
 {
 	GENERATED_BODY()
 
@@ -37,6 +38,7 @@ public:
 	EChangeWorld GetCurrentWorld() const{return CurrentWorld;}
 	void WriteSaveGame(FName CheckpointName);
 	void ClearSaveGame();
+	virtual UPRSaveGame* GetSaveFromLoader() override;
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Game")
 	TSubclassOf<AAIController> AIControllerClass;
@@ -46,8 +48,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Game")
 	TSubclassOf<APawn> AIPawnClass;
-	UPROPERTY(EditDefaultsOnly, Category="SaveSystem")
-	FName FirstCheckpointName;
 	
 	EChangeWorld CurrentWorld = EChangeWorld::OrdinaryWorld;
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
@@ -67,5 +67,5 @@ private:
 	UPROPERTY(Transient)
 	APlayerCharacter* PlayerPawn;
 	UPROPERTY()
-	UPRSaveGame* SaveGame;
+	UPRSaveGame* SaveGame=nullptr;
 };

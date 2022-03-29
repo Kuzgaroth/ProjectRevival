@@ -4,11 +4,14 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
-//#include "EditorViewportClient.h"
+#include "GameFramework/GameModeBase.h"
 #include "GameFramework/Character.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Interfaces/ISaveLoader.h"
 #include "Kismet/GameplayStatics.h"
+
+DEFINE_LOG_CATEGORY(LogPRSaveSystem)
 
 // Sets default values
 ABaseWeapon::ABaseWeapon()
@@ -16,7 +19,7 @@ ABaseWeapon::ABaseWeapon()
 	PrimaryActorTick.bCanEverTick = false;
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("WeaponMesh");
 	RootComponent = WeaponMesh;
-	CurrentAmmo = DefaultAmmo;
+	
 }
 
 
@@ -24,6 +27,23 @@ void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	check(WeaponMesh);
+	
+	UE_LOG(LogPRSaveSystem, Display, TEXT("----Loading weapon data----"))
+	auto GameMode = GetWorld()->GetAuthGameMode();
+	IISaveLoader* SaveLoader = Cast<IISaveLoader>(GameMode);
+	if (SaveLoader)
+	{
+		auto SaveGame = SaveLoader->GetSaveFromLoader();
+		if (SaveGame)
+		{
+			FAmmoData NewAmmoData;
+			NewAmmoData.Bullets = SaveGame->PlayerSaveData.WeaponSaveDatas[0].CurrentAmmo;
+			NewAmmoData.Clips = SaveGame->PlayerSaveData.WeaponSaveDatas[0].CurrentClips;
+			NewAmmoData.bInfiniteAmmo=false;
+			CurrentAmmo = NewAmmoData;
+		}
+		else CurrentAmmo = DefaultAmmo;
+	}
 	
 	SetupDynMaterialsFromMesh(this, DynamicMaterials);
 }
