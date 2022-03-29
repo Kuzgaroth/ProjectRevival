@@ -8,6 +8,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/HorizontalBox.h"
 #include "Menu/CreditsWidget.h"
+#include "Menu/MenuGameModeBase.h"
 #include "Menu/OptionsWidget.h"
 #include "ProjectRevival/Public/Menu/LevelItemWidget.h"
 #include "Sound/SoundCue.h"
@@ -59,6 +60,9 @@ void UMenuWidget::NativeOnInitialized()
 void UMenuWidget::OnStartGame()
 {
 	const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
+	
+	const auto MenuGameMode = GetWorld()->GetAuthGameMode<AMenuGameModeBase>();
+	if (MenuGameMode) MenuGameMode->ClearSaveData();
 	UGameplayStatics::PlaySound2D(GetWorld(), StartGameSound);
 	UGameplayStatics::OpenLevel(this,GameInstance->GetStartupLevel().LevelName);
 	
@@ -66,6 +70,10 @@ void UMenuWidget::OnStartGame()
 
 void UMenuWidget::OnContinueGame()
 {
+	const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
+	
+	UGameplayStatics::PlaySound2D(GetWorld(), StartGameSound);
+	UGameplayStatics::OpenLevel(this,GameInstance->GetStartupLevel().LevelName);
 }
 
 void UMenuWidget::OnNewGame()

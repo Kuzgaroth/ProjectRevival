@@ -7,13 +7,13 @@
 #include "Camera/CameraShakeBase.h"
 #include "PRGameModeBase.h"
 
+
 UHealthComponent::UHealthComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	
 }
 
 bool UHealthComponent::TryToAddHealth(float HealthAmount)
@@ -33,9 +33,20 @@ bool UHealthComponent::IsHealthFull() const
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
-	SetHealth(MaxHealth);
+	
+	UE_LOG(LogPRSaveSystem, Display, TEXT("----Loading player health----"))
+	const auto SaveLoader = Cast<IISaveLoader>(GetWorld()->GetAuthGameMode());
+	if (SaveLoader)
+	{
+		const auto SaveGame = SaveLoader->GetSaveFromLoader();
+		if (SaveGame)
+		{
+			SetHealth(SaveGame->PlayerSaveData.HP);
+		}
+		else SetHealth(MaxHealth);
+	}
+	;
+	
 	const auto Owner = GetOwner();
 	if (Owner)
 	{
@@ -75,7 +86,8 @@ void UHealthComponent::SetHealth(float NewHealth)
 	const auto NextHealth=FMath::Clamp<float>(NewHealth, 0.0f, MaxHealth);
 	const auto HealthDelta = NextHealth- Health;
 	Health = NextHealth;
-	OnHealthChanged.Broadcast(Health, HealthDelta);
+	if (OnHealthChanged.IsBound())
+		OnHealthChanged.Broadcast(Health, HealthDelta);
 }
 
 void UHealthComponent::PlayCameraShake()

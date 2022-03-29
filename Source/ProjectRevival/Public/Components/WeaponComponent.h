@@ -38,6 +38,8 @@ public:
 	TArray<UMaterialInstanceDynamic*> GetCurrentWeaponMaterials();
 	UFUNCTION(BlueprintCallable)
 	ABaseWeapon* GetCurrentWeapon();
+	TArray<FAmmoData> GetAllWeapons();
+	void SetWeponData(FAmmoData NewAmmoData);
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TArray<FWeaponData> WeaponDatas;
