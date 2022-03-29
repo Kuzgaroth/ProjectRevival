@@ -48,7 +48,7 @@ ASoldierAIController::ASoldierAIController()
 	bIsFiring = false;
 	bIsInCover = false;
 	bIsSideTurning = false;
-	BotWing = EWing::Center;
+	bIsCoverChangeAllowed = true;
 }
 
 void ASoldierAIController::SetPlayerPos(const FPlayerPositionData &NewPlayerPos)
@@ -78,6 +78,11 @@ void ASoldierAIController::OnPossess(APawn* InPawn)
 		Cast<ASoldierEnemy>(GetPawn())->StopCoverSideMovingDelegate.AddDynamic(this, &ASoldierAIController::StopCoverSideMoving);
 		Cast<ASoldierEnemy>(GetPawn())->StartFireDelegate.AddDynamic(this, &ASoldierAIController::StartFiring);
 		Cast<ASoldierEnemy>(GetPawn())->StopFireDelegate.AddDynamic(this, &ASoldierAIController::StopFiring);
+		const auto BlackboardComp = GetBlackboardComponent();
+		if (BlackboardComp)
+		{
+			BlackboardComp->SetValueAsEnum(WingKeyName, uint8(BotWing));
+		}
 	}
 }
 
@@ -169,6 +174,20 @@ bool ASoldierAIController::FindNewCover()
 	}
 	return false;
 	//MoveToLocation(CoverPos);
+}
+
+void ASoldierAIController::StartCoverTimer()
+{
+	SetBIsCoverChangeAllowed(false);
+	GetWorld()->GetTimerManager().SetTimer(BTCoverTimerHandle, this, &ASoldierAIController::OnCoverTimerFired, 5.0f, false, -1);
+	UE_LOG(LogPRAIController, Log, TEXT("Cover Change Cooldown Started"));
+}
+
+void ASoldierAIController::OnCoverTimerFired()
+{
+	SetBIsCoverChangeAllowed(true);
+	GetWorld()->GetTimerManager().ClearTimer(BTCoverTimerHandle);
+	UE_LOG(LogPRAIController, Log, TEXT("Cover Change Cooldown Ended"));
 }
 
 AActor* ASoldierAIController::GetFocusOnActor()

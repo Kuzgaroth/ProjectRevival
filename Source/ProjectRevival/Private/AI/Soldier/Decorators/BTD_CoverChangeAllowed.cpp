@@ -1,28 +1,27 @@
 // Project Revival. All Rights Reserved
 
 
-#include "AI/Soldier/Decorators/BTD_IfBotInCover.h"
+#include "AI/Soldier/Decorators/BTD_CoverChangeAllowed.h"
+
 #include "Soldier/SoldierAIController.h"
 
-
-
-UBTD_IfBotInCover::UBTD_IfBotInCover()
+UBTD_CoverChangeAllowed::UBTD_CoverChangeAllowed()
 {
-	NodeName = "If Bot Is In Cover";
+	NodeName = "If Cover Change Allowed";
 }
 
-bool UBTD_IfBotInCover::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
+bool UBTD_CoverChangeAllowed::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
 	return CalcCondition(OwnerComp, NodeMemory);
 }
 
-void UBTD_IfBotInCover::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+void UBTD_CoverChangeAllowed::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	TNodeInstanceMemory* DecoratorMemory = CastInstanceNodeMemory<TNodeInstanceMemory>(NodeMemory);
 	DecoratorMemory->bLastRawResult = CalcCondition(OwnerComp, NodeMemory);
 }
 
-void UBTD_IfBotInCover::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UBTD_CoverChangeAllowed::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	TNodeInstanceMemory* DecoratorMemory = CastInstanceNodeMemory<TNodeInstanceMemory>(NodeMemory);
 	
@@ -34,10 +33,10 @@ void UBTD_IfBotInCover::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	}
 }
 
-bool UBTD_IfBotInCover::CalcCondition(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
+bool UBTD_CoverChangeAllowed::CalcCondition(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
 	const auto Controller = Cast<ASoldierAIController>(OwnerComp.GetAIOwner());
 	if (!Controller) return false;
 
-	return Controller->GetBIsInCover();
+	return Controller->GetBIsCoverChangeAllowed();
 }
