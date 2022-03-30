@@ -13,6 +13,11 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnClipEmptySignature, ABaseWeapon*);
 
 // Log Categories
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAISystem, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIPerception, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAITasks, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAISoldier, Log, All);
 
 USTRUCT(BlueprintType)
 struct FAmmoData
@@ -348,6 +353,9 @@ struct FCoverPointsAndPossibility
 	UPROPERTY(EditInstanceOnly,BlueprintReadWrite,Category="CoverPointsData")
 	bool CanBeTakenAsCover=true;
 
+	UPROPERTY()
+	USceneComponent* LastCoverPosition;
+	
 	TMap<UBoxComponent*,bool> PointIsNotTaken;
 	TArray<FVector> PositionsOfCoverPoints;
 	
@@ -558,9 +566,6 @@ inline void UCameraCoverFunctions::TimelineCoverYShift(float Value, USpringArmCo
 	if (abs(NewView) >= abs(CameraCover.EndPos)) CameraCover.IsShifting = false;
 }
 
-
-DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
-
 struct FBTPlayerCheckDecoratorMemory
 {
 	bool bLastRawResult;
@@ -578,11 +583,12 @@ USTRUCT(BlueprintType)
 struct FPlayerPositionData
 {
 	GENERATED_BODY()
-
+private:
 	UPROPERTY()
 	AActor* PlayerActor;
 	UPROPERTY()
 	AActor* PlayerCover;
+public:
 	FPlayerPositionData(AActor* PActor, AActor* PCover)
 	{
 		PlayerActor = PActor;
@@ -592,6 +598,26 @@ struct FPlayerPositionData
 	{
 		PlayerActor=nullptr;
 		PlayerCover=nullptr;
+	}
+	void SetActor(AActor* PActor)
+	{
+		PlayerActor = PActor;
+	}
+	AActor* GetActor() const
+	{
+		return PlayerActor;
+	}
+	void SetCover(AActor* PCover)
+	{
+		PlayerCover = PCover;
+	}
+	AActor* GetCover() const
+	{
+		return PlayerCover;
+	}
+	FVector GetActorPosition() const
+	{
+		return (PlayerActor) ? PlayerActor->GetActorLocation() : FVector(0.0, 0.0, 0.0);
 	}
 	FORCEINLINE void operator=(const FPlayerPositionData& PlayerPos)
 	{

@@ -14,3 +14,9 @@ bool IIChangingWorldActor::TryToFindCoverPoint(FVector PlayerPos, FVector& Cover
 	return false;
 }
 
+void IIChangingWorldActor::SetLastCoverPointStatus(bool bIsFree)
+{
+	return;
+}
+
+

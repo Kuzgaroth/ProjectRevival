@@ -24,5 +24,10 @@ public:
 	virtual bool CheckIsChangeAbleObjIsCover();
 
 	virtual bool TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos);
-	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
+
+	/**
+	 * Changes a status (whether it's taken or not) of a CoverPoint (BoxComponent).
+	 * @param bIsFree if false than there is already someone how wants to take it (i.e. other bots can't use it). if true than it is free and one can use it.
+	 */
+	virtual void SetLastCoverPointStatus(bool bIsFree);
 };

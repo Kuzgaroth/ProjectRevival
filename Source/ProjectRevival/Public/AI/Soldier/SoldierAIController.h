@@ -6,21 +6,20 @@
 #include "AIController.h"
 #include "Components/PRSoldierAIPerceptionComponent.h"
 #include "Components/RespawnComponent.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "SoldierAIController.generated.h"
 
 class ASoldierAIController;
 
 // Объявление делегата передачи положения игрока
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerPosDelegate, const FPlayerPositionData&, PlayerPosition);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartEnteringCover, const FVector&, CoverPosition);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStartEnteringCover, const FVector&, CoverPosition, AActor*, CoverReference);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartCoverSideMoving, float, SideMovementAmount);
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnBotDiedSignature, ASoldierAIController*)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSpottedSignature, FPlayerPositionData)
 DECLARE_DELEGATE_RetVal(bool, FOnWingBotsDecision)
-
-DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
 
 class UPRAIPerceptionComponent;
 class URespawnComponent;
@@ -39,9 +38,15 @@ public:
 	FPlayerPositionData GetPlayerPos() const { return PlayerPos; }
 	void SetPlayerPos(const FPlayerPositionData &NewPlayerPos);
 	bool GetBIsFiring() const { return bIsFiring; }
-	void SetBIsFiring(bool bCond) { bIsFiring = bCond; }
+	void SetBIsFiring(bool const bCond) { bIsFiring = bCond; }
 	bool GetBIsInCover() const { return bIsInCover; }
-	void SetBIsInCover(bool bCond) { bIsInCover = bCond; }
+	void SetBIsInCover(bool const bCond) { bIsInCover = bCond; }
+	bool GetBIsSideTurning() const { return bIsSideTurning; }
+	void SetBIsSideTurning(bool const bCond) {bIsSideTurning = bCond; }
+	bool GetBIsCoverChangeAllowed() const { return bIsCoverChangeAllowed; }
+	void SetBIsCoverChangeAllowed(bool const bCond) {bIsCoverChangeAllowed = bCond; }
+	bool GetBIsDecisionMakingAllowed() const { return bIsDecisionMakingAllowed; }
+	void SetBIsDecisionMakingAllowed(bool const bCond) { bIsDecisionMakingAllowed = bCond; }
 
 	FPlayerPosDelegate PlayerPosDelegate;
 	UPROPERTY(BlueprintAssignable)
@@ -58,14 +63,22 @@ public:
 	FOnWingBotsDecision OnBotWingDecision;
 	void StartFiring();
 	// Функция, к которой должен быть привязан делегат класса Character
+	UFUNCTION()
 	void StopFiring();
 	void StartEnteringCover();
+	UFUNCTION()
 	void StopEnteringCover();
 	void StartExitingCover();
+	UFUNCTION()
 	void StopExitingCover();
 	void StartCoverSideMoving();
+	UFUNCTION()
 	void StopCoverSideMoving();
-	void FindNewCover();
+	bool FindNewCover();
+	void StartCoverTimer();
+	void OnCoverTimerFired();
+	void StartGeneralTimer();
+	void OnGeneralTimerFired();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
 	EWing BotWing;
@@ -80,20 +93,34 @@ protected:
 	FVector CoverPos;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	AActor* CoverRef;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
 	float SideMovementAmount;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
 	FName FocusOnKeyName = "EnemyActor";
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
-	FName CoverKeyname = "CoverPos";
+	FName CoverPosKeyName = "CoverPos";
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	FName CoverRefKeyName = "CoverRef";
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	FName WingKeyName = "WingSide";
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Respawn")
 	URespawnComponent* RespawnComponent;
 	
+	FTimerHandle BTCoverTimerHandle;
+	FTimerHandle BTGeneralTimerHandle;
+	
 	bool bIsFiring;
 	bool bIsInCover;
 	bool bIsSideTurning;
+	bool bIsCoverChangeAllowed;
+	bool bIsDecisionMakingAllowed;
 	
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaSeconds) override;

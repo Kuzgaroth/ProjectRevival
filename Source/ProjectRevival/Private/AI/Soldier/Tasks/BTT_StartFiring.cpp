@@ -19,6 +19,5 @@ EBTNodeResult::Type UBTT_StartFiring::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	if(!Character) return EBTNodeResult::Failed;
 
 	Controller->StartFiring();
-	Controller->SetBIsFiring(true);
 	return EBTNodeResult::Succeeded;
 }

@@ -3,6 +3,7 @@
 
 #include "Weapon/SoldierRifleWeapon.h"
 
+#include "BaseCharacter.h"
 #include "NiagaraComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -20,7 +21,8 @@ void ASoldierRifleWeapon::ShootRowInternal()
 	--CurrentBurstShot;
 	if (CurrentBurstShot <= 0)
 	{
-		Cast<UWeaponComponent>(GetOwner())->StopFire();
+		UE_LOG(LogTemp, Log, TEXT("Owner of SoldierRifle is: %s"), *GetOwner()->GetName());
+		Cast<ABaseCharacter>(GetOwner())->GetWeaponComponent()->StopFire();
 	}
 	GetWorld()->GetTimerManager().SetTimer(ShotTimerHandle, this, &ASoldierRifleWeapon::MakeShotInternal, BurstBulletsDelay, true);
 	MakeShotInternal();
@@ -37,12 +39,13 @@ void ASoldierRifleWeapon::StopFire()
 
 void ASoldierRifleWeapon::MakeShotInternal()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Current Burst Shot: %d"), CurrentBurstShot);
+	MakeShot();
 	--CurrentBurstShot;
 	if (CurrentBurstShot <= 0)
 	{
 		StopFireInternal();
 	}
-	MakeShot();
 }
 
 void ASoldierRifleWeapon::StopFireInternal()

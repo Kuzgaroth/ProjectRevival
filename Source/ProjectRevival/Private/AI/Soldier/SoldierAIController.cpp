@@ -8,11 +8,13 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "RespawnComponent.h"
 #include "SoldierEnemy.h"
-#include "GameFeature/CoverObject.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "Perception/AISenseConfig_Hearing.h"
 #include "Perception/AISenseConfig_Sight.h"
 
-DEFINE_LOG_CATEGORY(LogPRAIController)
+DEFINE_LOG_CATEGORY(LogPRAIController);
+DEFINE_LOG_CATEGORY(LogPRAIDecorators);
+DEFINE_LOG_CATEGORY(LogPRAITasks);
 
 ASoldierAIController::ASoldierAIController()
 {
@@ -40,24 +42,27 @@ ASoldierAIController::ASoldierAIController()
 	SetPerceptionComponent(*PRPerceptionComponent);
 
 	RespawnComponent = CreateDefaultSubobject<URespawnComponent>("RespawnController");
-
-	/*
-	const auto Character = Cast<ASoldierEnemy>(GetCharacter());
-	PlayerPosDelegate.AddDynamic(ASoldierEnemy::StaticClass(), ASoldierEnemy::StartFiring(PlayerPos));
-	*/
 	
 	SideMovementAmount = 0;
 	bWantsPlayerState = true;
 	bIsFiring = false;
 	bIsInCover = false;
 	bIsSideTurning = false;
-	BotWing = EWing::Center;
+	bIsCoverChangeAllowed = true;
+	bIsDecisionMakingAllowed = true;
 }
 
-void ASoldierAIController::SetPlayerPos(const FPlayerPositionData& NewPlayerPos)
+void ASoldierAIController::SetPlayerPos(const FPlayerPositionData &NewPlayerPos)
 {
-	OnPlayerSpotted.Broadcast(NewPlayerPos);
-	//PlayerPos=NewPlayerPos; 
+	if (NewPlayerPos.GetActor())
+	{
+		PlayerPos.SetActor(NewPlayerPos.GetActor());
+	}
+	if (NewPlayerPos.GetCover())
+	{
+		PlayerPos.SetCover(NewPlayerPos.GetCover());
+	}
+	OnPlayerSpotted.Broadcast(PlayerPos);
 }
 
 void ASoldierAIController::OnPossess(APawn* InPawn)
@@ -69,11 +74,16 @@ void ASoldierAIController::OnPossess(APawn* InPawn)
 	{
 		//UE_LOG(LogPRAIController, Log, TEXT("BehaviorTree started"));
 		RunBehaviorTree(AIChar->BehaviorTreeAsset);
-		//Cast<ASoldierEnemy>(GetPawn())->StopEnteringCoverDelegate.AddDynamic(this, &ASoldierAIController::StopEnteringCover);
-		//Cast<ASoldierEnemy>(GetPawn())->StopExitingCoverDelegate.AddDynamic(this, &ASoldierAIController::StopExitingCover);
-		//Cast<ASoldierEnemy>(GetPawn())->StopCoverSideMovingDelegate.AddDynamic(this, &ASoldierAIController::StopCoverSideMoving);
+		Cast<ASoldierEnemy>(GetPawn())->StopEnteringCoverDelegate.AddDynamic(this, &ASoldierAIController::StopEnteringCover);
+		Cast<ASoldierEnemy>(GetPawn())->StopExitingCoverDelegate.AddDynamic(this, &ASoldierAIController::StopExitingCover);
+		Cast<ASoldierEnemy>(GetPawn())->StopCoverSideMovingDelegate.AddDynamic(this, &ASoldierAIController::StopCoverSideMoving);
 		Cast<ASoldierEnemy>(GetPawn())->StartFireDelegate.AddDynamic(this, &ASoldierAIController::StartFiring);
-		//Cast<ASoldierEnemy>(GetPawn())->StopFireDelegate.AddDynamic(this, &ASoldierAIController::StopFiring);
+		Cast<ASoldierEnemy>(GetPawn())->StopFireDelegate.AddDynamic(this, &ASoldierAIController::StopFiring);
+		const auto BlackboardComp = GetBlackboardComponent();
+		if (BlackboardComp)
+		{
+			BlackboardComp->SetValueAsEnum(WingKeyName, uint8(BotWing));
+		}
 	}
 }
 
@@ -99,63 +109,103 @@ void ASoldierAIController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ASoldierAIController::StartFiring()
 {
-	const float PlayerX = (PlayerPos.PlayerActor) ? PlayerPos.PlayerActor->GetActorLocation().X : 0;
-	const float PlayerY = (PlayerPos.PlayerActor) ? PlayerPos.PlayerActor->GetActorLocation().Y : 0;
-	UE_LOG(LogPRAIController, Log, TEXT("Shoot at Player pos X: %0.2f, Y: %0.2f, Z: %0.2f"), PlayerX, PlayerY);
+	const auto PlayerCoordinates = PlayerPos.GetActorPosition();
+	UE_LOG(LogPRAIController, Log, TEXT("Shoot at Player pos X: %0.2f, Y: %0.2f, Z: %0.2f"), PlayerCoordinates.X, PlayerCoordinates.Y);
 	PlayerPosDelegate.Broadcast(PlayerPos);
+	SetBIsFiring(true);
 }
 
 void ASoldierAIController::StopFiring()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StopFiring() was called"));
 	SetBIsFiring(false);
 }
 
 void ASoldierAIController::StartEnteringCover()
 {
-	UE_LOG(LogPRAIController, Log, TEXT("%i Cover pos X: %0.2f, Y: %0.2f"), BotWing, CoverPos.X, CoverPos.Y);
-	StartEnteringCoverDelegate.Broadcast(CoverPos);
+	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StartEnteringCover() was called"));
+	UE_LOG(LogPRAIController, Log, TEXT("Controller: %i Cover pos X: %0.2f, Y: %0.2f"), BotWing, CoverPos.X, CoverPos.Y);
+	StartEnteringCoverDelegate.Broadcast(CoverPos, CoverRef);
 }
 
 void ASoldierAIController::StopEnteringCover()
 {
-	bIsInCover = true;
+	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StopEnteringCover() was called"));
+	SetBIsInCover(true);
 }
 
 void ASoldierAIController::StartExitingCover()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StartExitingCover() was called"));
 	StartExitingCoverDelegate.Broadcast();
 }
 
 void ASoldierAIController::StopExitingCover()
 {
-	bIsInCover = false;
+	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StopExitingCover() was called"));
+	SetBIsInCover(false);
 }
 
 void ASoldierAIController::StartCoverSideMoving()
 {
-	bIsSideTurning = true;
+	SetBIsSideTurning(true);
 	//SideMovementAmount defines the desired movement distance while in cover
 	StartCoverSideMovingDelegate.Broadcast(SideMovementAmount);
 }
 
 void ASoldierAIController::StopCoverSideMoving()
 {
-	bIsSideTurning = false;
+	SetBIsSideTurning(false);
 }
 
-void ASoldierAIController::FindNewCover()
+bool ASoldierAIController::FindNewCover()
 {
-	CoverPos = PRPerceptionComponent->GetBestCoverWing(BotWing);
+	UE_LOG(LogPRAISoldier, Warning, TEXT("Controller: Bot doing this is %s"), *GetPawn()->GetName())
+	bool const bFlag = PRPerceptionComponent->GetBestCoverWing(BotWing, CoverPos, CoverRef);
 	const auto BlackboardComp = GetBlackboardComponent();
-	if (BlackboardComp)
+	if (bFlag && BlackboardComp)
 	{
-		const float PlayerX = (PlayerPos.PlayerActor!=nullptr) ? PlayerPos.PlayerActor->GetActorLocation().X : 0;
-		const float PlayerY = (PlayerPos.PlayerActor!=nullptr) ? PlayerPos.PlayerActor->GetActorLocation().Y : 0;
-		UE_LOG(LogPRAIController, Log, TEXT("Cover pos was set X: %0.2f, Y: %0.2f"), CoverPos.X, CoverPos.Y);
-		UE_LOG(LogPRAIController, Log, TEXT("Player pos X: %0.2f, Y:%0.2f"), PlayerX,PlayerY);
-		BlackboardComp->SetValueAsVector(CoverKeyname, CoverPos);
+		UE_LOG(LogPRAISoldier, Warning, TEXT("Controller: CoverOwnerPos output is %s"), *CoverRef->GetName())
+		const auto PlayerCoordinates = PlayerPos.GetActorPosition();
+		UE_LOG(LogPRAIController, Log, TEXT("Controller: Player pos X: %0.2f, Y: %0.2f"), PlayerCoordinates.X, PlayerCoordinates.Y);
+		UE_LOG(LogPRAIController, Log, TEXT("Controller: Cover pos was set X: %0.2f, Y: %0.2f"), CoverPos.X, CoverPos.Y);
+		BlackboardComp->SetValueAsVector(CoverPosKeyName, CoverPos);
+		BlackboardComp->SetValueAsObject(CoverRefKeyName, CoverRef);
+		return true;
 	}
+	return false;
 	//MoveToLocation(CoverPos);
+}
+
+void ASoldierAIController::StartCoverTimer()
+{
+	SetBIsCoverChangeAllowed(false);
+	GetWorld()->GetTimerManager().SetTimer(BTCoverTimerHandle, this, &ASoldierAIController::OnCoverTimerFired, 5.0f, false, -1);
+	UE_LOG(LogPRAIController, Log, TEXT("Cover Change Cooldown Started"));
+}
+
+void ASoldierAIController::OnCoverTimerFired()
+{
+	SetBIsCoverChangeAllowed(true);
+	GetWorld()->GetTimerManager().ClearTimer(BTCoverTimerHandle);
+	UE_LOG(LogPRAIController, Log, TEXT("Cover Change Cooldown Ended"));
+}
+
+void ASoldierAIController::StartGeneralTimer()
+{
+	if (GetBIsDecisionMakingAllowed())
+	{
+		SetBIsDecisionMakingAllowed(false);
+		GetWorld()->GetTimerManager().SetTimer(BTGeneralTimerHandle, this, &ASoldierAIController::OnGeneralTimerFired, 0.5f, false, -1);
+		UE_LOG(LogPRAIController, Log, TEXT("Decision making cooldown started"));
+	}
+}
+
+void ASoldierAIController::OnGeneralTimerFired()
+{
+	SetBIsDecisionMakingAllowed(true);
+	GetWorld()->GetTimerManager().ClearTimer(BTGeneralTimerHandle);
+	UE_LOG(LogPRAIController, Log, TEXT("Decision making cooldown ended"));
 }
 
 AActor* ASoldierAIController::GetFocusOnActor()
