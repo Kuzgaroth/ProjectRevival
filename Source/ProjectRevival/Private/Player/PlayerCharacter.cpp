@@ -144,7 +144,7 @@ void APlayerCharacter::LookAround(float Amount)
 
 void APlayerCharacter::CoverCrouch()
 {
-	CoverData.TrySwitchCoverType(this);
+	if (!CoverData.TrySwitchCoverType(this)) return;
 	if (CameraCover.bIsShift == true)
 	{
 		CameraCover.StartPos = SpringArmComponent->SocketOffset.Y;

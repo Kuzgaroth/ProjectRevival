@@ -50,21 +50,25 @@ void FCoverData::TurnEnd(ECoverSide NewSide)
 	CoverSide = NewSide;
 }
 
-void FCoverData::TrySwitchCoverType(IICoverable* ICoverablePawn)
+bool FCoverData::TrySwitchCoverType(IICoverable* ICoverablePawn)
 {
 	ECoverType NewPossibleCover = ICoverablePawn->CheckCover();
 	switch (CoverType)
 	{
 	case High:
 		IsSwitchingCoverType = true;
-		return;
+		return true;
 	case Low:
-		if (NewPossibleCover==High) IsSwitchingCoverType = true;
-		return;
+		if (NewPossibleCover==High)
+		{
+			IsSwitchingCoverType = true;
+			return true;
+		}
+		return false;
 	default:
 		break;
 	}
-	return;
+	return false;
 }
 
 void FCoverData::OnCoverStatusUpdated(ECoverType CType, ECoverSide CSide, ECoverPart CPart)
