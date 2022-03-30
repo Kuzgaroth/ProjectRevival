@@ -363,6 +363,20 @@ void AStaticObjectToStaticObject::OnOtherMeshCollision(UPrimitiveComponent* Over
 	}
 }
 
+void AStaticObjectToStaticObject::SetLastCoverPointStatus(bool bIsFree)
+{
+	FCoverPointsAndPossibility coverstruct;
+	if(SuperMesh1->GetCollisionResponseToChannels()==OrdinaryWorldCollisionResponseContainer)
+	{
+		coverstruct=CoverStructForOrdinaryWObject;
+	}
+	else
+	{
+		coverstruct=CoverStructForOtherWOther;
+	}
+	coverstruct.PointIsNotTaken[Cast<UBoxComponent>(coverstruct.LastCoverPosition)] = bIsFree;
+}
+
 bool AStaticObjectToStaticObject::TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos)
 {
 	FCoverPointsAndPossibility coverstruct;
@@ -375,21 +389,23 @@ bool AStaticObjectToStaticObject::TryToFindCoverPoint(FVector PlayerPos, FVector
 		coverstruct=CoverStructForOtherWOther;
 	}
 	if(coverstruct.CoverPositions.Num()==0) return false;
-	UE_LOG(LogTemp,Warning,TEXT("Found coverpoints in ord world 3"))
-	for(auto covpos:coverstruct.CoverPositions)
+	UE_LOG(LogTemp,Warning,TEXT("StaticToStatic: Found coverpoints in ord world 3"))
+	for(USceneComponent* covpos:coverstruct.CoverPositions)
 	{
+		UE_LOG(LogPRAISoldier, Log, TEXT("StaticToStatic: foreach covpos is %s"), *covpos->GetComponentLocation().ToString())
 		FVector TraceStart=covpos->GetComponentLocation();
 		FVector TraceEnd=PlayerPos;
 		FHitResult HitResult;
 		FCollisionQueryParams CollisionParams;
 		GetWorld()->LineTraceSingleByChannel(HitResult,TraceStart,TraceEnd,ECollisionChannel::ECC_Visibility,CollisionParams);
-		DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
+		UBoxComponent* box = Cast<UBoxComponent>(covpos);
 		if(HitResult.bBlockingHit)
 		{
-			
-			if(HitResult.Actor==this)
+			DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
+			if(HitResult.Actor==this && coverstruct.PointIsNotTaken.Contains(box) && coverstruct.PointIsNotTaken[box])
 			{
-				CoverPos=TraceStart;
+				CoverPos = TraceStart;
+				coverstruct.LastCoverPosition = covpos;
 				return true;
 			}
 		}

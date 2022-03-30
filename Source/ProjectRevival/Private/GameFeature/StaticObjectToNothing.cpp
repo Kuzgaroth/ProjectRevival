@@ -239,6 +239,7 @@ void AStaticObjectToNothing::OnCoverPointComponentCollision(UPrimitiveComponent*
 {
 	if(Cast<APawn>(OtherActor))
 	{
+		UE_LOG(LogPRAISoldier, Log, TEXT("Point BeginOverlap()"))
 		BlockCoverPoint(Cast<UBoxComponent>(OverlappedComponent));
 	}
 }
@@ -248,18 +249,25 @@ void AStaticObjectToNothing::OnCoverPointComponentExit(UPrimitiveComponent* Over
 {
 	if(Cast<APawn>(OtherActor))
 	{
+		UE_LOG(LogPRAISoldier, Log, TEXT("Point EndOverlap()"))
 		FreeCoverPoint(Cast<UBoxComponent>(OverlappedComponent));
 	}
 }
 
+void AStaticObjectToNothing::SetLastCoverPointStatus(bool bIsFree)
+{
+	CoverStruct.PointIsNotTaken[Cast<UBoxComponent>(CoverStruct.LastCoverPosition)] = bIsFree;
+}
 
 void AStaticObjectToNothing::BlockCoverPoint(const UBoxComponent* CoverPoint)
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: BlockCoverPoint() CoverPoint is %s"), *CoverPoint->GetName())
 	CoverStruct.PointIsNotTaken[CoverPoint]=false;
 }
 
 void AStaticObjectToNothing::FreeCoverPoint(const UBoxComponent* CoverPoint)
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: FreeCoverPoint() CoverPoint is %s"), *CoverPoint->GetName())
 	CoverStruct.PointIsNotTaken[CoverPoint]=true;
 }
 
@@ -311,7 +319,7 @@ bool AStaticObjectToNothing::TryToFindCoverPoint(FVector PlayerPos, FVector& Cov
 	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: Input PlayerPos is %s"), *PlayerPos.ToString())
 	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: Input CoverPos  is %s"), *CoverPos.ToString())
 	if(CoverStruct.CoverPositions.Num()==0) return false;
-	for(auto covpos:CoverStruct.CoverPositions)
+	for(USceneComponent* covpos:CoverStruct.CoverPositions)
 	{
 		UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: foreach covpos is %s"), *covpos->GetComponentLocation().ToString())
 		FVector TraceStart=covpos->GetComponentLocation();
@@ -319,13 +327,14 @@ bool AStaticObjectToNothing::TryToFindCoverPoint(FVector PlayerPos, FVector& Cov
 		FHitResult HitResult;
 		FCollisionQueryParams CollisionParams;
 		GetWorld()->LineTraceSingleByChannel(HitResult,TraceStart,TraceEnd,ECollisionChannel::ECC_Visibility,CollisionParams);
-		auto box =Cast<UBoxComponent>(covpos);
+		UBoxComponent* box = Cast<UBoxComponent>(covpos);
 		if(HitResult.bBlockingHit)
 		{
 			DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
-			if(HitResult.Actor==this&& CoverStruct.PointIsNotTaken.Contains(box)&&CoverStruct.PointIsNotTaken[box])
+			if(HitResult.Actor==this && CoverStruct.PointIsNotTaken.Contains(box) && CoverStruct.PointIsNotTaken[box])
 			{
-				CoverPos=TraceStart;
+				CoverPos = TraceStart;
+				CoverStruct.LastCoverPosition = covpos;
 				return true;
 			}
 		}

@@ -98,4 +98,5 @@ public:
 	
 	virtual bool CheckIsChangeAbleObjIsCover() override;
 	virtual bool TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos) override;
+	virtual void SetLastCoverPointStatus(bool bIsFree) override;
 };

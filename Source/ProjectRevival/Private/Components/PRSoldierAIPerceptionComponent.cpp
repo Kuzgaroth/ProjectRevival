@@ -90,7 +90,7 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 	
 	for (const auto Actor : PerceivedActors)
 	{
-		UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Bool : %s"), Actor->ActorHasTag(TEXT("Cover")) ? TEXT("t") : TEXT("f"));
+		UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Bool : %s"), Actor->ActorHasTag(TEXT("Cover")) ? TEXT("t") : TEXT("f"))
 		if (Actor && Actor->ActorHasTag(TEXT("Cover")))
 		{
 			UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Actor Has Cover Tag"))
@@ -152,12 +152,10 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 		UE_LOG(LogPRAISoldier, Log, TEXT("Perception: GetBestCoverWing v2 was found"))
 		CoverRef = BestCoverRef;
 		CoverPos = BestCoverPos;
+		Cast<IIChangingWorldActor>(BestCoverRef)->SetLastCoverPointStatus(false);
 		if (CoverRef)
 		{
-			UE_LOG(LogPRAISoldier, Log, TEXT("Perception: PerceptionCoverRef class is %s"), *CoverRef->GetName());
-		} else
-		{
-			UE_LOG(LogPRAISoldier, Log, TEXT("Perception: SUCK SOME DICK"), *CoverRef->GetName());	
+			UE_LOG(LogPRAISoldier, Log, TEXT("Perception: PerceptionCoverRef class is %s"), *CoverRef->GetName())
 		}
 		return true;
 	}
