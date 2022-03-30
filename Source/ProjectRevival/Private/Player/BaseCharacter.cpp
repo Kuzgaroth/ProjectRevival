@@ -208,7 +208,7 @@ ECoverType ABaseCharacter::CoverTrace(FHitResult& CoverHit)
 {
 	const FVector Location = GetActorLocation();
 	FVector HighLocation;
-	HighLocation.Set(Location.X, Location.Y, 225.f);
+	HighLocation.Set(Location.X, Location.Y, Location.Z+225.f/2);
 	const bool HighTraceResult = UKismetSystemLibrary::LineTraceSingle(GetWorld(), HighLocation, GetActorForwardVector()*RootDelta+HighLocation,
 		UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, CoverHit, true);
 	//DrawDebugLine(GetWorld(), HighLocation, GetActorRotation().Vector()*25.0f, FColor::Red, false, 2,0, 2);
