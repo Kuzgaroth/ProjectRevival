@@ -31,11 +31,15 @@ public:
 	bool CanFire();
 	bool CanEquip();
 	bool CanReload();
+	UFUNCTION(BlueprintCallable)
 	bool IsShooting();
 	bool IsWeaponBlocked() const { return bIsWeaponBlocked; }
 	void SetWeaponBlocked(const bool bIsBlocked) { bIsWeaponBlocked = bIsBlocked; }
 	TArray<UMaterialInstanceDynamic*> GetCurrentWeaponMaterials();
+	UFUNCTION(BlueprintCallable)
 	ABaseWeapon* GetCurrentWeapon();
+	TArray<FAmmoData> GetAllWeapons();
+	void SetWeponData(FAmmoData NewAmmoData);
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TArray<FWeaponData> WeaponDatas;

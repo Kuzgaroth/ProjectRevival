@@ -6,6 +6,7 @@
 #include "BaseCharacterMovementComponent.h"
 #include "Player/BaseCharacter.h"
 #include "Components/TimelineComponent.h"
+#include "GameFeature/StaticObjectToNothing.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "PlayerCharacter.generated.h"
 
@@ -39,6 +40,15 @@ public:
 
 	UFUNCTION()
 	void TimelineCoverYShift(float Value);
+
+	UFUNCTION()
+	void TimelineCoverLow(float Value);
+
+	UFUNCTION()
+	void SetChangeWorldPossibility(bool newValue,AStaticObjectToNothing* overlappedAct);
+
+	UFUNCTION()
+	bool CheckIfWorldCanBeChanged() const;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoomBlueprint PlayerAimZoom;
@@ -74,6 +84,13 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	USceneComponent* CameraSocket;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="Phrases")
+	USoundCue* WorldCantBeChangedPhrase;
+
+	
+	bool WorldCanBeChanged=true;
+	AStaticObjectToNothing* OverlappedChangeWActor;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data) override;
@@ -112,6 +129,7 @@ public:
 	virtual void OnTurn() override;
 	virtual void Falling() override;
 	virtual void Landed(const FHitResult& Hit) override;
+	TArray<FAmmoData> GetPlayerWeapons() const;
 	UFUNCTION(BlueprintCallable)
 	FCoverData& GetCoverData();
 	

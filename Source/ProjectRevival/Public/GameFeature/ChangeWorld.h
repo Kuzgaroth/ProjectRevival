@@ -52,12 +52,6 @@ protected:
 	virtual void ClearComponentTags(UStaticMeshComponent* supermesh);
 	virtual void LoadComponentTags(UStaticMeshComponent* supermesh);
 	
-	
-
-
-
-
-	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

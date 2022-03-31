@@ -3,16 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PlayerCharacter.h"
 #include "GameFramework/GameModeBase.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "AI/Soldier/SoldierAIController.h"
+#include "GameFeature/ChangeWorld.h"
+#include "Interfaces/ISaveLoader.h"
 #include "PRGameModeBase.generated.h"
 
-
+class USaveGame;
+class UPRSaveGame;
 class AAIController;
 
 UCLASS()
-class PROJECTREVIVAL_API APRGameModeBase : public AGameModeBase
+class PROJECTREVIVAL_API APRGameModeBase : public AGameModeBase, public IISaveLoader
 {
 	GENERATED_BODY()
 
@@ -30,6 +34,11 @@ public:
 	virtual bool SetPause(APlayerController* PC, FCanUnpause CanUnpauseDelegate) override;
 	virtual bool ClearPause() override;
 	void GameOver();
+	void SetCurrentWorld(EChangeWorld NewWorld);
+	EChangeWorld GetCurrentWorld() const{return CurrentWorld;}
+	void WriteSaveGame(FName CheckpointName);
+	void ClearSaveGame();
+	virtual UPRSaveGame* GetSaveFromLoader() override;
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Game")
 	TSubclassOf<AAIController> AIControllerClass;
@@ -39,6 +48,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Game")
 	TSubclassOf<APawn> AIPawnClass;
+	
+	EChangeWorld CurrentWorld = EChangeWorld::OrdinaryWorld;
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+	virtual void RestartPlayer(AController* NewPlayer) override;
 private:
 	EMatchState MatchState = EMatchState::WaitingToStart;
 	
@@ -48,4 +61,11 @@ private:
 	void LogPlayerInfo();
 	
 	void SetMatchState(EMatchState State);
+	void LoadSaveGame();
+	void SaveFinished(const FString&, const int32, bool);
+	void LoadFinished(const FString&, const int32, USaveGame*);
+	UPROPERTY(Transient)
+	APlayerCharacter* PlayerPawn;
+	UPROPERTY()
+	UPRSaveGame* SaveGame=nullptr;
 };

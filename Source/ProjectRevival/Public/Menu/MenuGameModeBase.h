@@ -15,4 +15,5 @@ class PROJECTREVIVAL_API AMenuGameModeBase : public AGameModeBase
 
 public:
 	AMenuGameModeBase();
+	void ClearSaveData();
 };

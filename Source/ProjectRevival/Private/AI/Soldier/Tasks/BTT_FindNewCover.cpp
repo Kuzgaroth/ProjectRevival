@@ -3,6 +3,10 @@
 
 #include "AI/Soldier/Tasks/BTT_FindNewCover.h"
 #include "AI/Soldier/SoldierAIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "BehaviorTree/BlackboardData.h"
+#include "Interfaces/IChangingWorldActor.h"
+#include "Kismet/GameplayStatics.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 
 UBTT_FindNewCover::UBTT_FindNewCover()
