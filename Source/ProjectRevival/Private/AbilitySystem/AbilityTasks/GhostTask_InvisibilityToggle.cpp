@@ -77,6 +77,7 @@ void UGhostTask_InvisibilityToggle::TimelineProgress(float Value)
 {
 	for (const auto Material : MeshesMaterials)
 	{
-		Material->SetScalarParameterValue("Amount",Value);
+		Material->SetScalarParameterValueByInfo(FMaterialParameterInfo("Amount",
+			EMaterialParameterAssociation::BlendParameter,0), Value);
 	}
 }
