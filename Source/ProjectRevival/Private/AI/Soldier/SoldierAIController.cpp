@@ -108,7 +108,7 @@ void ASoldierAIController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ASoldierAIController::StartFiring()
 {
-	const auto PlayerCoordinates = PlayerPos.GetActorPosition();
+	const FVector PlayerCoordinates = PlayerPos.GetActorPosition();
 	UE_LOG(LogPRAIController, Log, TEXT("Shoot at Player pos X: %0.2f, Y: %0.2f, Z: %0.2f"), PlayerCoordinates.X, PlayerCoordinates.Y);
 	PlayerPosDelegate.Broadcast(PlayerPos);
 	SetBIsFiring(true);
@@ -159,12 +159,10 @@ void ASoldierAIController::StopCoverSideMoving()
 
 bool ASoldierAIController::FindNewCover()
 {
-	UE_LOG(LogPRAISoldier, Warning, TEXT("Controller: Bot doing this is %s"), *GetPawn()->GetName())
 	bool const bFlag = PRPerceptionComponent->GetBestCoverWing(BotWing, CoverPos, CoverRef);
 	const auto BlackboardComp = GetBlackboardComponent();
 	if (bFlag && BlackboardComp)
 	{
-		UE_LOG(LogPRAISoldier, Warning, TEXT("Controller: CoverOwnerPos output is %s"), *CoverRef->GetName())
 		const auto PlayerCoordinates = PlayerPos.GetActorPosition();
 		UE_LOG(LogPRAIController, Log, TEXT("Controller: Player pos X: %0.2f, Y: %0.2f"), PlayerCoordinates.X, PlayerCoordinates.Y);
 		UE_LOG(LogPRAIController, Log, TEXT("Controller: Cover pos was set X: %0.2f, Y: %0.2f"), CoverPos.X, CoverPos.Y);
@@ -180,14 +178,14 @@ void ASoldierAIController::StartCoverTimer()
 {
 	SetBIsCoverChangeAllowed(false);
 	GetWorld()->GetTimerManager().SetTimer(BTCoverTimerHandle, this, &ASoldierAIController::OnCoverTimerFired, 5.0f, false, -1);
-	UE_LOG(LogPRAIController, Log, TEXT("Cover Change Cooldown Started"));
+	UE_LOG(LogPRAIController, Log, TEXT("Controller: Cover Change Cooldown Started"));
 }
 
 void ASoldierAIController::OnCoverTimerFired()
 {
 	SetBIsCoverChangeAllowed(true);
 	GetWorld()->GetTimerManager().ClearTimer(BTCoverTimerHandle);
-	UE_LOG(LogPRAIController, Log, TEXT("Cover Change Cooldown Ended"));
+	UE_LOG(LogPRAIController, Log, TEXT("Controller: Cover Change Cooldown Ended"));
 }
 
 AActor* ASoldierAIController::GetFocusOnActor()

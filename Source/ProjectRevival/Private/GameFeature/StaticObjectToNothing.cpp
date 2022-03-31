@@ -321,7 +321,6 @@ bool AStaticObjectToNothing::TryToFindCoverPoint(FVector PlayerPos, FVector& Cov
 	if(CoverStruct.CoverPositions.Num()==0) return false;
 	for(USceneComponent* covpos:CoverStruct.CoverPositions)
 	{
-		UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: foreach covpos is %s"), *covpos->GetComponentLocation().ToString())
 		FVector TraceStart=covpos->GetComponentLocation();
 		FVector TraceEnd=PlayerPos;
 		FHitResult HitResult;
@@ -333,6 +332,7 @@ bool AStaticObjectToNothing::TryToFindCoverPoint(FVector PlayerPos, FVector& Cov
 			DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
 			if(HitResult.Actor==this && CoverStruct.PointIsNotTaken.Contains(box) && CoverStruct.PointIsNotTaken[box])
 			{
+				UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: covpos set to %s"), *covpos->GetComponentLocation().ToString())
 				CoverPos = TraceStart;
 				CoverStruct.LastCoverPosition = covpos;
 				return true;
