@@ -16,25 +16,25 @@ void ASoldierRifleWeapon::StartFire()
 	GetWorld()->GetTimerManager().SetTimer(ClipsTimerHandle, this, &ASoldierRifleWeapon::ShootRowInternal, OneRowTime, true);
 }
 
+// void ASoldierRifleWeapon::StartFire2(const FPlayerPositionData& PlayerPos)
+// {
+// 	InitFX();
+// 	CurrentBurstShot = BurstClipsNumber * BurstBulletsNumber;
+// 	CurrentBurstRow = BurstClipsNumber;
+// 	OneRowTime = BurstBulletsDelay * BurstBulletsNumber + BurstClipsDelay;
+// 	GetWorld()->GetTimerManager().SetTimer(ClipsTimerHandle, this, &ASoldierRifleWeapon::ShootRowInternal, OneRowTime, true);
+// }
+
 void ASoldierRifleWeapon::ShootRowInternal()
 {
-	--CurrentBurstShot;
-	if (CurrentBurstShot <= 0)
+	--CurrentBurstRow;
+	if (CurrentBurstRow <= 0)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Owner of SoldierRifle is: %s"), *GetOwner()->GetName());
 		Cast<ABaseCharacter>(GetOwner())->GetWeaponComponent()->StopFire();
 	}
 	GetWorld()->GetTimerManager().SetTimer(ShotTimerHandle, this, &ASoldierRifleWeapon::MakeShotInternal, BurstBulletsDelay, true);
 	MakeShotInternal();
-}
-
-void ASoldierRifleWeapon::StopFire()
-{
-	if (!GetWorld()->GetTimerManager().IsTimerActive(ClipsTimerHandle)) {return;}
-	if (GetWorld()->GetTimerManager().IsTimerActive(ShotTimerHandle)) {GetWorld()->GetTimerManager().ClearTimer(ShotTimerHandle);}
-	GetWorld()->GetTimerManager().ClearTimer(ClipsTimerHandle);
-	StoppedFireInWeaponDelegate.Broadcast();
-	SetFXActive(false);
 }
 
 void ASoldierRifleWeapon::MakeShotInternal()
@@ -46,6 +46,15 @@ void ASoldierRifleWeapon::MakeShotInternal()
 	{
 		StopFireInternal();
 	}
+}
+
+void ASoldierRifleWeapon::StopFire()
+{
+	if (!GetWorld()->GetTimerManager().IsTimerActive(ClipsTimerHandle)) {return;}
+	if (GetWorld()->GetTimerManager().IsTimerActive(ShotTimerHandle)) {GetWorld()->GetTimerManager().ClearTimer(ShotTimerHandle);}
+	GetWorld()->GetTimerManager().ClearTimer(ClipsTimerHandle);
+	StoppedFireInWeaponDelegate.Broadcast();
+	SetFXActive(false);
 }
 
 void ASoldierRifleWeapon::StopFireInternal()

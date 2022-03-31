@@ -15,6 +15,7 @@ class PROJECTREVIVAL_API ASoldierRifleWeapon : public ARifleWeapon
 	
 public:
 	virtual void StartFire() override;
+	// virtual void StartFire2(const FPlayerPositionData& PlayerPos);
 	virtual void StopFire() override;
 	
 	FStoppedFireInWeapon StoppedFireInWeaponDelegate;

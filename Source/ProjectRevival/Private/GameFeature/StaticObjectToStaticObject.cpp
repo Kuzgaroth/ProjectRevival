@@ -392,7 +392,6 @@ bool AStaticObjectToStaticObject::TryToFindCoverPoint(FVector PlayerPos, FVector
 	UE_LOG(LogTemp,Warning,TEXT("StaticToStatic: Found coverpoints in ord world 3"))
 	for(USceneComponent* covpos:coverstruct.CoverPositions)
 	{
-		UE_LOG(LogPRAISoldier, Log, TEXT("StaticToStatic: foreach covpos is %s"), *covpos->GetComponentLocation().ToString())
 		FVector TraceStart=covpos->GetComponentLocation();
 		FVector TraceEnd=PlayerPos;
 		FHitResult HitResult;
@@ -404,6 +403,7 @@ bool AStaticObjectToStaticObject::TryToFindCoverPoint(FVector PlayerPos, FVector
 			DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
 			if(HitResult.Actor==this && coverstruct.PointIsNotTaken.Contains(box) && coverstruct.PointIsNotTaken[box])
 			{
+				UE_LOG(LogPRAISoldier, Log, TEXT("StaticToStatic: covpos set to %s"), *covpos->GetComponentLocation().ToString())
 				CoverPos = TraceStart;
 				coverstruct.LastCoverPosition = covpos;
 				return true;

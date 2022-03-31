@@ -112,6 +112,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	FPlayerPositionData PlayerCoordinates;
+
+	UPROPERTY(BlueprintReadOnly)
+	FRotator AimRotator;
 	
 	UFUNCTION()
 	virtual void StartFiring(const FPlayerPositionData& PlayerPos) override;
@@ -151,6 +154,8 @@ private:
 
 	UFUNCTION()
 	void ThrowGrenadeCaller();
+
+	float OldYaw = 0.f;
 
 	// void MoveForward(float Amount);
 	// void MoveRight(float Amount);

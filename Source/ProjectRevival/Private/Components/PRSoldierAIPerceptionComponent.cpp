@@ -153,10 +153,6 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 		CoverRef = BestCoverRef;
 		CoverPos = BestCoverPos;
 		Cast<IIChangingWorldActor>(BestCoverRef)->SetLastCoverPointStatus(false);
-		if (CoverRef)
-		{
-			UE_LOG(LogPRAISoldier, Log, TEXT("Perception: PerceptionCoverRef class is %s"), *CoverRef->GetName())
-		}
 		return true;
 	}
 }
