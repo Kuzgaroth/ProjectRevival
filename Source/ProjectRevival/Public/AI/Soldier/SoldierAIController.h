@@ -56,6 +56,7 @@ public:
 	FOnPlayerSpottedSignature OnPlayerSpotted;
 	//Делегат для выбора действий ботов в крыльях (надо подключить к BehaviorTree)
 	FOnWingBotsDecision OnBotWingDecision;
+	UFUNCTION()
 	void StartFiring();
 	// Функция, к которой должен быть привязан делегат класса Character
 	void StopFiring();
