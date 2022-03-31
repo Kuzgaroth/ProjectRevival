@@ -2,7 +2,9 @@
 
 
 #include "AbilitySystem/AbilityTasks/GhostTask_InvisibilityToggle.h"
+#include "PlayerCharacter.h"
 #include "AbilitySystem/PRAbilityTypes.h"
+#include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 void UGhostTask_InvisibilityToggle::Activate()
@@ -20,7 +22,12 @@ void UGhostTask_InvisibilityToggle::Activate()
 		TickActor->OnTick.AddUObject(this, &UGhostTask_InvisibilityToggle::TickTimeline);
 		UGameplayStatics::FinishSpawningActor(TickActor,GetOwnerActor()->GetTransform());
 		//TickActor->SetTimeline(Timeline);
-		
+		auto Character = Cast<APlayerCharacter>(GetOwnerActor());
+		if (Character)
+		{
+			Character->GetPlayerSpringArmComponent()->bDoCollisionTest=0;
+			Character->GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+		}
 		DisappearMeshes();
 	}
 	
@@ -44,6 +51,7 @@ void UGhostTask_InvisibilityToggle::TickTimeline(float Delta)
 void UGhostTask_InvisibilityToggle::DisappearMeshes()
 {
 	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Disappearing meshes has started"))
+	
 	Timeline.SetTimelineFinishedFunc(OnDisappearFinished);
 	Timeline.PlayFromStart();
 	//UE_LOG(LogPRAbilitySystemBase, Warning, TEXT("Timeline playing status: %s"),Timeline.IsPlaying() ? TEXT("True") : TEXT("False"));
@@ -52,6 +60,12 @@ void UGhostTask_InvisibilityToggle::DisappearMeshes()
 void UGhostTask_InvisibilityToggle::AppearMeshes()
 {
 	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Appearing meshes has started"))
+	auto Character = Cast<APlayerCharacter>(GetOwnerActor());
+	if (Character)
+	{
+		Character->GetPlayerSpringArmComponent()->bDoCollisionTest=1;
+		Character->GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+	}
 	Timeline.SetTimelineFinishedFunc(OnAppearFinished);
 	Timeline.ReverseFromEnd();
 }
