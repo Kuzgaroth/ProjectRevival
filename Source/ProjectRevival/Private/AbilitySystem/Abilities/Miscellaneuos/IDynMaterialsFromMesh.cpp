@@ -17,6 +17,12 @@ void IIDynMaterialsFromMesh::SetupDynMaterialsFromMesh(AActor* Actor, TArray<UMa
 				const auto Material = Mesh->CreateDynamicMaterialInstance(i);
 				DynamicMaterials.Add(Material);
 			}
+			
 		}
 	}
+	TArray<AActor*> AttachedActors;
+	Actor->GetAttachedActors(AttachedActors, false);
+	if (AttachedActors.Num()>0)
+		for (AActor* AttachedActor : AttachedActors)
+			SetupDynMaterialsFromMesh(AttachedActor, DynamicMaterials);
 }

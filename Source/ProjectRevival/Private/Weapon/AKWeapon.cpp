@@ -29,6 +29,12 @@ void AKWeapon::BeginPlay()
 	check(MagazineMeshComponent);
 
 	
+	
+}
+
+void AKWeapon::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 	if(!UGameplayStatics::GetPlayerCharacter(GetWorld(), 0) || !GetWorld())
 	{
 		UE_LOG(LogActor,Error,TEXT("Unable to spawn magazine"));
