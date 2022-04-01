@@ -321,7 +321,6 @@ void ASoldierEnemy::StartCoverToFire()
 	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartCoverToFire() was called"))
 	if (GetCoverIndex() < 2) {return;}
 	if (CoverData.IsInTransition()) {return;}
-	if (!CoverData.IsInCover()) {return;}
 	CoverData.IsInFireTransition = true;
 	// StartCoverToFireForAnimDelegate.Broadcast();
 }
