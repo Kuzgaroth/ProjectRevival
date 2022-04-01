@@ -17,12 +17,6 @@ class PROJECTREVIVAL_API UBTD_CheckForWingSide : public UBTDecorator
 	GENERATED_BODY()
 	typedef FBTPlayerCheckDecoratorMemory TNodeInstanceMemory;
 
-	UPROPERTY(EditAnywhere, Category="Blackboard")
-	FBlackboardKeySelector Comparekey;
-
-	UPROPERTY(EditAnywhere, Category="Blackboard")
-	EWing Wing;
-
 	UBTD_CheckForWingSide();
 
 protected:

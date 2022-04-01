@@ -5,24 +5,33 @@
 
 UBTD_CheckForWingSide::UBTD_CheckForWingSide()
 {
+	NodeName = "Check for wing side";
 }
 
 bool UBTD_CheckForWingSide::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
-	return Super::CalculateRawConditionValue(OwnerComp, NodeMemory);
+	return CalcCondition(OwnerComp, NodeMemory);
 }
 
 void UBTD_CheckForWingSide::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
+	TNodeInstanceMemory* DecoratorMemory = CastInstanceNodeMemory<TNodeInstanceMemory>(NodeMemory);
+	DecoratorMemory->bLastRawResult = CalcCondition(OwnerComp, NodeMemory);
 }
 
 void UBTD_CheckForWingSide::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
+	TNodeInstanceMemory* DecoratorMemory = CastInstanceNodeMemory<TNodeInstanceMemory>(NodeMemory);
+	
+	const bool bResult = CalcCondition(OwnerComp, NodeMemory);
+	if (bResult != DecoratorMemory->bLastRawResult)
+	{
+		DecoratorMemory->bLastRawResult = bResult;
+		OwnerComp.RequestExecution(this);
+	}
 }
 
 bool UBTD_CheckForWingSide::CalcCondition(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
-	return false;
+	return true;
 }

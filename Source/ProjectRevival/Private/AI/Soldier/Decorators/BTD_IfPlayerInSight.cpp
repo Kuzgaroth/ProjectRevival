@@ -23,19 +23,7 @@ bool UBTD_IfPlayerInSight::CalcCondition(UBehaviorTreeComponent& OwnerComp, uint
 
 	const auto Actor = PerceptionComp->GetClosestEnemy();
 	
-	if (Actor.GetActor() && !Controller->GetBIsFiring())
-	{
-		const auto ActorLocation =  PerceptionComp->GetActorLocation(*Actor.GetActor());
-		UE_LOG(LogPRAIDecorators, Log, TEXT("Player Pos is set to: X = %0.2f, Y = %0.2f"), ActorLocation.X, ActorLocation.Y)
-
-		// Удалить когда будет написан координатор
-		Controller->SetPlayerPos(FPlayerPositionData(Actor.GetActor(), nullptr));
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return Actor.GetActor() && !Controller->GetBIsFiring();
 }
 
 bool UBTD_IfPlayerInSight::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const

@@ -16,9 +16,9 @@ class PROJECTREVIVAL_API ACoverObject : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ACoverObject();
-
+#if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-	
+#endif
 
 protected:
 	// Called when the game starts or when spawned

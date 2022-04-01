@@ -5,6 +5,7 @@
 
 #include <string>
 
+#include "PlayerCharacter.h"
 #include "DrawDebugHelpers.h"
 #include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
 #include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
@@ -25,6 +26,7 @@ AStaticObjectToNothing::AStaticObjectToNothing()
 	OnTimeLineFinished.BindUFunction(this,FName("TimeLineFinished"));
 	
 	SuperMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SuperMesh"));
+	RootComponent = SuperMesh;
 	SuperMesh->SetMobility(EComponentMobility::Movable);
 	SuperMesh->SetVisibility(true);
 }
@@ -55,7 +57,7 @@ void AStaticObjectToNothing::BeginPlay()
 	if (World==OrdinaryWorld)
 	{
 		isApearing=true;
-		if(VisualCurve)
+		if(VisualCurve&&MeshesMaterials.Num()>0)
 		{
 			for (const auto Material : MeshesMaterials)
 			{
@@ -71,7 +73,7 @@ void AStaticObjectToNothing::BeginPlay()
 	}
 	else
 	{
-		if(VisualCurve)
+		if(VisualCurve&&MeshesMaterials.Num()>0)
 		{
 			for (const auto Material : MeshesMaterials)
 			{
@@ -100,6 +102,7 @@ void AStaticObjectToNothing::BeginPlay()
 			
 		}
 	}
+	SuperMesh->OnComponentEndOverlap.AddDynamic(this,&AStaticObjectToNothing::OnMeshComponentEndCollision);
 }
 
 // Called every frame
@@ -163,6 +166,7 @@ void AStaticObjectToNothing::Changing()
 		else
 		{
 			SuperMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+			LoadComponentTags(SuperMesh);
 			SuperMesh->SetVisibility(true);
 		}
 	}
@@ -177,6 +181,7 @@ void AStaticObjectToNothing::Changing()
 		}
 		else
 		{
+			ClearComponentTags(SuperMesh);
 			SuperMesh->SetCollisionProfileName("OverlapAll");
 			SuperMesh->SetVisibility(false);
 		}
@@ -225,12 +230,58 @@ void AStaticObjectToNothing::ChangeVisibleWorld(EChangeAllMapEditorVisibility Vi
 	}
 }
 
+void AStaticObjectToNothing::ShowChangeWorldObjectByAbility()
+{
+	SuperMesh->SetRenderCustomDepth(true);
+	if(SuperMesh->GetCollisionProfileName()=="OverlapAll")
+	{
+		if(MeshesMaterials.Num()!=0)
+			for (const auto Material : MeshesMaterials)
+			{
+				auto reqwar=(MaxCurveValue-MinCurveValue)/TransparencyLevel;
+				reqwar=MaxCurveValue-reqwar;
+				Material->SetScalarParameterValue("Amount",reqwar);
+			}
+	}
+	
+}
+
+void AStaticObjectToNothing::HideChangeWorldObjectByAbility()
+{
+	SuperMesh->SetRenderCustomDepth(false);
+	if(SuperMesh->GetCollisionProfileName()=="OverlapAll")
+	{
+		if(MeshesMaterials.Num()!=0)
+			for (const auto Material : MeshesMaterials)
+			{
+				Material->SetScalarParameterValue("Amount",MaxCurveValue);
+			}
+	}
+}
+
 void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if(Cast<AChangeWorldSphereActor>(OtherActor))
 	{
 		Changing();
+	}
+	auto Player=Cast<APlayerCharacter>(OtherActor);
+	if(Player&& SuperMesh->GetCollisionProfileName()=="OverlapAll")
+	{
+		Player->SetChangeWorldPossibility(false,this);
+		
+	}
+}
+
+void AStaticObjectToNothing::OnMeshComponentEndCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	auto Player=Cast<APlayerCharacter>(OtherActor);
+	if(Player)
+	{
+		Player->SetChangeWorldPossibility(true,nullptr);
+		HideChangeWorldObjectByAbility();
 	}
 }
 
@@ -286,6 +337,7 @@ void AStaticObjectToNothing::TimeLineFloatReturn(float Value)
 	{
 		if(isApearing)
 		{
+			
 			Material->SetScalarParameterValue("Amount",Value);
 		}
 		else

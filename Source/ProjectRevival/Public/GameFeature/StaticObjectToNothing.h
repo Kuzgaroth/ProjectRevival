@@ -50,14 +50,18 @@ protected:
 	
 	virtual void LoadComponentTags(UStaticMeshComponent* supermesh) override;
 
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	float TransparencyLevel=5.0f;
+	
+
 
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
+#if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-
+#endif
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	UStaticMeshComponent* SuperMesh;
 
@@ -66,6 +70,9 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
 	
+	void ShowChangeWorldObjectByAbility();
+	void HideChangeWorldObjectByAbility();
+
 
 	UFUNCTION()
 	void OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, 
@@ -74,6 +81,12 @@ public:
 					  int32 OtherBodyIndex, 
 					  bool bFromSweep, 
 					  const FHitResult &SweepResult);
+
+	UFUNCTION()
+	void OnMeshComponentEndCollision(UPrimitiveComponent* OverlappedComponent, 
+					  AActor* OtherActor, 
+					  UPrimitiveComponent* OtherComp, 
+					  int32 OtherBodyIndex);
 
 	UFUNCTION()
 	void OnCoverPointComponentCollision(UPrimitiveComponent* OverlappedComponent, 

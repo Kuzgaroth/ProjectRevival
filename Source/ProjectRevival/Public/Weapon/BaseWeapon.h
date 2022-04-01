@@ -30,7 +30,7 @@ public:
 	FAmmoData GetAmmoData() const {return CurrentAmmo;}
 	FAmmoData GetDefaultAmmoData() const {return DefaultAmmo;}
 	bool IsAmmoEmpty() const;
-
+	void SetAmmoData(FAmmoData NewAmmoData);
 	FOnWeaponShotSignature OnWeaponShotDelegate;
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")

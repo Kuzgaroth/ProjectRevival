@@ -15,10 +15,10 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Components/BaseCharacterMovementComponent.h"
-#include "ProjectRevival/ProjectRevival.h"
 #include "GameFeature/StaticObjectToNothing.h"
 #include "Kismet/GameplayStatics.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
+#include "Sound/SoundCue.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -81,6 +81,7 @@ void APlayerCharacter::MoveForward(float Amount)
 	if (CoverData.IsInCover() || CoverData.IsInTransition() || CoverData.IsFiring) return;
 	bIsMovingForward = Amount>0;
 	PlayerMovementComponent->MoveForward(Amount);
+
 }
 
 void APlayerCharacter::MoveRight(float Amount) 
@@ -144,6 +145,16 @@ void APlayerCharacter::LookAround(float Amount)
 void APlayerCharacter::CoverCrouch()
 {
 	CoverData.TrySwitchCoverType(this);
+	if (CameraCover.bIsShift == true)
+	{
+		CameraCover.StartPos = SpringArmComponent->SocketOffset.Y;
+		if (LeftSideView.CamPos == false) CameraCover.EndPos = SpringArmComponent->SocketOffset.Y - CameraCover.CoverYShift;
+		else CameraCover.EndPos = SpringArmComponent->SocketOffset.Y + CameraCover.CoverYShift;
+		CameraCover.bIsShift = false;
+		CameraCover.IsShifting = true;
+		CameraCoverFunctions->CameraCoverYShiftTimeline.PlayFromStart();
+	}
+	CameraCoverFunctions->OnHighCoverLow(SpringArmComponent, CameraCoverFunctions, CameraCover);
 }
 
 void APlayerCharacter::Cover()
@@ -153,12 +164,14 @@ void APlayerCharacter::Cover()
 	if (FMath::Abs(GetAimDelta().Yaw)>60.f) return;
 	if (CoverData.IsInCover())
 	{
+		LeftSideView.bIsFirstTimeChange = false;
 		StopCover_Internal();
 		return;
 	}
 	FHitResult CoverHit;
 	const ECoverType CoverType = CoverTrace(CoverHit);
 	if (CoverType==ECoverType::None) return;
+	LeftSideView.bIsFirstTimeChange = false;
 	StartCover_Internal(CoverHit);
 }
 
@@ -226,6 +239,11 @@ void APlayerCharacter::Landed(const FHitResult& Hit)
 	Super::Landed(Hit);
 }
 
+TArray<FAmmoData> APlayerCharacter::GetPlayerWeapons() const
+{
+	return WeaponComponent->GetAllWeapons();
+}
+
 bool APlayerCharacter::IsRunning() const
 {
 	return bWantsToRun && bIsMovingForward && !GetVelocity().IsZero();
@@ -288,6 +306,8 @@ void APlayerCharacter::BeginPlay()
 	LeftSideViewFunctions = NewObject<ULeftSideViewFunctions>(this);
 	CameraCoverFunctions = NewObject<UCameraCoverFunctions>(this);
 
+	//LeftSideView.YCenter = (SpringArmComponent->SocketOffset.Y + tan(CameraComponent->GetRelativeRotation().Yaw * PI / 180) * SpringArmComponent->TargetArmLength) * 2.0;
+
 	FOnTimelineVector TimelineProgress;
 	FOnTimelineFloat TimelineFieldOfView;
 	TimelineProgress.BindUFunction(this, FName("TimelineProgress"));
@@ -295,9 +315,9 @@ void APlayerCharacter::BeginPlay()
 	PlayerAimZoomFunctions->CurveTimeline.AddInterpVector(PlayerAimZoom.CurveVector, TimelineProgress);
 	PlayerAimZoomFunctions->CurveTimeline.AddInterpFloat(PlayerAimZoom.CurveFloat, TimelineFieldOfView);
 
-	FOnTimelineFloat TimelineLeftSideView;
+	FOnTimelineVector TimelineLeftSideView;
 	TimelineLeftSideView.BindUFunction(this, FName("TimelineLeftSideView"));
-	LeftSideViewFunctions->LeftSideViewCurveTimeline.AddInterpFloat(PlayerAimZoom.CurveFloat, TimelineLeftSideView);
+	LeftSideViewFunctions->LeftSideViewCurveTimeline.AddInterpVector(LeftSideView.LeftSideViewVector, TimelineLeftSideView);
 
 	FOnTimelineVector TimelineCover;
 	FOnTimelineFloat TimelineCoverFieldOfView;
@@ -309,6 +329,10 @@ void APlayerCharacter::BeginPlay()
 	FOnTimelineFloat TimelineCoverYShift;
 	TimelineCoverYShift.BindUFunction(this, FName("TimelineCoverYShift"));
 	CameraCoverFunctions->CameraCoverYShiftTimeline.AddInterpFloat(CameraCover.CoverYShiftCurve, TimelineCoverYShift);
+
+	FOnTimelineFloat TimelineCoverLow;
+	TimelineCoverLow.BindUFunction(this, FName("TimelineCoverLow"));
+	CameraCoverFunctions->CameraCoverLowTimeline.AddInterpFloat(CameraCover.CoverHighCoverCrouchCurve, TimelineCoverLow);
 
 	CameraCover.SavePosRight = SpringArmComponent->SocketOffset;
 	CameraCover.SavePosLeft = SpringArmComponent->SocketOffset;
@@ -322,6 +346,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	LeftSideViewFunctions->LeftSideViewCurveTimeline.TickTimeline(DeltaTime);
 	CameraCoverFunctions->CameraCoverTimeline.TickTimeline(DeltaTime);
 	CameraCoverFunctions->CameraCoverYShiftTimeline.TickTimeline(DeltaTime);
+	CameraCoverFunctions->CameraCoverLowTimeline.TickTimeline(DeltaTime);
 }
 
 
@@ -344,7 +369,34 @@ void APlayerCharacter::TimelineLeftSideView(float Value)
 
 void APlayerCharacter::TimelineCover(float Value)
 {
-	CameraCoverFunctions->TimelineCover(Value, CameraCoverFunctions, SpringArmComponent, CameraCover, LeftSideView);
+	CameraCoverFunctions->TimelineCover(Value, CameraCoverFunctions, SpringArmComponent);
+}
+
+
+void APlayerCharacter::TimelineCoverLow(float Value)
+{
+	CameraCoverFunctions->TimelineCoverLow(Value, CameraCoverFunctions, SpringArmComponent);
+}
+
+void APlayerCharacter::SetChangeWorldPossibility(bool newValue, AStaticObjectToNothing* overlappedAct)
+{
+	OverlappedChangeWActor=overlappedAct;
+	WorldCanBeChanged=newValue;
+}
+
+bool APlayerCharacter::CheckIfWorldCanBeChanged() const
+{
+	if(!WorldCanBeChanged)
+	{
+		if(WorldCantBeChangedPhrase)
+			UGameplayStatics::SpawnSound2D(GetWorld(),WorldCantBeChangedPhrase);
+		if(OverlappedChangeWActor)
+		{
+			OverlappedChangeWActor->ShowChangeWorldObjectByAbility();
+		}
+		
+	}
+	return WorldCanBeChanged;
 }
 
 
@@ -397,7 +449,7 @@ void APlayerCharacter::CameraZoomOut()
 			PlayerMovementComponent->AimEnd();
 		}
 		bUseControllerRotationYaw=false;
-		PlayerAimZoomFunctions->CameraZoomOut(SpringArmComponent, PlayerAimZoomFunctions->CurveTimeline, PlayerAimZoom, CoverData);
+		PlayerAimZoomFunctions->CameraZoomOut(SpringArmComponent, PlayerAimZoomFunctions->CurveTimeline, PlayerAimZoom, CoverData, CameraCover);
 	}
 }
 
@@ -408,7 +460,7 @@ void APlayerCharacter::OnCameraMove()
 	if (LeftSideView.Block == false && PlayerAimZoom.IsZooming == false && LeftSideView.IsMoving == false && !(CameraCoverFunctions->CameraCoverYShiftTimeline.IsPlaying()))
 	{
 		if (CoverData.IsInCover() && CameraCover.bIsTurning == false) return;
-		LeftSideViewFunctions->OnCameraMove(SpringArmComponent, CameraComponent, LeftSideView, LeftSideViewFunctions->LeftSideViewCurveTimeline, CameraCover, CoverData);
+		LeftSideViewFunctions->OnCameraMove(SpringArmComponent, CameraComponent, LeftSideView, LeftSideViewFunctions->LeftSideViewCurveTimeline, CameraCover, CoverData, CameraCoverFunctions);
 	}
 }
 
@@ -470,6 +522,7 @@ bool APlayerCharacter::StopCover_Internal()
 
 	CameraCoverFunctions->Start = SpringArmComponent->SocketOffset;
 	CameraCoverFunctions->End = SpringArmComponent->SocketOffset - CameraCover.CameraCover;
+	if (CameraCover.bIsLow == true) { CameraCoverFunctions->End.Z += CameraCover.Low; CameraCover.bIsLow = false; }
 	if (CameraCoverFunctions->CoverType == ECoverType::Low) CameraCoverFunctions->End.Z += CameraCover.Low;
 	CameraCoverFunctions->CoverType = None;
 	PlayerAimZoom.StartStartPos = FVector(0.0);

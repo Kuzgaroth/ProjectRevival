@@ -34,7 +34,6 @@ void AMeleeWeapon::BeginPlay()
 	Super::BeginPlay();
 	check(WeaponMesh);
 	check(BladeCollisionBox);
-	UE_LOG(LogPRAbilitySystemBase, Error, TEXT("BeginPlay"));
 }
 
 void AMeleeWeapon::AddNewBeam()

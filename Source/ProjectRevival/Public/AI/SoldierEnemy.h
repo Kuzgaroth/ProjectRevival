@@ -65,6 +65,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FCoverData& GetCoverData();
 
+	UFUNCTION(BlueprintCallable)
+	void UpdatePlayerCoordinates(const FPlayerPositionData& PlayerPos);
+
 	UFUNCTION()
 	void StartCoverSoldier(const FVector& CoverPos, AActor* CoverRef);
 
@@ -117,7 +120,7 @@ public:
 	FRotator AimRotator;
 	
 	UFUNCTION()
-	virtual void StartFiring(const FPlayerPositionData& PlayerPos) override;
+	virtual void StartFiring() override;
 
 	UFUNCTION(BlueprintCallable)
 	virtual void StopFiring();
