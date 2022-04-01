@@ -39,5 +39,5 @@ bool UBTD_DecisionMakingAllowed::CalcCondition(UBehaviorTreeComponent& OwnerComp
 	if (!Controller) return false;
 
 	UE_LOG(LogPRAIDecorators, Log, TEXT("%b"), Controller->GetBIsDecisionMakingAllowed());
-	return Controller->GetBIsDecisionMakingAllowed();
+	return Controller->GetBIsDecisionMakingAllowed() && Controller->GetBIsFiringAllowed();
 }

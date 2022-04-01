@@ -69,7 +69,7 @@ void AAICharacter::BeginPlay()
 	check(HealthWidgetComponent);
 }
 
-void AAICharacter::StartFiring(const FPlayerPositionData& PlayerPos)
+void AAICharacter::StartFiring()
 {
 	UE_LOG(LogPRAICharacter, Log, TEXT("Started Firing"));
 }

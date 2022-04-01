@@ -13,6 +13,7 @@ class ASoldierAIController;
 
 // Объявление делегата передачи положения игрока
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerPosDelegate, const FPlayerPositionData&, PlayerPosition);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartFiring);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStartEnteringCover, const FVector&, CoverPosition, AActor*, CoverReference);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartCoverSideMoving, float, SideMovementAmount);
@@ -47,8 +48,13 @@ public:
 	void SetBIsCoverChangeAllowed(bool const bCond) {bIsCoverChangeAllowed = bCond; }
 	bool GetBIsDecisionMakingAllowed() const { return bIsDecisionMakingAllowed; }
 	void SetBIsDecisionMakingAllowed(bool const bCond) { bIsDecisionMakingAllowed = bCond; }
+	bool GetBIsFiringAllowed() const { return bIsFiringAllowed; }
+	void SetBIsFiringAllowed(bool const bCond) { bIsFiringAllowed = bCond; }
 
+	UPROPERTY(BlueprintAssignable)
 	FPlayerPosDelegate PlayerPosDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FStartFiring StartFiringDelegate;
 	UPROPERTY(BlueprintAssignable)
 	FStartEnteringCover StartEnteringCoverDelegate;
 	UPROPERTY(BlueprintAssignable)
@@ -79,6 +85,8 @@ public:
 	void OnCoverTimerFired();
 	void StartGeneralTimer();
 	void OnGeneralTimerFired();
+	void StartFireTimer(float cooldownSeconds);
+	void OnFireTimerFired();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
 	EWing BotWing;
@@ -115,12 +123,14 @@ protected:
 	
 	FTimerHandle BTCoverTimerHandle;
 	FTimerHandle BTGeneralTimerHandle;
+	FTimerHandle BTFireTimerHandle;
 	
 	bool bIsFiring;
 	bool bIsInCover;
 	bool bIsSideTurning;
 	bool bIsCoverChangeAllowed;
 	bool bIsDecisionMakingAllowed;
+	bool bIsFiringAllowed;
 	
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaSeconds) override;

@@ -48,7 +48,7 @@ public:
 	virtual void OnDeath() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void PossessedBy(AController* NewController) override;
-	virtual void StartFiring(const FPlayerPositionData& PlayerPos);
+	virtual void StartFiring();
 	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")

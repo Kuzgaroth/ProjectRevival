@@ -126,7 +126,8 @@ void ASoldierEnemy::PossessedBy(AController* NewController)
 	Cast<ASoldierAIController>(GetController())->StartEnteringCoverDelegate.AddDynamic(this, &ASoldierEnemy::StartCoverSoldier);
 	Cast<ASoldierAIController>(GetController())->StartExitingCoverDelegate.AddDynamic(this, &ASoldierEnemy::StopCoverSoldier);
 	Cast<ASoldierAIController>(GetController())->StartCoverSideMovingDelegate.AddDynamic(this, &ASoldierEnemy::ChangeCoverSide);
-	Cast<ASoldierAIController>(GetController())->PlayerPosDelegate.AddDynamic(this, &ASoldierEnemy::StartFiring);
+	Cast<ASoldierAIController>(GetController())->PlayerPosDelegate.AddDynamic(this, &ASoldierEnemy::UpdatePlayerCoordinates);
+	Cast<ASoldierAIController>(GetController())->StartFiringDelegate.AddDynamic(this, &ASoldierEnemy::StartFiring);
 }
 
 void ASoldierEnemy::OnHealthChanged(float CurrentHealth, float HealthDelta)
@@ -325,7 +326,7 @@ void ASoldierEnemy::StartCoverToFireFinish()
 	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartCoverToFireFinish() was called"))
 	CoverData.IsInFireTransition = false;
 	CoverData.IsFiring = true;
-	StartFiring(PlayerCoordinates);
+	StartFiring();
 }
 
 void ASoldierEnemy::StartCoverFromFire()
@@ -345,11 +346,10 @@ void ASoldierEnemy::StartCoverFromFireFinish()
 	StopFiring();
 }
 
-void ASoldierEnemy::StartFiring(const FPlayerPositionData& PlayerPos)
+void ASoldierEnemy::StartFiring()
 {
 	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartFiring() was called"))
-	UE_LOG(LogPRAISoldier, Log, TEXT("Character: PlayerPos is %s"), *PlayerPos.GetActorPosition().ToString())
-	PlayerCoordinates = PlayerPos;
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: PlayerPos is %s"), *PlayerCoordinates.GetActorPosition().ToString())
 	if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring && !bIsFiringBP && !CoverData.IsInTransition() && GetCoverIndex() >= 2)
 	{
 		StartCoverToFire();
@@ -449,6 +449,11 @@ void ASoldierEnemy::CoverCrouch()
 FCoverData& ASoldierEnemy::GetCoverData()
 {
 	return CoverData;
+}
+
+void ASoldierEnemy::UpdatePlayerCoordinates(const FPlayerPositionData& PlayerPos)
+{
+	PlayerCoordinates = PlayerPos;
 }
 
 void ASoldierEnemy::CleanCoverData()
