@@ -123,10 +123,14 @@ void ASoldierEnemy::Tick(float DeltaSeconds)
 void ASoldierEnemy::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	Cast<ASoldierAIController>(GetController())->StartEnteringCoverDelegate.AddDynamic(this, &ASoldierEnemy::StartCoverSoldier);
-	Cast<ASoldierAIController>(GetController())->StartExitingCoverDelegate.AddDynamic(this, &ASoldierEnemy::StopCoverSoldier);
-	Cast<ASoldierAIController>(GetController())->StartCoverSideMovingDelegate.AddDynamic(this, &ASoldierEnemy::ChangeCoverSide);
-	Cast<ASoldierAIController>(GetController())->PlayerPosDelegate.AddDynamic(this, &ASoldierEnemy::StartFiring);
+	ASoldierAIController* SoldierController = Cast<ASoldierAIController>(NewController);
+	PlayerCoordinates = SoldierController->GetPlayerPos();
+	AimRotator = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerCoordinates.GetActorPosition());
+	DrawDebugLine(GetWorld(),GetActorLocation(),PlayerCoordinates.GetActorPosition(),FColor::Purple,false,5.0f,0,3.0f);
+	SoldierController->StartEnteringCoverDelegate.AddDynamic(this, &ASoldierEnemy::StartCoverSoldier);
+	SoldierController->StartExitingCoverDelegate.AddDynamic(this, &ASoldierEnemy::StopCoverSoldier);
+	SoldierController->StartCoverSideMovingDelegate.AddDynamic(this, &ASoldierEnemy::ChangeCoverSide);
+	SoldierController->PlayerPosDelegate.AddDynamic(this, &ASoldierEnemy::StartFiring);
 }
 
 void ASoldierEnemy::OnHealthChanged(float CurrentHealth, float HealthDelta)
@@ -154,7 +158,8 @@ void ASoldierEnemy::UpdateHealthWidgetVisibility()
 void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, AActor* CoverRef)
 {
 	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartCoverSoldier() was called"))
-	// FHitResult HitResult;
+	AimRotator = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerCoordinates.GetActorPosition());
+    DrawDebugLine(GetWorld(),GetActorLocation(),PlayerCoordinates.GetActorPosition(),FColor::Purple,false,5.0f,0,3.0f);
 	TArray<FHitResult> HitResults;
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(this);
