@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "ConfirmationWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/WidgetSwitcher.h"
 
@@ -57,9 +59,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> OptionsGameWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
+	TSubclassOf<UUserWidget> ConfirmationWidgetClass;
+
 	virtual void NativeOnInitialized() override;
 
 private:
+	UPROPERTY()
+	UConfirmationWidget* ConfirmationWidget;
+	
 	UFUNCTION()
     void OnBack();
 
@@ -76,7 +84,16 @@ private:
 	void OnGame();
 
 	UFUNCTION()
+	void ChooseLevel();
+
+	UFUNCTION()
 	void OpenMenu();
+
+	UFUNCTION()
+	void ApplyAllChanges();
+
+	UFUNCTION()
+	void CloseConfirmationWidget();
 
 	FTimerHandle TimerHandle;
 };

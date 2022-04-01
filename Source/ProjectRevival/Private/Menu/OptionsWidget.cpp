@@ -66,21 +66,15 @@ void UOptionsWidget::NativeOnInitialized()
 
 void UOptionsWidget::OnBack()
 {
-	UWorld* MyWorld = GetWorld();
-	FString CurrentMapName = MyWorld->GetMapName();
-	if (CurrentMapName.Equals("MenuLevel"))
+	if (Cast<UOptionsGraphicsWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(0))->HasUnsavedChanges())
 	{
-		if (MenuWidgetClass)
+		if (ConfirmationWidgetClass)
 		{
-			LeaveEvent();
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UOptionsWidget::OpenMenu, 1.0f, false, 0.125f);
-		}
-	}
-	else
-	{
-		if (PauseMenuWidgetClass)
-		{
-			RemoveFromParent();
+			ConfirmationWidget = CreateWidget<UConfirmationWidget>(GetWorld(), ConfirmationWidgetClass);
+			ConfirmationWidget->ConfirmButton->OnClicked.AddDynamic(this, &UOptionsWidget::ApplyAllChanges);
+			ConfirmationWidget->DeclineButton->OnClicked.AddDynamic(this, &UOptionsWidget::CloseConfirmationWidget);
+			ConfirmationWidget->SetLabelText(FText::FromString("Do you want to save your changes?"));
+			ConfirmationWidget->AddToViewport();
 		}
 	}	
 }
@@ -117,6 +111,27 @@ void UOptionsWidget::OnGame()
 	}
 }
 
+void UOptionsWidget::ChooseLevel()
+{
+	UWorld* MyWorld = GetWorld();
+	FString CurrentMapName = MyWorld->GetMapName();
+	if (CurrentMapName.Equals("MenuLevel"))
+	{
+		if (MenuWidgetClass)
+		{
+			LeaveEvent();
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UOptionsWidget::OpenMenu, 1.0f, false, 0.125f);
+		}
+	}
+	else
+	{
+		if (PauseMenuWidgetClass)
+		{
+			RemoveFromParent();
+		}
+	}
+}
+
 void UOptionsWidget::OpenMenu()
 {
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
@@ -141,6 +156,25 @@ void UOptionsWidget::OpenMenu()
 			// MenuWidget->AddToViewport();
 		}
 	}
+}
+
+void UOptionsWidget::ApplyAllChanges()
+{
+	if (OptionsWidgetSwitcher)
+	{
+		Cast<UOptionsGraphicsWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(0))->ApplyChanges();	
+	}
+	
+	CloseConfirmationWidget();
+}
+
+void UOptionsWidget::CloseConfirmationWidget()
+{
+	if (ConfirmationWidget)
+	{
+		ConfirmationWidget->RemoveFromParent();
+	}
+	ChooseLevel();
 }
 
 

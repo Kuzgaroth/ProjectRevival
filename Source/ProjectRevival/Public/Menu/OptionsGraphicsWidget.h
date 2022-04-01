@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "Blueprint/UserWidget.h"
 #include "OptionsGraphicsWidget.generated.h"
 
@@ -15,7 +16,12 @@ UCLASS()
 class PROJECTREVIVAL_API UOptionsGraphicsWidget : public UUserWidget
 {
 	GENERATED_BODY()
+public:
+	bool HasUnsavedChanges();
 
+	UFUNCTION()
+	void ApplyChanges();
+	
 protected:
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* ResolutionBoxString;
@@ -43,9 +49,6 @@ protected:
 private:
 	UFUNCTION()
 	void SetView();
-	
-	UFUNCTION()
-    void ApplyChanges();
 
 	UFUNCTION()
 	void ApplyDefaultChanges();
