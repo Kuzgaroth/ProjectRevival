@@ -28,17 +28,20 @@ AChangeWorldSphereActor::AChangeWorldSphereActor()
 void AChangeWorldSphereActor::BeginPlay()
 {
 	Super::BeginPlay();
-	;
+	
 	
 	ChangeWorldFXComponent=SpawnChangeWorldEffect();
-	auto expSpeed=ExpantionSpeed;
-	if(expSpeed<=0.0f)
+	if(ChangeWorldFXComponent)
 	{
-		expSpeed=1000.0f;
+		auto expSpeed=ExpantionSpeed;
+		if(expSpeed<=0.0f)
+		{
+			expSpeed=1000.0f;
+		}
+		ChangeWorldFXComponent->SetVariableFloat("User.Life Time",1000.0f/expSpeed);
+		ChangeWorldFXComponent->SetVariableVec2("User.Effect Size",FVector2D(2.5f*EndRadius));
+		ChangeWorldFXComponent->Activate();
 	}
-	ChangeWorldFXComponent->SetVariableFloat("User.Life Time",1000.0f/expSpeed);
-	ChangeWorldFXComponent->SetVariableVec2("User.Effect Size",FVector2D(2.5f*EndRadius));
-	ChangeWorldFXComponent->Activate();
 	
 }
 
@@ -62,10 +65,9 @@ void AChangeWorldSphereActor::Tick(float DeltaTime)
 }
 UNiagaraComponent* AChangeWorldSphereActor::SpawnChangeWorldEffect()
 {
-	
-	
-	return UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),ChangeWorldFX,GetActorLocation(),GetActorRotation(),FVector(1),true,false);
-	
+	if(ChangeWorldFX)
+		return UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),ChangeWorldFX,GetActorLocation(),GetActorRotation(),FVector(1),true,false);
+	return nullptr;
 }
 //Обработка колизий
 void AChangeWorldSphereActor::OnSphereComponentCollision(UPrimitiveComponent* OverlappedComponent, 

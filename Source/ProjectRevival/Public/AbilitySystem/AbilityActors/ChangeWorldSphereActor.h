@@ -29,7 +29,7 @@ protected:
 	UPROPERTY(EditAnywhere,Category="Sphere params")
 	UNiagaraSystem* ChangeWorldFX;
 	UPROPERTY(EditAnywhere,Category="Sphere params")
-	UNiagaraComponent* ChangeWorldFXComponent;
+	UNiagaraComponent* ChangeWorldFXComponent=nullptr;
 	UPROPERTY(EditAnywhere,Category="Sphere params")
 	float StartRadius=10.0f;
 	UPROPERTY(EditAnywhere,Category="Sphere params")
