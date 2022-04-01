@@ -7,43 +7,48 @@
 #include "Kismet/GameplayStatics.h"
 #include "Menu/MenuLevelTheme.h"
 
-
-bool UOptionsSoundWidget::Initialize()
+void UOptionsSoundWidget::NativeOnInitialized()
 {
-	const auto InitStatus = Super::Initialize();
-
-	
-	Slider_0->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnMasterVolumeChange);
-	Slider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnEffectsVolumeChange);
-	Slider_1->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnMusicVolumeChange);
-	Slider_2->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnVoiceVolumeChange);
-
-	return InitStatus;
+	if (MasterVolumeSlider)
+	{
+		MasterVolumeSlider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnMasterVolumeChange);
+	}
+	if (EffectVolumeSlider)
+	{
+		EffectVolumeSlider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnEffectsVolumeChange);
+	}
+	if (MusicVolumeSlider)
+	{
+		MusicVolumeSlider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnMusicVolumeChange);
+	}
+	if (VoiceVolumeSlider)
+	{
+		VoiceVolumeSlider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnVoiceVolumeChange);
+	}
 }
-
 
 void UOptionsSoundWidget::OnMasterVolumeChange(float newValue)
 {
-	Slider_0->Value = newValue;
+	MasterVolumeSlider->Value = newValue;
 	SetVolume(newValue, "Master");
 }
 
 void UOptionsSoundWidget::OnEffectsVolumeChange(float newValue)
 {
-	Slider->Value = newValue;
+	EffectVolumeSlider->Value = newValue;
 	SetVolume(newValue, "Effects");
 }
 
 void UOptionsSoundWidget::OnMusicVolumeChange(float newValue)
 {
-	Slider_1->Value = newValue;
+	MusicVolumeSlider->Value = newValue;
 	SetVolume(newValue, "Music");
 }
 
 
 void UOptionsSoundWidget::OnVoiceVolumeChange(float newValue)
 {
-	Slider_2->Value = newValue;
+	VoiceVolumeSlider->Value = newValue;
 	SetVolume(newValue, "Voice");
 }
 
@@ -57,4 +62,3 @@ void UOptionsSoundWidget::SetVolume(float newValue, FString WhatSound)
 		Cast<AMenuLevelTheme>(OutActors[EveryActor])->ChangeVolume(newValue, WhatSound);
 	}
 }
-

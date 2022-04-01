@@ -14,33 +14,33 @@ class PROJECTREVIVAL_API UOptionsSoundWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-public:
-	virtual bool Initialize() override;
-
+protected:
 	UPROPERTY(meta=(BindWidget))
-	USlider* Slider_0;
+	USlider* MasterVolumeSlider;
 
 	UFUNCTION()
 	void OnMasterVolumeChange(float newValue);
 	
 	UPROPERTY(meta=(BindWidget))
-	USlider* Slider;
+	USlider* EffectVolumeSlider;
 	
 	UFUNCTION()
 	void OnEffectsVolumeChange(float newValue);
 
 	UPROPERTY(meta=(BindWidget))
-	USlider* Slider_1;
+	USlider* MusicVolumeSlider;
 
 	UFUNCTION()
 	void OnMusicVolumeChange(float newValue);
 
 	UPROPERTY(meta=(BindWidget))
-	USlider* Slider_2;
+	USlider* VoiceVolumeSlider;
 
 	UFUNCTION()
 	void OnVoiceVolumeChange(float newValue);
 
 	UFUNCTION()
 	void SetVolume(float newValue, FString WhatSound);
+
+	virtual void NativeOnInitialized() override;
 };
