@@ -17,6 +17,7 @@ class PROJECTREVIVAL_API UOptionsGraphicsWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
+	UFUNCTION()
 	bool HasUnsavedChanges();
 
 	UFUNCTION()
@@ -44,14 +45,14 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	class UButton* ApplyDefaultButton;
 
-	virtual void NativeOnInitialized() override;
-
-private:
 	UFUNCTION()
 	void SetView();
 
 	UFUNCTION()
 	void ApplyDefaultChanges();
 
+	virtual void NativeOnInitialized() override;
+	
+private:
 	TArray<FIntPoint> PossibleResolutions;
 };

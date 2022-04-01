@@ -4,6 +4,8 @@
 #include "Menu/OptionsSoundWidget.h"
 
 #include "PRGameInstance.h"
+
+#include "Components/Button.h"
 #include "Components/Slider.h"
 #include "Kismet/GameplayStatics.h"
 #include "Menu/MenuLevelTheme.h"
@@ -28,6 +30,17 @@ void UOptionsSoundWidget::NativeOnInitialized()
 	{
 		VoiceVolumeSlider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnVoiceVolumeChange);
 	}
+
+	if (ApplyButton)
+	{
+		ApplyButton->OnClicked.AddDynamic(this, &UOptionsSoundWidget::ApplyChanges);	
+	}
+	if (ApplyDefaultButton)
+	{
+		ApplyDefaultButton->OnClicked.AddDynamic(this, &UOptionsSoundWidget::ApplyDefaultChanges);
+	}
+	
+	SetView();
 
 	MyGameInstance = Cast<UPRGameInstance>
         (UGameplayStatics::GetGameInstance(GetWorld()));
@@ -87,4 +100,28 @@ void UOptionsSoundWidget::SetVolume(float newValue, FString WhatSound)
 	{
 		Cast<AMenuLevelTheme>(OutActors[EveryActor])->ChangeVolume(newValue, WhatSound);
 	}
+}
+
+void UOptionsSoundWidget::SetView()
+{
+	// Set current slider levels here
+}
+
+void UOptionsSoundWidget::ApplyChanges()
+{
+	// Apply and save changes here
+}
+
+void UOptionsSoundWidget::ApplyDefaultChanges()
+{
+	// Set default values here
+	
+	SetView();
+}
+
+bool UOptionsSoundWidget::HasUnsavedChanges()
+{
+	// Check your unsaved changes here
+	
+	return false;
 }

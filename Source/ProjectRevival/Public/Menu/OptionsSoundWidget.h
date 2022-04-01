@@ -13,7 +13,13 @@ UCLASS()
 class PROJECTREVIVAL_API UOptionsSoundWidget : public UUserWidget
 {
 	GENERATED_BODY()
+public:
+	UFUNCTION()
+	bool HasUnsavedChanges();
 
+	UFUNCTION()
+    void ApplyChanges();
+	
 protected:
 	UPROPERTY(meta=(BindWidget))
 	USlider* MasterVolumeSlider;
@@ -41,6 +47,18 @@ protected:
 
 	UFUNCTION()
 	void SetVolume(float newValue, FString WhatSound);
+
+	UPROPERTY(meta = (BindWidget))
+	class UButton* ApplyButton;
+	
+	UPROPERTY(meta = (BindWidget))
+	class UButton* ApplyDefaultButton;
+
+	UFUNCTION()
+	void SetView();
+	
+	UFUNCTION()
+	void ApplyDefaultChanges();
 
 	UPROPERTY()
 	USoundMix* SoundMix;
