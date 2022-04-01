@@ -34,12 +34,21 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	class UButton* ApplyButton;
+	
+	UPROPERTY(meta = (BindWidget))
+	class UButton* ApplyDefaultButton;
 
 	virtual void NativeOnInitialized() override;
 
-private:	
+private:
+	UFUNCTION()
+	void SetView();
+	
 	UFUNCTION()
     void ApplyChanges();
+
+	UFUNCTION()
+	void ApplyDefaultChanges();
 
 	TArray<FIntPoint> PossibleResolutions;
 };

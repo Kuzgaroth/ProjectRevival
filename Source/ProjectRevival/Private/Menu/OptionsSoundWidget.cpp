@@ -10,22 +10,30 @@
 #include "Menu/SaveGameClass.h"
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
-
-bool UOptionsSoundWidget::Initialize()
+void UOptionsSoundWidget::NativeOnInitialized()
 {
-	const auto InitStatus = Super::Initialize();
-	
-	Slider_0->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnMasterVolumeChange);
-	Slider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnEffectsVolumeChange);
-	Slider_1->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnMusicVolumeChange);
-	Slider_2->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnVoiceVolumeChange);
+	if (MasterVolumeSlider)
+	{
+		MasterVolumeSlider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnMasterVolumeChange);
+	}
+	if (EffectVolumeSlider)
+	{
+		EffectVolumeSlider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnEffectsVolumeChange);
+	}
+	if (MusicVolumeSlider)
+	{
+		MusicVolumeSlider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnMusicVolumeChange);
+	}
+	if (VoiceVolumeSlider)
+	{
+		VoiceVolumeSlider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnVoiceVolumeChange);
+	}
 
 	MyGameInstance = Cast<UPRGameInstance>
-			(UGameplayStatics::GetGameInstance(GetWorld()));
+        (UGameplayStatics::GetGameInstance(GetWorld()));
 
 	LoadSoundSettings();
 	
-	return InitStatus;
 }
 
 
@@ -36,35 +44,35 @@ void UOptionsSoundWidget::SaveSoundSettings()
 
 void UOptionsSoundWidget::LoadSoundSettings()
 {
-	Slider_0->Value = MyGameInstance->LoadSoundData()->SaveSlider_0Value;
-	Slider->Value = MyGameInstance->LoadSoundData()->SaveSliderValue;
-	Slider_1->Value = MyGameInstance->LoadSoundData()->SaveSlider_1Value;
-	Slider_2->Value = MyGameInstance->LoadSoundData()->SaveSlider_2Value;
+	MasterVolumeSlider->Value = MyGameInstance->LoadSoundData()->SaveSlider_0Value;
+	EffectVolumeSlider->Value = MyGameInstance->LoadSoundData()->SaveSliderValue;
+	MusicVolumeSlider->Value = MyGameInstance->LoadSoundData()->SaveSlider_1Value;
+	VoiceVolumeSlider->Value = MyGameInstance->LoadSoundData()->SaveSlider_2Value;
 }
 
 
 void UOptionsSoundWidget::OnMasterVolumeChange(float newValue)
 {
-	Slider_0->Value = newValue;
+	MasterVolumeSlider->Value = newValue;
 	SetVolume(newValue, "Master");
 }
 
 void UOptionsSoundWidget::OnEffectsVolumeChange(float newValue)
 {
-	Slider->Value = newValue;
+	EffectVolumeSlider->Value = newValue;
 	SetVolume(newValue, "Effects");
 }
 
 void UOptionsSoundWidget::OnMusicVolumeChange(float newValue)
 {
-	Slider_1->Value = newValue;
+	MusicVolumeSlider->Value = newValue;
 	SetVolume(newValue, "Music");
 }
 
 
 void UOptionsSoundWidget::OnVoiceVolumeChange(float newValue)
 {
-	Slider_2->Value = newValue;
+	VoiceVolumeSlider->Value = newValue;
 	SetVolume(newValue, "Voice");
 }
 
