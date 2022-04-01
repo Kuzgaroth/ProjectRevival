@@ -56,6 +56,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	FOnEndAbitity AbilityEnded;
+	UFUNCTION(BlueprintImplementableEvent,meta=	(DisplayName="OnHit"))
+	void SetNiagaraParameters();
 	
 
 };
