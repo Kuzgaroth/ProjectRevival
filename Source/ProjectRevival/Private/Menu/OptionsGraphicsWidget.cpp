@@ -10,6 +10,7 @@
 #include "RHI.h"
 #include "Components/Button.h"
 
+
 void UOptionsGraphicsWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
@@ -22,8 +23,7 @@ void UOptionsGraphicsWidget::NativeOnInitialized()
 	{
 		ApplyDefaultButton->OnClicked.AddDynamic(this, &UOptionsGraphicsWidget::ApplyDefaultChanges);
 	}
-
-	UGameUserSettings* GameSettings = GEngine->GetGameUserSettings();
+	
 	TArray<FText> ResolutionList;
 	FScreenResolutionArray Resolutions;
 	if (RHIGetAvailableResolutions(Resolutions, false))
@@ -156,4 +156,35 @@ void UOptionsGraphicsWidget::ApplyDefaultChanges()
 		GameSettings->ApplySettings(false);
 		SetView();
 	}
+}
+
+bool UOptionsGraphicsWidget::HasUnsavedChanges()
+{
+	UGameUserSettings* GameSettings = GEngine->GetGameUserSettings();
+	if (PossibleResolutions[ResolutionBoxString->GetSelectedIndex()] != GameSettings->GetScreenResolution())
+	{
+		return true;
+	}
+	if (FullScreenCheckBox->IsChecked() && GameSettings->GetFullscreenMode() != EWindowMode::Fullscreen)
+	{
+		return true;
+	}
+	if (!FullScreenCheckBox->IsChecked() && GameSettings->GetFullscreenMode() == EWindowMode::Fullscreen)
+	{
+		return true;
+	}
+	if (VSyncCheckBox->IsChecked() != GameSettings->IsVSyncEnabled())
+	{
+		return true;
+	}
+	if (ShadowsBoxString->GetSelectedIndex() != GameSettings->GetShadingQuality())
+	{
+		return true;
+	}
+	if (AntiAliasingBoxString->GetSelectedIndex() != GameSettings->GetAntiAliasingQuality())
+	{
+		return true;
+	}
+	
+	return false;
 }
