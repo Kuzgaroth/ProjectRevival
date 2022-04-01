@@ -90,6 +90,9 @@ private:
 	void OpenMenu();
 
 	UFUNCTION()
+	bool CheckUnsavedChanges() const;
+
+	UFUNCTION()
 	void ApplyAllChanges();
 
 	UFUNCTION()

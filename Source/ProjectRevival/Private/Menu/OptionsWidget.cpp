@@ -5,7 +5,6 @@
 
 #include "PauseWidget.h"
 #include "Components/Button.h"
-#include "PRGameInstance.h"
 #include "Menu/OptionsControlsWidget.h"
 #include "Menu/OptionsGameWidget.h"
 #include "Menu/OptionsGraphicsWidget.h"
@@ -66,7 +65,7 @@ void UOptionsWidget::NativeOnInitialized()
 
 void UOptionsWidget::OnBack()
 {
-	if (Cast<UOptionsGraphicsWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(0))->HasUnsavedChanges())
+	if (CheckUnsavedChanges())
 	{
 		if (ConfirmationWidgetClass)
 		{
@@ -76,7 +75,11 @@ void UOptionsWidget::OnBack()
 			ConfirmationWidget->SetLabelText(FText::FromString("Do you want to save your changes?"));
 			ConfirmationWidget->AddToViewport();
 		}
-	}	
+	}
+	else
+	{
+		ChooseLevel();
+	}
 }
 
 void UOptionsWidget::OnControls()
@@ -158,11 +161,31 @@ void UOptionsWidget::OpenMenu()
 	}
 }
 
+bool UOptionsWidget::CheckUnsavedChanges() const
+{
+	if (Cast<UOptionsGraphicsWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(0))->HasUnsavedChanges())
+	{
+		return true;
+	}
+	if (Cast<UOptionsSoundWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(2))->HasUnsavedChanges())
+	{
+		return true;
+	}
+	if (Cast<UOptionsGameWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(3))->HasUnsavedChanges())
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void UOptionsWidget::ApplyAllChanges()
 {
 	if (OptionsWidgetSwitcher)
 	{
-		Cast<UOptionsGraphicsWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(0))->ApplyChanges();	
+		Cast<UOptionsGraphicsWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(0))->ApplyChanges();
+		Cast<UOptionsSoundWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(2))->ApplyChanges();
+		Cast<UOptionsGameWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(3))->ApplyChanges();	
 	}
 	
 	CloseConfirmationWidget();
@@ -176,5 +199,3 @@ void UOptionsWidget::CloseConfirmationWidget()
 	}
 	ChooseLevel();
 }
-
-
