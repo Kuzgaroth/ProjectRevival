@@ -23,6 +23,7 @@ bool UBTD_IfPlayerInSight::CalcCondition(UBehaviorTreeComponent& OwnerComp, uint
 
 	const auto Actor = PerceptionComp->GetClosestEnemy();
 	
+	UE_LOG(LogPRAIDecorators, Log, TEXT("BTD_IfPlayerInSight: GetBIsFiring(): %s"), Controller->GetBIsFiring()?TEXT("true"):TEXT("false"))
 	return Actor.GetActor() && !Controller->GetBIsFiring();
 }
 

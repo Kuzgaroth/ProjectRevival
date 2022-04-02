@@ -2,39 +2,29 @@
 
 
 #include "Weapon/SoldierRifleWeapon.h"
-
 #include "BaseCharacter.h"
 #include "NiagaraComponent.h"
+#include "SoldierEnemy.h"
 #include "Kismet/GameplayStatics.h"
 
 void ASoldierRifleWeapon::StartFire()
 {
 	InitFX();
-	CurrentBurstShot = BurstClipsNumber * BurstBulletsNumber;
 	CurrentBurstRow = BurstClipsNumber;
 	OneRowTime = BurstBulletsDelay * BurstBulletsNumber + BurstClipsDelay;
 	GetWorld()->GetTimerManager().SetTimer(ClipsTimerHandle, this, &ASoldierRifleWeapon::ShootRowInternal, OneRowTime, true);
 }
 
-// void ASoldierRifleWeapon::StartFire2(const FPlayerPositionData& PlayerPos)
-// {
-// 	InitFX();
-// 	CurrentBurstShot = BurstClipsNumber * BurstBulletsNumber;
-// 	CurrentBurstRow = BurstClipsNumber;
-// 	OneRowTime = BurstBulletsDelay * BurstBulletsNumber + BurstClipsDelay;
-// 	GetWorld()->GetTimerManager().SetTimer(ClipsTimerHandle, this, &ASoldierRifleWeapon::ShootRowInternal, OneRowTime, true);
-// }
-
 void ASoldierRifleWeapon::ShootRowInternal()
 {
 	--CurrentBurstRow;
-	if (CurrentBurstRow <= 0)
+	if (CurrentBurstRow < 0)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Owner of SoldierRifle is: %s"), *GetOwner()->GetName());
-		Cast<ABaseCharacter>(GetOwner())->GetWeaponComponent()->StopFire();
+		StopFireInternal();
 	}
-	GetWorld()->GetTimerManager().SetTimer(ShotTimerHandle, this, &ASoldierRifleWeapon::MakeShotInternal, BurstBulletsDelay, true);
-	MakeShotInternal();
+	CurrentBurstShot = BurstBulletsNumber;
+	SetFXActive(true);
+	GetWorld()->GetTimerManager().SetTimer(BulletsTimerHandle, this, &ASoldierRifleWeapon::MakeShotInternal, BurstBulletsDelay, true);
 }
 
 void ASoldierRifleWeapon::MakeShotInternal()
@@ -44,22 +34,29 @@ void ASoldierRifleWeapon::MakeShotInternal()
 	--CurrentBurstShot;
 	if (CurrentBurstShot <= 0)
 	{
-		StopFireInternal();
+		StopFireBullet();
 	}
 }
 
 void ASoldierRifleWeapon::StopFire()
 {
-	if (!GetWorld()->GetTimerManager().IsTimerActive(ClipsTimerHandle)) {return;}
-	if (GetWorld()->GetTimerManager().IsTimerActive(ShotTimerHandle)) {GetWorld()->GetTimerManager().ClearTimer(ShotTimerHandle);}
+	UE_LOG(LogTemp, Log, TEXT("Rifle has stopped fire. It's Owner is: %s"), *GetOwner()->GetName());
+	if (GetWorld()->GetTimerManager().IsTimerActive(BulletsTimerHandle)) {GetWorld()->GetTimerManager().ClearTimer(BulletsTimerHandle);}
 	GetWorld()->GetTimerManager().ClearTimer(ClipsTimerHandle);
-	StoppedFireInWeaponDelegate.Broadcast();
+	CurrentBurstShot = BurstBulletsNumber;
 	SetFXActive(false);
+	StoppedFireInWeaponDelegate.Broadcast();
 }
 
 void ASoldierRifleWeapon::StopFireInternal()
 {
-	GetWorld()->GetTimerManager().ClearTimer(ShotTimerHandle);
+	Cast<ABaseCharacter>(GetOwner())->GetWeaponComponent()->StopFire();
+}
+
+void ASoldierRifleWeapon::StopFireBullet()
+{
+	SetFXActive(false);
+	GetWorld()->GetTimerManager().ClearTimer(BulletsTimerHandle);
 }
 
 void ASoldierRifleWeapon::BeginPlay()

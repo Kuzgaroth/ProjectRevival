@@ -10,16 +10,10 @@
 #include "Soldier/SoldierAIController.h"
 #include "SoldierEnemy.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartEnteringCoverForAnim);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCoverForAnim);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCoverSideMovingForAnim);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCoverToFireForAnim);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCoverFromFireForAnim);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FThrowGrenade);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopEnteringCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopExitingCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopCoverSideMoving);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartFire);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopFire);
 
 UCLASS()
@@ -33,16 +27,6 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 	
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FStartEnteringCoverForAnim StartEnteringCoverForAnimDelegate;
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FStartExitingCoverForAnim StartExitingCoverForAnimDelegate;
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FStartCoverSideMovingForAnim StartCoverSideMovingForAnimDelegate;
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FStartCoverToFireForAnim StartCoverToFireForAnimDelegate;
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FStartCoverToFireForAnim StartCoverFromFireForAnimDelegate;
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FThrowGrenade ThrowGrenadeDelegate;
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FStopEnteringCover StopEnteringCoverDelegate;
@@ -50,8 +34,6 @@ public:
 	FStopExitingCover StopExitingCoverDelegate;
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FStopCoverSideMoving StopCoverSideMovingDelegate;
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FStartFire StartFireDelegate;
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FStopFire StopFireDelegate;
 
@@ -67,6 +49,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void UpdatePlayerCoordinates(const FPlayerPositionData& PlayerPos);
+
+	UFUNCTION()
+	void UpdateAimRotator();
 
 	UFUNCTION()
 	void StartCoverSoldier(const FVector& CoverPos, AActor* CoverRef);
@@ -130,6 +115,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void OnHealthChanged(float CurrentHealth, float HealthDelta) override;
 
+	virtual void StopFiringForExit();
 	virtual TEnumAsByte<ECoverSide> CheckSideByNormal(FVector Forward, FVector Normal);
 	virtual TEnumAsByte<ECoverPart> GetCoverPart(int8 PartPos);
 	virtual void CleanCoverData();
@@ -144,21 +130,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Grenade Ability")
 	TSubclassOf<ABaseGrenade> CurrentGrenade = nullptr;
 
+	//In the future it should be replaced with an AIWeapon class 
 	UPROPERTY()
-	ASoldierRifleWeapon* RifleRef=nullptr;
-	
+	ASoldierRifleWeapon* RowRifleRef=nullptr;
+
 	// virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
 	virtual void UpdateHealthWidgetVisibility() override;
 	virtual void UpdateHStateBlackboardKey(uint8 EnumKey) override;
 	void CoverCrouch();
-	FVector PlayerPosition; //Used when we need to call StartFireBP(It is needed when we start firing while covering)
+	FTimerHandle UpdaterForRowRifleTimerHandle;
 
 	UFUNCTION()
 	void ThrowGrenadeCaller();
-
-	float OldYaw = 0.f;
 
 	// void MoveForward(float Amount);
 	// void MoveRight(float Amount);

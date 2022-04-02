@@ -179,7 +179,7 @@ bool ASoldierAIController::FindNewCover()
 void ASoldierAIController::StartCoverTimer()
 {
 	SetBIsCoverChangeAllowed(false);
-	GetWorld()->GetTimerManager().SetTimer(BTCoverTimerHandle, this, &ASoldierAIController::OnCoverTimerFired, 5.0f, false, -1);
+	GetWorld()->GetTimerManager().SetTimer(BTCoverTimerHandle, this, &ASoldierAIController::OnCoverTimerFired, 10.0f, false, -1);
 	UE_LOG(LogPRAIController, Log, TEXT("Cover Change Cooldown Started"))
 }
 

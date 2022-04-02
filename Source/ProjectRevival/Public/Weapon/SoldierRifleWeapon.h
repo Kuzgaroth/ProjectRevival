@@ -15,8 +15,8 @@ class PROJECTREVIVAL_API ASoldierRifleWeapon : public ARifleWeapon
 	
 public:
 	virtual void StartFire() override;
-	// virtual void StartFire2(const FPlayerPositionData& PlayerPos);
 	virtual void StopFire() override;
+	void StopFireInternal();
 	
 	FStoppedFireInWeapon StoppedFireInWeaponDelegate;
 
@@ -50,8 +50,8 @@ private:
 	
 	void MakeShotInternal();
 	void ShootRowInternal();
-	void StopFireInternal();
+	void StopFireBullet();
 	
-	FTimerHandle ShotTimerHandle;
+	FTimerHandle BulletsTimerHandle;
 	FTimerHandle ClipsTimerHandle;
 };

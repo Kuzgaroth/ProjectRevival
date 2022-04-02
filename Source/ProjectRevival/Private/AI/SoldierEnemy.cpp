@@ -125,7 +125,7 @@ void ASoldierEnemy::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 	ASoldierAIController* SoldierController = Cast<ASoldierAIController>(NewController);
 	PlayerCoordinates = SoldierController->GetPlayerPos();
-	AimRotator = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerCoordinates.GetActorPosition());
+	UpdateAimRotator();
 	DrawDebugLine(GetWorld(),GetActorLocation(),PlayerCoordinates.GetActorPosition(),FColor::Purple,false,5.0f,0,3.0f);
 	SoldierController->StartEnteringCoverDelegate.AddDynamic(this, &ASoldierEnemy::StartCoverSoldier);
 	SoldierController->StartExitingCoverDelegate.AddDynamic(this, &ASoldierEnemy::StopCoverSoldier);
@@ -159,8 +159,6 @@ void ASoldierEnemy::UpdateHealthWidgetVisibility()
 void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, AActor* CoverRef)
 {
 	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartCoverSoldier() was called"))
-	AimRotator = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerCoordinates.GetActorPosition());
-    DrawDebugLine(GetWorld(),GetActorLocation(),PlayerCoordinates.GetActorPosition(),FColor::Purple,false,5.0f,0,3.0f);
 	TArray<FHitResult> HitResults;
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(this);
@@ -194,20 +192,17 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, AActor* CoverRef)
 	CoverData.CoverSide = Right;
 	CoverData.CoverPart = GetCoverPart(0);
 	
-	if (!Super::StartCover_Internal(HitResults[IndexFound]))
-	{
-		GetCharacterMovement()->SetPlaneConstraintEnabled(false);
-		CleanCoverData();
-		return;
-	}
+	GetCharacterMovement()->SetPlaneConstraintEnabled(true);
+	GetCharacterMovement()->SetPlaneConstraintNormal(HitResults[IndexFound].Normal);
 	bUseControllerRotationYaw = false;
-	FRotator FinRotator = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), HitResults[IndexFound].ImpactPoint);
-	FinRotator.Pitch = 0.f;
-	FinRotator.Roll = 0.f;
-	FinRotator.Yaw = FinRotator.Yaw - GetActorRotation().Yaw;
+	
+	FRotator RotationToCover = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), HitResults[IndexFound].ImpactPoint);
+	RotationToCover.Pitch = 0.f;
+	RotationToCover.Roll = 0.f;
+	RotationToCover.Yaw = RotationToCover.Yaw - GetActorRotation().Yaw;
 	// DrawDebugLine(GetWorld(),HitResults[IndexFound].ImpactPoint,GetActorLocation(),FColor::Orange,false,15.0f,0,3.0f);
 	// DrawDebugLine(GetWorld(),GetActorLocation(),GetActorLocation()+GetActorForwardVector()*100,FColor::Purple,false,15.0f,0,3.0f);
-	AddActorLocalRotation(FinRotator);
+	AddActorLocalRotation(RotationToCover);
 	CoverData.IsInCoverTransition = true;
 	// StartEnteringCoverForAnimDelegate.Broadcast();
 }
@@ -222,16 +217,20 @@ void ASoldierEnemy::StartCoverSoldierFinish()
 }
 
 void ASoldierEnemy::StopCoverSoldier()
-{
+{//
 	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StopCoverSoldier() was called"))
-	const bool Sup = Super::StopCover_Internal();
-	if (!Sup)
+	if (bIsFiringBP)
 	{
-		return;
+		StopFiringForExit();
+		GetCharacterMovement()->SetPlaneConstraintEnabled(false);
+		bUseControllerRotationYaw = false;
+		CoverData.StopCover();
+	} else
+	{
+		GetCharacterMovement()->SetPlaneConstraintEnabled(false);
+		bUseControllerRotationYaw = false;
+		CoverData.StopCover();
 	}
-	bUseControllerRotationYaw = false;
-	CoverData.StopCover();
-	// StartExitingCoverForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StopCoverSoldierFinish()
@@ -258,7 +257,6 @@ void ASoldierEnemy::ChangeCoverSide(const float Amount)
 		if (!CoverData.IsTurning)
 		{
 			ChangeCoverSideFinish();
-			// StartCoverSideMovingForAnimDelegate.Broadcast();
 		}
 	}
 }
@@ -320,9 +318,7 @@ void ASoldierEnemy::StartCoverToFire()
 {
 	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartCoverToFire() was called"))
 	if (GetCoverIndex() < 2) {return;}
-	if (CoverData.IsInTransition()) {return;}
 	CoverData.IsInFireTransition = true;
-	// StartCoverToFireForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StartCoverToFireFinish()
@@ -336,11 +332,9 @@ void ASoldierEnemy::StartCoverToFireFinish()
 void ASoldierEnemy::StartCoverFromFire()
 {
 	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartCoverFromFire() was called"))
-	if (CoverData.IsInTransition()) {return;}
 	if (!CoverData.IsInCover()) {return;}
 	CoverData.IsFiring = false;
 	CoverData.IsInFireTransition = true;
-	// StartCoverFromFireForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StartCoverFromFireFinish()
@@ -352,6 +346,7 @@ void ASoldierEnemy::StartCoverFromFireFinish()
 
 void ASoldierEnemy::StartFiring()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: Bot doing this is %s"), *GetName())
 	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StartFiring() was called"))
 	UE_LOG(LogPRAISoldier, Log, TEXT("Character: PlayerPos is %s"), *PlayerCoordinates.GetActorPosition().ToString())
 	if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring && !bIsFiringBP && !CoverData.IsInTransition() && GetCoverIndex() >= 2)
@@ -361,36 +356,46 @@ void ASoldierEnemy::StartFiring()
 	}
 	else if (CoverData.IsInCover() && bIsInCoverBP && CoverData.IsFiring && !CoverData.IsInTransition() && !bIsFiringBP)
 	{
-		AimRotator = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerCoordinates.GetActorPosition());
+		UpdateAimRotator();
 		DrawDebugLine(GetWorld(),GetActorLocation(),PlayerCoordinates.GetActorPosition(),FColor::Purple,false,5.0f,0,3.0f);
 		UE_LOG(LogPRAISoldier, Log, TEXT("Bot started firing at X: %0.1f, Y: %0.1f"), PlayerCoordinates.GetActorPosition().X, PlayerCoordinates.GetActorPosition().Y)
-		RifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
-		RifleRef->StartFire();
-		bIsFiringBP = true;
-		StartFireDelegate.Broadcast();
-		if (RifleRef)
+		if (Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon()))
 		{
-			RifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
+			RowRifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
+			RowRifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
+			GetWorld()->GetTimerManager().SetTimer(UpdaterForRowRifleTimerHandle, this, &ASoldierEnemy::UpdateAimRotator, RowRifleRef->BurstBulletsDelay, true);
+			WeaponComponent->StartFire();
 		}
+		else
+		{
+			WeaponComponent->StartFire();
+		}
+		bIsFiringBP = true;
 		return;
-	}
+	}// The following line exists in case we would need different logic for firing in and out of cover. But for now it works fine like that.
 	else if (!CoverData.IsInCover() && !bIsInCoverBP && !CoverData.IsInTransition() && !bIsFiringBP)
 	{
-		AimRotator = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerCoordinates.GetActorPosition());
+		UpdateAimRotator();
 		DrawDebugLine(GetWorld(),GetActorLocation(),PlayerCoordinates.GetActorPosition(),FColor::Purple,false,5.0f,0,3.0f);
 		UE_LOG(LogPRAISoldier, Log, TEXT("Bot started firing at X: %0.1f, Y: %0.1f"), PlayerCoordinates.GetActorPosition().X, PlayerCoordinates.GetActorPosition().Y)
-		RifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
-		RifleRef->StartFire();
-		bIsFiringBP = true;
-		StartFireDelegate.Broadcast();
-		if (RifleRef)
+		if (Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon()))
 		{
-			RifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
+			RowRifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
+			RowRifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
+			GetWorld()->GetTimerManager().SetTimer(UpdaterForRowRifleTimerHandle, this, &ASoldierEnemy::UpdateAimRotator, RowRifleRef->BurstBulletsDelay, true);
+			WeaponComponent->StartFire();
 		}
+		else
+		{
+			WeaponComponent->StartFire();
+		}
+		bIsFiringBP = true;
 		return;
 	}
 }
 
+//It works properly for bots only if their weapon have StoppedFireInWeaponDelegate.
+//Lately every logic inside should follow the RowRifleRef logic style.
 void ASoldierEnemy::StopFiring()
 {
 	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StopFiring() was called"))
@@ -399,28 +404,56 @@ void ASoldierEnemy::StopFiring()
 		StartCoverFromFire();
 		return;
 	}
-	else if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring && bIsFiringBP)
+	else if (!CoverData.IsFiring && bIsFiringBP)
 	{
-		bIsFiringBP = false;
-		if (RifleRef)
+		if (Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon()))
 		{
-			RifleRef->StoppedFireInWeaponDelegate.RemoveDynamic(this, &ASoldierEnemy::StopFiring);
-			RifleRef = nullptr;
+			RowRifleRef->StoppedFireInWeaponDelegate.RemoveDynamic(this, &ASoldierEnemy::StopFiring);
+			if (GetWorld()->GetTimerManager().IsTimerActive(UpdaterForRowRifleTimerHandle))
+			{
+				GetWorld()->GetTimerManager().ClearTimer(UpdaterForRowRifleTimerHandle);
+			}
+			RowRifleRef = nullptr;
 		}
+		else
+		{
+			WeaponComponent->GetCurrentWeapon()->StopFire();
+		}
+		bIsFiringBP = false;
 		StopFireDelegate.Broadcast();
 		return;
 	}
-	else if (!CoverData.IsInCover() && !bIsInCoverBP && bIsFiringBP)
+	// else if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring && bIsFiringBP)
+	// {
+	// 	
+	// }
+	// else if (!CoverData.IsInCover() && !bIsInCoverBP && bIsFiringBP)
+	// {
+	// 	
+	// }
+}
+
+//This function is only for inner usage.
+//Called when we want to abort covering during firing. 
+void ASoldierEnemy::StopFiringForExit()
+{
+	if (Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon()))
 	{
-		bIsFiringBP = false;
-		if (RifleRef)
+		RowRifleRef->StoppedFireInWeaponDelegate.RemoveDynamic(this, &ASoldierEnemy::StopFiring);
+		if (GetWorld()->GetTimerManager().IsTimerActive(UpdaterForRowRifleTimerHandle))
 		{
-			RifleRef->StoppedFireInWeaponDelegate.RemoveDynamic(this, &ASoldierEnemy::StopFiring);
-			RifleRef = nullptr;
+			GetWorld()->GetTimerManager().ClearTimer(UpdaterForRowRifleTimerHandle);
 		}
-		StopFireDelegate.Broadcast();
-		return;
+		RowRifleRef = nullptr;
 	}
+	else
+	{
+		WeaponComponent->GetCurrentWeapon()->StopFire();
+	}
+	CoverData.IsFiring = false;
+	bIsFiringBP = false;
+	StopFireDelegate.Broadcast();
+	return;
 }
 
 ECoverType ASoldierEnemy::CheckCover()
@@ -458,6 +491,12 @@ FCoverData& ASoldierEnemy::GetCoverData()
 void ASoldierEnemy::UpdatePlayerCoordinates(const FPlayerPositionData& PlayerPos)
 {
 	PlayerCoordinates = PlayerPos;
+	UpdateAimRotator();
+}
+
+void ASoldierEnemy::UpdateAimRotator()
+{
+	AimRotator = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerCoordinates.GetActorPosition());
 }
 
 void ASoldierEnemy::CleanCoverData()

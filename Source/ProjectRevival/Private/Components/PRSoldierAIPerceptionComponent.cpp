@@ -108,10 +108,10 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 				if (Wing == EWing::Left)
 				{
 					UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Entered best dist v1"))
-					if (LineEquation > 0.0f && DistToLine > 400.0f && BestDist > FVector::Dist(PawnPos, CoverPosTemp))
+					if (FVector::Dist(PlayerPos, CoverPosTemp) > 600.f && BestDist > FVector::Dist(PlayerPos, CoverPosTemp))
 					{
 						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Set best dist v1"))
-						BestDist = FVector::Dist(PawnPos, CoverPosTemp);
+						BestDist = FVector::Dist(PlayerPos, CoverPosTemp);
 						BestCoverRef = Actor;
 						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Preset CoverPosTemp X: %0.2f, Y: %0.2f"), CoverPosTemp.X, CoverPosTemp.Y)
 						BestCoverPos = CoverPosTemp;
@@ -121,10 +121,10 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 				else if (Wing == EWing::Center)
 				{
 					UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Entered best dist v2"))
-					if (DistToLine <= 400.0f && BestDist > FVector::Dist(PawnPos, CoverPosTemp))
+					if (FVector::Dist(PlayerPos, CoverPosTemp) > 300.f && BestDist > FVector::Dist(PlayerPos, CoverPosTemp))
 					{
 						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Set best dist v2"))
-						BestDist = FVector::Dist(PawnPos, CoverPosTemp);
+						BestDist = FVector::Dist(PlayerPos, CoverPosTemp);
 						BestCoverRef = Actor;
 						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Preset CoverPosTemp X: %0.2f, Y: %0.2f"), CoverPosTemp.X, CoverPosTemp.Y)
 						BestCoverPos = CoverPosTemp;
@@ -134,10 +134,10 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 				else if (Wing == EWing::Right)
 				{
 					UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Entered best dist v3"))
-					if (LineEquation < 0.0f && DistToLine > 400.0f && BestDist > FVector::Dist(PawnPos, CoverPosTemp))
+					if (FVector::Dist(PlayerPos, CoverPosTemp) > 600.f && BestDist > FVector::Dist(PlayerPos, CoverPosTemp))
 					{
 						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Set best dist v3"))
-						BestDist = FVector::Dist(PawnPos, CoverPosTemp);
+						BestDist = FVector::Dist(PlayerPos, CoverPosTemp);
 						BestCoverRef = Actor;
 						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Preset CoverPosTemp X: %0.2f, Y: %0.2f"), CoverPosTemp.X, CoverPosTemp.Y)
 						BestCoverPos = CoverPosTemp;
