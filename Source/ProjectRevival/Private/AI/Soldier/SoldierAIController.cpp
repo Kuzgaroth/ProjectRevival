@@ -4,6 +4,7 @@
 #include "AI/Soldier/SoldierAIController.h"
 #include "AI/AICharacter.h"
 #include "BasePickup.h"
+#include "PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "RespawnComponent.h"
@@ -15,6 +16,7 @@
 DEFINE_LOG_CATEGORY(LogPRAIController);
 DEFINE_LOG_CATEGORY(LogPRAIDecorators);
 DEFINE_LOG_CATEGORY(LogPRAITasks);
+DEFINE_LOG_CATEGORY(LogPRAIServices);
 
 ASoldierAIController::ASoldierAIController()
 {
@@ -63,6 +65,7 @@ void ASoldierAIController::SetPlayerPos(const FPlayerPositionData &NewPlayerPos)
 	{
 		PlayerPos.SetCover(NewPlayerPos.GetCover());
 	}
+	UE_LOG(LogPRAIController, Log, TEXT("bIsPlayerInSight: %s"), GetBIsPlayerInSight()?TEXT("true"):TEXT("false"))
 	PlayerPosDelegate.Broadcast(PlayerPos);
 	OnPlayerSpotted.Broadcast(PlayerPos);
 }
@@ -75,6 +78,13 @@ void ASoldierAIController::OnPossess(APawn* InPawn)
 	if (AIChar)
 	{
 		//UE_LOG(LogPRAIController, Log, TEXT("BehaviorTree started"));
+		auto Actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
+		Actor = Cast<APlayerCharacter>(Actor);
+		if (Actor)
+		{
+			FPlayerPositionData ActorPos(Actor, nullptr);
+			SetPlayerPos(ActorPos);
+		}
 		RunBehaviorTree(AIChar->BehaviorTreeAsset);
 		Cast<ASoldierEnemy>(GetPawn())->StopEnteringCoverDelegate.AddDynamic(this, &ASoldierAIController::StopEnteringCover);
 		Cast<ASoldierEnemy>(GetPawn())->StopExitingCoverDelegate.AddDynamic(this, &ASoldierAIController::StopExitingCover);
@@ -173,7 +183,6 @@ bool ASoldierAIController::FindNewCover()
 		return true;
 	}
 	return false;
-	//MoveToLocation(CoverPos);
 }
 
 void ASoldierAIController::StartCoverTimer()

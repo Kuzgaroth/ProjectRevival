@@ -50,6 +50,8 @@ public:
 	void SetBIsDecisionMakingAllowed(bool const bCond) { bIsDecisionMakingAllowed = bCond; }
 	bool GetBIsFiringAllowed() const { return bIsFiringAllowed; }
 	void SetBIsFiringAllowed(bool const bCond) { bIsFiringAllowed = bCond; }
+	bool GetBIsPlayerInSight() { return bIsPlayerInSight; }
+	void SetBIsPlayerInSight(bool const bCond) { bIsPlayerInSight = bCond; }
 
 	UPROPERTY(BlueprintAssignable)
 	FPlayerPosDelegate PlayerPosDelegate;
@@ -131,6 +133,7 @@ protected:
 	bool bIsCoverChangeAllowed;
 	bool bIsDecisionMakingAllowed;
 	bool bIsFiringAllowed;
+	bool bIsPlayerInSight;
 	
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaSeconds) override;

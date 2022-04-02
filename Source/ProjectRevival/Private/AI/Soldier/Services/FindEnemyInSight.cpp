@@ -17,9 +17,19 @@ void UFindEnemyInSight::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 {
 	const auto Controller = Cast<ASoldierAIController>(OwnerComp.GetAIOwner());
 	const auto PerceptionComponent = Cast<UPRSoldierAIPerceptionComponent>(Controller->GetPerceptionComponent());
+	FPlayerPositionData PlayerPos;
 	if (PerceptionComponent)
 	{
-		Controller->SetPlayerPos(PerceptionComponent->GetClosestEnemy());
+		PlayerPos = PerceptionComponent->GetClosestEnemy();
+		if (PlayerPos.GetActor())
+		{
+			Controller->SetBIsPlayerInSight(true);
+		}
+		else
+		{
+			Controller->SetBIsPlayerInSight(false);
+		}
+		Controller->SetPlayerPos(PlayerPos);
 	}
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 }
