@@ -40,6 +40,7 @@ public:
 	virtual ECoverType CheckCover() override;
 	virtual bool UsesOwnGrenades() override;
 	virtual bool SwitchGrenade() override;
+	TArray<FAmmoData> GetPlayerWeapons() const;
 	
 	UFUNCTION(BlueprintCallable)
 	virtual TSubclassOf<ABaseGrenade> GetCurrentGrenade() override;
@@ -115,7 +116,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void OnHealthChanged(float CurrentHealth, float HealthDelta) override;
 
-	virtual void StopFiringForExit();
+	virtual void StopFiringImmediately();
 	virtual TEnumAsByte<ECoverSide> CheckSideByNormal(FVector Forward, FVector Normal);
 	virtual TEnumAsByte<ECoverPart> GetCoverPart(int8 PartPos);
 	virtual void CleanCoverData();
@@ -133,6 +134,8 @@ protected:
 	//In the future it should be replaced with an AIWeapon class 
 	UPROPERTY()
 	ASoldierRifleWeapon* RowRifleRef=nullptr;
+	
+	FDelegateHandle UpdateRowRifleDelegateHandle;
 
 	// virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -140,7 +143,6 @@ private:
 	virtual void UpdateHealthWidgetVisibility() override;
 	virtual void UpdateHStateBlackboardKey(uint8 EnumKey) override;
 	void CoverCrouch();
-	FTimerHandle UpdaterForRowRifleTimerHandle;
 
 	UFUNCTION()
 	void ThrowGrenadeCaller();
