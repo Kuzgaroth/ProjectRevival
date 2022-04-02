@@ -82,7 +82,20 @@ void ARifleWeapon::MakeDamage(FHitResult& HitResult)
 	const auto DamagedActor = HitResult.GetActor();
 	if (!DamagedActor) return;
 
+	ProcessEnemyHit(IsHitInHead(HitResult));
+	
 	DamagedActor->TakeDamage(ShotDamage,FDamageEvent{},GetController(),this);
+}
+
+bool ARifleWeapon::IsHitInHead(const FHitResult& HitResult)
+{
+	return false;
+}
+
+void ARifleWeapon::ProcessEnemyHit(bool IsInHead)
+{
+	//UI logic stuff
+	
 }
 
 void ARifleWeapon::BeginPlay()
