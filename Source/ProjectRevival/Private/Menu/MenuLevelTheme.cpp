@@ -44,6 +44,7 @@ void AMenuLevelTheme::Tick(float DeltaTime)
 
 void AMenuLevelTheme::ChangeVolume(float Value, FString WhatSound)
 {
+    /*StrangeThings*/
 	if (Value > 0)
 	{
 		if (WhatSound == "Master") MainSoundMix->SoundClassEffects[0].SoundClassObject->Properties.Volume = Value, MasterVolume = Value;

@@ -54,4 +54,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
 	USoundMix* VoiceSoundMix;
+	
+	/*StrangeThings*/
 };
