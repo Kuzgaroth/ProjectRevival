@@ -2,17 +2,14 @@
 
 
 #include "GameFeature/StaticObjectToNothing.h"
-
 #include <string>
-
 #include "PlayerCharacter.h"
 #include "DrawDebugHelpers.h"
-#include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
 #include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/BoxComponent.h"
-#include "UObject/UObjectGlobals.h"
-#include "GameFramework/GameUserSettings.h"
+
+DEFINE_LOG_CATEGORY(LogPRStaticObject);
 
 // Sets default values
 AStaticObjectToNothing::AStaticObjectToNothing()
@@ -135,8 +132,7 @@ void AStaticObjectToNothing::PostEditChangeProperty(FPropertyChangedEvent& Prope
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(),AChangeWorld::StaticClass(),ChangeAbleObjs);
 		for(auto obj:ChangeAbleObjs)
 		{
-			auto chobj=Cast<AChangeWorld>(obj);
-			chobj->ChangeVisibleWorld(AllObjectVisibleWorld);
+			Cast<AStaticObjectToNothing>(obj)->ChangeVisibleWorld(AllObjectVisibleWorld);
 		}
 	}
 }
@@ -190,7 +186,6 @@ void AStaticObjectToNothing::Changing()
 
 void AStaticObjectToNothing::ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld)
 {
-	Super::ChangeVisibleWorld(VisibleInEditorWorld);
 	if(VisibleInEditorWorld!=OwnValuesWorld)
 	{
 		switch (VisibleInEditorWorld)
@@ -243,7 +238,6 @@ void AStaticObjectToNothing::ShowChangeWorldObjectByAbility()
 				Material->SetScalarParameterValue("Amount",reqwar);
 			}
 	}
-	
 }
 
 void AStaticObjectToNothing::HideChangeWorldObjectByAbility()
@@ -262,15 +256,17 @@ void AStaticObjectToNothing::HideChangeWorldObjectByAbility()
 void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG(LogPRStaticObject, Warning, TEXT("StaticObject OnMeshComponentCollision"))
+	UE_LOG(LogPRStaticObject, Warning, TEXT("%s"), *FString(OtherActor->GetName()))
 	if(Cast<AChangeWorldSphereActor>(OtherActor))
 	{
+		UE_LOG(LogPRStaticObject, Warning, TEXT("StaticObject Changing"))
 		Changing();
 	}
 	auto Player=Cast<APlayerCharacter>(OtherActor);
 	if(Player&& SuperMesh->GetCollisionProfileName()=="OverlapAll")
 	{
 		Player->SetChangeWorldPossibility(false,this);
-		
 	}
 }
 
@@ -280,7 +276,8 @@ void AStaticObjectToNothing::OnMeshComponentEndCollision(UPrimitiveComponent* Ov
 	auto Player=Cast<APlayerCharacter>(OtherActor);
 	if(Player)
 	{
-		Player->SetChangeWorldPossibility(true,nullptr);
+		AStaticObjectToNothing* ptr = nullptr;
+		Player->SetChangeWorldPossibility(true, ptr);
 		HideChangeWorldObjectByAbility();
 	}
 }
@@ -327,7 +324,6 @@ void AStaticObjectToNothing::TimeLineFinished()
 	if(!isApearing)
 	{
 		ClearComponentTags(SuperMesh);
-
 	}
 }
 
@@ -337,7 +333,6 @@ void AStaticObjectToNothing::TimeLineFloatReturn(float Value)
 	{
 		if(isApearing)
 		{
-			
 			Material->SetScalarParameterValue("Amount",Value);
 		}
 		else
@@ -347,14 +342,16 @@ void AStaticObjectToNothing::TimeLineFloatReturn(float Value)
 			Material->SetScalarParameterValue("Amount",val);
 		}
 	}
-	
 }
 
 
+void AStaticObjectToNothing::ClearComponentTags(UStaticMeshComponent* supermesh)
+{
+	Tags.Empty();
+}
 
 void AStaticObjectToNothing::LoadComponentTags(UStaticMeshComponent* supermesh)
 {
-	Super::LoadComponentTags(supermesh);
 	for(int i=0;i<MeshTags.Num();i++)
 	{
 		this->Tags.AddUnique(MeshTags[i]);

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 #include "ChangeWorld.h"
 #include "Interfaces/IChangingWorldActor.h"
 #include "UObject/UObjectGlobals.h"
@@ -37,9 +36,9 @@ protected:
     float MaxCurveValue;
     bool isApearing=false;
     UFUNCTION()
-    virtual void TimeLineFinished();
+    virtual void TimeLineFinished() override;
     UFUNCTION()
-    virtual void TimeLineFloatReturn(float Value);
+    virtual void TimeLineFloatReturn(float Value) override;
     FOnTimelineFloat InterpFunction;
 
 
@@ -48,6 +47,11 @@ protected:
 
 
 	
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	TEnumAsByte<EChangeEditorVisibility> VisibleWorld = BothWorlds;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	TEnumAsByte<EChangeAllMapEditorVisibility> AllObjectVisibleWorld=OwnValuesWorld;
+	virtual void ClearComponentTags(UStaticMeshComponent* supermesh) override;
 	virtual void LoadComponentTags(UStaticMeshComponent* supermesh) override;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
@@ -69,24 +73,25 @@ public:
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
+	TEnumAsByte<EChangeWorld> CurrentWorld = OrdinaryWorld;
 	
-	void ShowChangeWorldObjectByAbility();
-	void HideChangeWorldObjectByAbility();
+	virtual void ShowChangeWorldObjectByAbility() override;
+	virtual void HideChangeWorldObjectByAbility() override;
 
 
 	UFUNCTION()
-	void OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, 
+	virtual void OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, 
 					  AActor* OtherActor, 
 					  UPrimitiveComponent* OtherComp, 
 					  int32 OtherBodyIndex, 
 					  bool bFromSweep, 
-					  const FHitResult &SweepResult);
+					  const FHitResult &SweepResult) override;
 
 	UFUNCTION()
-	void OnMeshComponentEndCollision(UPrimitiveComponent* OverlappedComponent, 
+	virtual void OnMeshComponentEndCollision(UPrimitiveComponent* OverlappedComponent, 
 					  AActor* OtherActor, 
 					  UPrimitiveComponent* OtherComp, 
-					  int32 OtherBodyIndex);
+					  int32 OtherBodyIndex) override;
 
 	UFUNCTION()
 	void OnCoverPointComponentCollision(UPrimitiveComponent* OverlappedComponent, 
@@ -105,7 +110,7 @@ public:
 	UFUNCTION()
 	void FreeCoverPoint(const UBoxComponent* CoverPoint);
 	
-	void Changing() override;
+	virtual void Changing() override;
 	
 	virtual void ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld) override;
 	

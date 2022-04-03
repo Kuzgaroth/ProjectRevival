@@ -3,11 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 #include "ChangeWorld.h"
 #include "Interfaces/IChangingWorldActor.h"
 #include "ProjectRevival/Public/CoreTypes.h"
-#include "Interfaces/IChangingWorldActor.h"
 #include "StaticObjectToStaticObject.generated.h"
 
 class UBoxComponent;
@@ -57,7 +55,11 @@ protected:
     TArray<FName> OrMeshTags;
     TArray<FName> OtMeshTags;
     
-
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	TEnumAsByte<EChangeEditorVisibility> VisibleWorld = BothWorlds;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	TEnumAsByte<EChangeAllMapEditorVisibility> AllObjectVisibleWorld=OwnValuesWorld;
+	virtual void ClearComponentTags(UStaticMeshComponent* supermesh) override;
     
 
 public:	
@@ -69,6 +71,8 @@ public:
 	
 	//UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	//TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
+
+	TEnumAsByte<EChangeWorld> CurrentWorld = OrdinaryWorld;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	UStaticMeshComponent* SuperMesh1;

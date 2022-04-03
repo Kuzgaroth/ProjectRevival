@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseCharacterMovementComponent.h"
+#include "SoldierEnemy.h"
 #include "Player/BaseCharacter.h"
 #include "Components/TimelineComponent.h"
 #include "GameFeature/StaticObjectToNothing.h"
@@ -43,9 +44,9 @@ public:
 
 	UFUNCTION()
 	void TimelineCoverLow(float Value);
-
-	UFUNCTION()
-	void SetChangeWorldPossibility(bool newValue,AStaticObjectToNothing* overlappedAct);
+	
+	void SetChangeWorldPossibility(bool newValue, AStaticObjectToNothing* overlappedAct);
+	void SetChangeWorldPossibility(bool newValue, ASoldierEnemy* overlappedAct);
 
 	UFUNCTION()
 	bool CheckIfWorldCanBeChanged() const;
@@ -91,6 +92,7 @@ protected:
 	
 	bool WorldCanBeChanged=true;
 	AStaticObjectToNothing* OverlappedChangeWActor;
+	ASoldierEnemy* OverlappedChangeWEnemy;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data) override;

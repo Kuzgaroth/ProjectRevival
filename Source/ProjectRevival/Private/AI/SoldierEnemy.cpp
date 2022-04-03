@@ -10,13 +10,15 @@
 #include "BrainComponent.h"
 #include "DrawDebugHelpers.h"
 #include "HealthBarWidget.h"
-#include "HealthComponent.h"
+#include "PlayerCharacter.h"
 #include "SoldierRifleWeapon.h"
 #include "AbilitySystem/Abilities/GrenadeAbility.h"
+#include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Components/WidgetComponent.h"
+#include "GameFeature/ChangeWorld.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Soldier/SoldierAIController.h"
@@ -35,6 +37,9 @@ void ASoldierEnemy::BeginPlay()
 	CoverData.IsFiring = false;
 	bIsInCoverBP = false;
 	bIsFiringBP = false;
+
+	InterpFunction.BindUFunction(this,FName("TimeLineFloatReturn"));
+	OnTimeLineFinished.BindUFunction(this,FName("TimeLineFinished"));
 }
 
 /*Чтобы протестить бота, нужно раскомментить следующие функции вплоть до IsRunning(),
@@ -120,6 +125,13 @@ void ASoldierEnemy::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 }
 
+void ASoldierEnemy::SetBIsAppearing(bool const bCond)
+{
+	bIsAppearing = bCond;
+	UE_LOG(LogPRAISoldier, Warning, TEXT("bIsAppearing updated in Soldier: %s"), bIsAppearing?TEXT("true"):TEXT("false"))
+	SoldierWorldChangeDelegate.Broadcast(GetBIsAppearing());
+}
+
 void ASoldierEnemy::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -132,6 +144,59 @@ void ASoldierEnemy::PossessedBy(AController* NewController)
 	SoldierController->StartCoverSideMovingDelegate.AddDynamic(this, &ASoldierEnemy::ChangeCoverSide);
 	SoldierController->StartFiringDelegate.AddDynamic(this, &ASoldierEnemy::StartFiring);
 	SoldierController->PlayerPosDelegate.AddDynamic(this, &ASoldierEnemy::UpdatePlayerCoordinates);
+
+	SkeletalMesh = GetMesh();
+	CapsuleComp = GetCapsuleComponent();
+	
+	SetBIsAppearing(CurrentWorld == World);
+	
+	int num = SkeletalMesh->GetNumMaterials();
+	for (int32 i=0; i < num; i++)
+	{
+		const auto Material = SkeletalMesh->CreateDynamicMaterialInstance(i);
+		MeshesMaterials.Add(Material);
+	}
+	if(VisualCurve)
+	{
+		VisualCurve->GetValueRange(MinCurveValue,MaxCurveValue);
+		TimeLine.AddInterpFloat(VisualCurve,InterpFunction);
+		TimeLine.SetTimelineFinishedFunc(OnTimeLineFinished);
+		TimeLine.SetLooping(false);
+	}
+	if (World==OrdinaryWorld)
+	{
+		SetBIsAppearing(true);
+		if(VisualCurve&&MeshesMaterials.Num()>0)
+		{
+			for (const auto Material : MeshesMaterials)
+			{
+				Material->SetScalarParameterValue("Amount",MinCurveValue);
+			}
+		}
+		else
+		{
+			SkeletalMesh->SetVisibility(true);
+		}
+		SetCollisionResponseToVisible();
+		SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+	}
+	else
+	{
+		if(VisualCurve&&MeshesMaterials.Num()>0)
+		{
+			for (const auto Material : MeshesMaterials)
+			{
+				Material->SetScalarParameterValue("Amount",MaxCurveValue);
+			}
+		}
+		else
+		{
+			SkeletalMesh->SetVisibility(false);
+		}
+		SetCollisionResponseToInvisible();
+		SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+	}
+	CapsuleComp->OnComponentBeginOverlap.AddDynamic(this,&ASoldierEnemy::OnMeshComponentCollision);
 }
 
 void ASoldierEnemy::OnHealthChanged(float CurrentHealth, float HealthDelta)
@@ -225,7 +290,8 @@ void ASoldierEnemy::StopCoverSoldier()
 		GetCharacterMovement()->SetPlaneConstraintEnabled(false);
 		bUseControllerRotationYaw = false;
 		CoverData.StopCover();
-	} else
+	}
+	else
 	{
 		GetCharacterMovement()->SetPlaneConstraintEnabled(false);
 		bUseControllerRotationYaw = false;
@@ -445,13 +511,197 @@ void ASoldierEnemy::StopFiring()
 	// }
 }
 
+void ASoldierEnemy::ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld)
+{
+	if(VisibleInEditorWorld!=OwnValuesWorld)
+	{
+		switch (VisibleInEditorWorld)
+		{
+		case DefaultVisibleWorld:
+			VisibleWorld=DefaultWorld;
+			break;
+		case OtherVisibleWorld:
+			VisibleWorld=AltirnativeWorld;
+			break;
+		case BothVisibleWorlds:
+			VisibleWorld=BothWorlds;
+			break;
+		default:
+			break;
+		}
+		if(VisibleWorld==World || VisibleWorld==BothWorlds)
+		{
+			SkeletalMesh->SetVisibility(true);
+		}
+		else
+		{
+			SkeletalMesh->SetVisibility(false);
+		}
+	}
+	else
+	{
+		VisibleWorld=DefaultWorld;
+		if(VisibleWorld==World || VisibleWorld==BothWorlds)
+		{
+			SkeletalMesh->SetVisibility(true);
+		}
+		else
+		{
+			SkeletalMesh->SetVisibility(false);
+		}
+	}
+}
+
+void ASoldierEnemy::Changing()
+{
+	UE_LOG(LogPRAISoldier, Warning, TEXT("Changing func is called"))
+	if(CurrentWorld==OrdinaryWorld)
+	{
+		CurrentWorld=OtherWorld;
+	}
+	else
+	{
+		CurrentWorld=OrdinaryWorld;
+	}
+	if (World == CurrentWorld)
+	{
+		SetCollisionResponseToVisible();
+		SetBIsAppearing(true);
+		if(VisualCurve)
+		{
+			CapsuleComp->SetCollisionResponseToChannels(CollisionResponseContainer);
+			SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+			SkeletalMesh->SetVisibility(true);
+			Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon())->GetWeaponMeshComponent()->SetVisibility(true);
+			TimeLine.PlayFromStart();
+		}
+		else
+		{
+			CapsuleComp->SetCollisionResponseToChannels(CollisionResponseContainer);
+			SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+			SkeletalMesh->SetVisibility(true);
+			Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon())->GetWeaponMeshComponent()->SetVisibility(true);
+		}
+	}
+	else
+	{
+		SetCollisionResponseToInvisible();
+		StopFiringImmediately();
+		SetBIsAppearing(false);
+		if(VisualCurve)
+		{
+			CapsuleComp->SetCollisionResponseToChannels(CollisionResponseContainer);
+			SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+			SkeletalMesh->SetVisibility(false);
+			Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon())->GetWeaponMeshComponent()->SetVisibility(false);
+			TimeLine.PlayFromStart();
+		}
+		else
+		{
+			CapsuleComp->SetCollisionResponseToChannels(CollisionResponseContainer);
+			SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+			SkeletalMesh->SetVisibility(false);
+			Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon())->GetWeaponMeshComponent()->SetVisibility(false);
+		}
+		if (bIsInCoverBP)
+		{
+			StopCoverSoldier();
+		}
+	}
+}
+
+#if WITH_EDITOR
+void ASoldierEnemy::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	if(PropertyChangedEvent.Property->GetName()=="VisibleWorld")
+	{
+		if(VisibleWorld==World || VisibleWorld==BothWorlds)
+		{
+			SkeletalMesh->SetVisibility(true);
+		}
+		else
+		{
+			SkeletalMesh->SetVisibility(false);
+		}
+	}
+	if(PropertyChangedEvent.Property->GetName()=="AllObjectVisibleWorld")
+	{
+		TArray<AActor*> ChangeAbleObjs;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(),AChangeWorld::StaticClass(),ChangeAbleObjs);
+		for(auto obj:ChangeAbleObjs)
+		{
+			Cast<ASoldierEnemy>(obj)->ChangeVisibleWorld(AllObjectVisibleWorld);
+		}
+	}
+}
+#endif
+
+void ASoldierEnemy::ShowChangeWorldObjectByAbility()
+{
+	SkeletalMesh->SetRenderCustomDepth(true);
+	if(CapsuleComp->GetCollisionResponseToChannel(ECC_WorldDynamic) == ECR_Overlap)
+	{
+		if(MeshesMaterials.Num()!=0)
+			for (const auto Material : MeshesMaterials)
+			{
+				auto reqwar=(MaxCurveValue-MinCurveValue)/TransparencyLevel;
+				reqwar=MaxCurveValue-reqwar;
+				Material->SetScalarParameterValue("Amount",reqwar);
+			}
+	}
+}
+
+void ASoldierEnemy::HideChangeWorldObjectByAbility()
+{
+	SkeletalMesh->SetRenderCustomDepth(false);
+	if(CapsuleComp->GetCollisionResponseToChannel(ECC_WorldDynamic) == ECR_Overlap)
+	{
+		if(MeshesMaterials.Num()!=0)
+			for (const auto Material : MeshesMaterials)
+			{
+				Material->SetScalarParameterValue("Amount",MaxCurveValue);
+			}
+	}
+}
+
+void ASoldierEnemy::OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	UE_LOG(LogPRAISoldier, Warning, TEXT("OnMeshComponentCollision"))
+	UE_LOG(LogPRAISoldier, Warning, TEXT("%s"), *FString(OtherActor->GetName()))
+	if(Cast<AChangeWorldSphereActor>(OtherActor))
+	{
+		UE_LOG(LogPRAISoldier, Warning, TEXT("Cast went successful"))
+		Changing();
+	}
+	auto Player=Cast<APlayerCharacter>(OtherActor);
+	if(Player&& CapsuleComp->GetCollisionResponseToChannel(ECC_WorldDynamic) == ECR_Overlap)
+	{
+		Player->SetChangeWorldPossibility(false,this);
+	}
+}
+
+void ASoldierEnemy::OnMeshComponentEndCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	const auto Player = Cast<APlayerCharacter>(OtherActor);
+	if(Player)
+	{
+		ASoldierEnemy* ptr = nullptr;
+		Player->SetChangeWorldPossibility(true, ptr);
+		HideChangeWorldObjectByAbility();
+	}
+}
+
 //This function is only for inner usage.
 //Called when we want to abort covering during firing. 
 void ASoldierEnemy::StopFiringImmediately()
 {
 	if (Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon()))
 	{
-		if (!RowRifleRef) {return;}
+		if (!RowRifleRef) { return; }
+		RowRifleRef->StopFireExternal();
 		if (RowRifleRef->StoppedFireInWeaponDelegate.IsBound())
 		{
 			RowRifleRef->StoppedFireInWeaponDelegate.RemoveDynamic(this, &ASoldierEnemy::StopFiring);
@@ -469,7 +719,6 @@ void ASoldierEnemy::StopFiringImmediately()
 	CoverData.IsFiring = false;
 	bIsFiringBP = false;
 	StopFireDelegate.Broadcast();
-	return;
 }
 
 TArray<FAmmoData> ASoldierEnemy::GetPlayerWeapons() const
@@ -490,8 +739,7 @@ TEnumAsByte<ECoverSide> ASoldierEnemy::CheckSideByNormal(FVector Forward, FVecto
 	Normal = - Normal;
 	const float CosNormal = Normal.CosineAngle2D(FVector(0, 1, 0));
 	const float CosForward = Forward.CosineAngle2D(FVector(0, 1, 0));
-	if (CosNormal >= CosForward) return Left;
-	else return Right;
+	return (CosNormal >= CosForward)?Left:Right;
 }
 
 TEnumAsByte<ECoverPart> ASoldierEnemy::GetCoverPart(int8 PartPos)
@@ -532,9 +780,51 @@ void ASoldierEnemy::CleanCoverData()
 
 int8 ASoldierEnemy::GetCoverIndex()
 {
-	if (CoverData.CoverType != ECoverType::None || CoverData.CoverPart != ECoverPart::CPNone || CoverData.CoverSide != ECoverSide::CSNone)
-	return CoverData.CoverType * 2 + CoverData.CoverPart * 4 + CoverData.CoverSide;
-	else return -1;
+	bool const bCond = CoverData.CoverType != ECoverType::None || CoverData.CoverPart != ECoverPart::CPNone || CoverData.CoverSide != ECoverSide::CSNone;
+	
+	return bCond ? CoverData.CoverType * 2 + CoverData.CoverPart * 4 + CoverData.CoverSide : -1;
+}
+
+void ASoldierEnemy::SetCollisionResponseToVisible()
+{
+	CollisionResponseContainer.SetResponse(ECC_WorldStatic, ECR_Block);
+	CollisionResponseContainer.SetResponse(ECC_WorldDynamic, ECR_Block);
+	CollisionResponseContainer.SetResponse(ECC_Pawn, ECR_Block);
+	CollisionResponseContainer.SetResponse(ECC_PhysicsBody, ECR_Block);
+	CollisionResponseContainer.SetResponse(ECC_Vehicle, ECR_Block);
+	CollisionResponseContainer.SetResponse(ECC_Destructible, ECR_Block);
+}
+
+void ASoldierEnemy::SetCollisionResponseToInvisible()
+{
+	CollisionResponseContainer.SetResponse(ECC_WorldStatic, ECR_Block);
+	CollisionResponseContainer.SetResponse(ECC_WorldDynamic, ECR_Overlap);
+	CollisionResponseContainer.SetResponse(ECC_Pawn, ECR_Overlap);
+	CollisionResponseContainer.SetResponse(ECC_PhysicsBody, ECR_Overlap);
+	CollisionResponseContainer.SetResponse(ECC_Vehicle, ECR_Overlap);
+	CollisionResponseContainer.SetResponse(ECC_Destructible, ECR_Overlap);
+}
+
+void ASoldierEnemy::TimeLineFinished()
+{
+	IIChangingWorldActor::TimeLineFinished();
+}
+
+void ASoldierEnemy::TimeLineFloatReturn(float Value)
+{
+	for (const auto Material : MeshesMaterials)
+	{
+		if(GetBIsAppearing())
+		{
+			Material->SetScalarParameterValue("Amount",Value);
+		}
+		else
+		{
+			float val=MinCurveValue-Value;
+			val=MaxCurveValue+val;
+			Material->SetScalarParameterValue("Amount",val);
+		}
+	}
 }
 
 void ASoldierEnemy::ThrowGrenadeCaller()

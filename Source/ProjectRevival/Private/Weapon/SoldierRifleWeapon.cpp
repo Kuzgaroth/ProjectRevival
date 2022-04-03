@@ -48,6 +48,13 @@ void ASoldierRifleWeapon::StopFire()
 	SetFXActive(false);
 }
 
+void ASoldierRifleWeapon::StopFireExternal()
+{
+	if (GetWorld()->GetTimerManager().IsTimerActive(BulletsTimerHandle)) {GetWorld()->GetTimerManager().ClearTimer(BulletsTimerHandle);}
+	GetWorld()->GetTimerManager().ClearTimer(ClipsTimerHandle);
+	SetFXActive(false);
+}
+
 void ASoldierRifleWeapon::StopFireBullet()
 {
 	SetFXActive(false);

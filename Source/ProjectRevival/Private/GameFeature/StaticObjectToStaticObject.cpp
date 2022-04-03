@@ -142,7 +142,6 @@ void AStaticObjectToStaticObject::BeginPlay()
 
 void AStaticObjectToStaticObject::ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld)
 {
-	Super::ChangeVisibleWorld(VisibleInEditorWorld);
 	if(VisibleInEditorWorld!=OwnValuesWorld)
 	{
 		switch (VisibleInEditorWorld)
@@ -188,6 +187,11 @@ bool AStaticObjectToStaticObject::CheckIsChangeAbleObjIsCover()
 	return SuperMesh1->ComponentTags.Contains("Cover")||SuperMesh2->ComponentTags.Contains("Cover");
 }
 
+void AStaticObjectToStaticObject::ClearComponentTags(UStaticMeshComponent* supermesh)
+{
+	IIChangingWorldActor::ClearComponentTags(supermesh);
+}
+
 // Called every frame
 void AStaticObjectToStaticObject::Tick(float DeltaTime)
 {
@@ -231,8 +235,7 @@ void AStaticObjectToStaticObject::PostEditChangeProperty(FPropertyChangedEvent& 
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(),AChangeWorld::StaticClass(),ChangeAbleObjs);
 		for(auto obj:ChangeAbleObjs)
 		{
-			auto chobj=Cast<AChangeWorld>(obj);
-			chobj->ChangeVisibleWorld(AllObjectVisibleWorld);
+			ChangeVisibleWorld(AllObjectVisibleWorld);
 		}
 	}
 	if(PropertyChangedEvent.Property->GetName()=="CoverPointsAmount")
@@ -494,7 +497,6 @@ void AStaticObjectToStaticObject::Changing()
 
 void AStaticObjectToStaticObject::LoadComponentTags(UStaticMeshComponent* supermesh)
 {
-	Super::LoadComponentTags(supermesh);
 	if(supermesh==SuperMesh1)
 	{
 		for(int i=0;i<OrMeshTags.Num();i++)

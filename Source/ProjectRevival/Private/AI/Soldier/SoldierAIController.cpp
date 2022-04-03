@@ -53,6 +53,7 @@ ASoldierAIController::ASoldierAIController()
 	bIsCoverChangeAllowed = true;
 	bIsDecisionMakingAllowed = true;
 	bIsFiringAllowed = true;
+	bIsAppearing = true;
 }
 
 void ASoldierAIController::SetPlayerPos(const FPlayerPositionData &NewPlayerPos)
@@ -70,19 +71,23 @@ void ASoldierAIController::SetPlayerPos(const FPlayerPositionData &NewPlayerPos)
 	OnPlayerSpotted.Broadcast(PlayerPos);
 }
 
+void ASoldierAIController::SetBIsAppearing(bool bCond)
+{
+	bIsAppearing = bCond;
+	UE_LOG(LogPRAIController, Warning, TEXT("bIsAppearing is updated in Controller: %s"), bIsAppearing?TEXT("true"):TEXT("false"))
+}
+
 void ASoldierAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	const auto AIChar = Cast<AAICharacter>(InPawn);
-	//UE_LOG(LogPRAIController, Log, TEXT("Character Possessed"));
 	if (AIChar)
 	{
-		//UE_LOG(LogPRAIController, Log, TEXT("BehaviorTree started"));
 		auto Actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
 		Actor = Cast<APlayerCharacter>(Actor);
 		if (Actor)
 		{
-			FPlayerPositionData ActorPos(Actor, nullptr);
+			const FPlayerPositionData ActorPos(Actor, nullptr);
 			SetPlayerPos(ActorPos);
 		}
 		RunBehaviorTree(AIChar->BehaviorTreeAsset);
@@ -90,6 +95,8 @@ void ASoldierAIController::OnPossess(APawn* InPawn)
 		Cast<ASoldierEnemy>(GetPawn())->StopExitingCoverDelegate.AddDynamic(this, &ASoldierAIController::StopExitingCover);
 		Cast<ASoldierEnemy>(GetPawn())->StopCoverSideMovingDelegate.AddDynamic(this, &ASoldierAIController::StopCoverSideMoving);
 		Cast<ASoldierEnemy>(GetPawn())->StopFireDelegate.AddDynamic(this, &ASoldierAIController::StopFiring);
+		Cast<ASoldierEnemy>(GetPawn())->SoldierWorldChangeDelegate.AddDynamic(this, &ASoldierAIController::SetBIsAppearing);
+		UE_LOG(LogPRAIController, Warning, TEXT("delegate is bound %s"), Cast<ASoldierEnemy>(GetPawn())->SoldierWorldChangeDelegate.IsBound()?TEXT("true"):TEXT("false"))
 		const auto BlackboardComp = GetBlackboardComponent();
 		if (BlackboardComp)
 		{
