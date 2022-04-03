@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "ChangeWorld.h"
 #include "Interfaces/IChangingWorldActor.h"
+#include "ProjectRevival/Public/CoreTypes.h"
+#include "Interfaces/IChangingWorldActor.h"
 #include "StaticObjectToStaticObject.generated.h"
 
 class UBoxComponent;
@@ -61,9 +63,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+#if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-
+#endif
 	
 	//UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	//TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
@@ -88,6 +90,15 @@ public:
 					  int32 OtherBodyIndex, 
 					  bool bFromSweep, 
 					  const FHitResult &SweepResult);
+
+	virtual bool TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos) override;
+	
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	FCoverPointsAndPossibility CoverStructForOrdinaryWObject;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	FCoverPointsAndPossibility CoverStructForOtherWOther;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* SceneComponent;
 	

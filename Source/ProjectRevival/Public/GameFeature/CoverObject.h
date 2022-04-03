@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagAssetInterface.h"
 #include "GameFramework/Actor.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "CoverObject.generated.h"
 
 UCLASS()
@@ -15,6 +16,9 @@ class PROJECTREVIVAL_API ACoverObject : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ACoverObject();
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 
 protected:
 	// Called when the game starts or when spawned
@@ -23,8 +27,14 @@ protected:
 	// Занято ли укрытие
 	bool bIsTaken;
 
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	FCoverPointsAndPossibility CoverStruct;
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	bool IsCoverTaken() const { return bIsTaken; }
+
+	virtual bool TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos);
 };

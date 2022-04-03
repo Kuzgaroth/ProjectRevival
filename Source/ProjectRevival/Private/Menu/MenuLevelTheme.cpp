@@ -47,6 +47,8 @@ void AMenuLevelTheme::ChangeVolume(float Value, FString WhatSound)
     /*StrangeThings*/
 	if (Value > 0)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Effects: %s"), *EffectsSoundMix->SoundClassEffects[0].SoundClassObject->GetName());
+
 		if (WhatSound == "Master") MainSoundMix->SoundClassEffects[0].SoundClassObject->Properties.Volume = Value, MasterVolume = Value;
 		if (WhatSound == "Effects") EffectsSoundMix->SoundClassEffects[0].SoundClassObject->Properties.Volume = Value * MasterVolume;
 		if (WhatSound == "Music") MusicSoundMix->SoundClassEffects[0].SoundClassObject->Properties.Volume = Value * MasterVolume;

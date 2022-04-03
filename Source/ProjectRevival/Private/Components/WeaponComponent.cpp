@@ -62,6 +62,22 @@ ABaseWeapon* UWeaponComponent::GetCurrentWeapon()
 	return nullptr;
 }
 
+TArray<FAmmoData> UWeaponComponent::GetAllWeapons()
+{
+	TArray<FAmmoData> AmmoDatas;
+	for (ABaseWeapon* Weapon : Weapons)
+		AmmoDatas.Add(Weapon->GetAmmoData());
+	return AmmoDatas;
+}
+
+void UWeaponComponent::SetWeponData(FAmmoData NewAmmoData)
+{
+	for (auto Weapon : Weapons)
+	{
+		Weapon->SetAmmoData(NewAmmoData);
+	}
+}
+
 bool UWeaponComponent::GetCurrentWeaponUIData(FWeaponUIData& UIData) const
 {
 	if (CurrentWeapon)

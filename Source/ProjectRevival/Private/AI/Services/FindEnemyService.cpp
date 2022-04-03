@@ -6,6 +6,9 @@
 #include "AIController.h"
 #include "PRUtils.h"
 #include "PRAIPerceptionComponent.h"
+#include "PRSoldierAIPerceptionComponent.h"
+
+class UPRSoldierAIPerceptionComponent;
 
 UFindEnemyService::UFindEnemyService()
 {
@@ -19,7 +22,7 @@ void UFindEnemyService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	if (Blackboard)
 	{
 		const auto Controller = OwnerComp.GetAIOwner();
-		const auto PerceptionComponent = PRUtils::GetCharacterComponent<UPRAIPerceptionComponent>(Controller);
+		const auto PerceptionComponent = PRUtils::GetCharacterComponent<UPRSoldierAIPerceptionComponent>(Controller);
 		if (PerceptionComponent)
 		{
 			Blackboard->SetValueAsObject(EnemyActorKey.SelectedKeyName, PerceptionComponent->GetClosestEnemy());

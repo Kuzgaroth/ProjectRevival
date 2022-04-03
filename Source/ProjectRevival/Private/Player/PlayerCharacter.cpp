@@ -15,10 +15,10 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Components/BaseCharacterMovementComponent.h"
-#include "ProjectRevival/ProjectRevival.h"
 #include "GameFeature/StaticObjectToNothing.h"
 #include "Kismet/GameplayStatics.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
+#include "Sound/SoundCue.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -81,6 +81,7 @@ void APlayerCharacter::MoveForward(float Amount)
 	if (CoverData.IsInCover() || CoverData.IsInTransition() || CoverData.IsFiring) return;
 	bIsMovingForward = Amount>0;
 	PlayerMovementComponent->MoveForward(Amount);
+
 }
 
 void APlayerCharacter::MoveRight(float Amount) 
@@ -143,7 +144,7 @@ void APlayerCharacter::LookAround(float Amount)
 
 void APlayerCharacter::CoverCrouch()
 {
-	CoverData.TrySwitchCoverType(this);
+	if (!CoverData.TrySwitchCoverType(this)) return;
 	if (CameraCover.bIsShift == true)
 	{
 		CameraCover.StartPos = SpringArmComponent->SocketOffset.Y;
@@ -236,6 +237,11 @@ void APlayerCharacter::Landed(const FHitResult& Hit)
 {
 	bWantsToRun=false;
 	Super::Landed(Hit);
+}
+
+TArray<FAmmoData> APlayerCharacter::GetPlayerWeapons() const
+{
+	return WeaponComponent->GetAllWeapons();
 }
 
 bool APlayerCharacter::IsRunning() const
@@ -370,6 +376,27 @@ void APlayerCharacter::TimelineCover(float Value)
 void APlayerCharacter::TimelineCoverLow(float Value)
 {
 	CameraCoverFunctions->TimelineCoverLow(Value, CameraCoverFunctions, SpringArmComponent);
+}
+
+void APlayerCharacter::SetChangeWorldPossibility(bool newValue, AStaticObjectToNothing* overlappedAct)
+{
+	OverlappedChangeWActor=overlappedAct;
+	WorldCanBeChanged=newValue;
+}
+
+bool APlayerCharacter::CheckIfWorldCanBeChanged() const
+{
+	if(!WorldCanBeChanged)
+	{
+		if(WorldCantBeChangedPhrase)
+			UGameplayStatics::SpawnSound2D(GetWorld(),WorldCantBeChangedPhrase);
+		if(OverlappedChangeWActor)
+		{
+			OverlappedChangeWActor->ShowChangeWorldObjectByAbility();
+		}
+		
+	}
+	return WorldCanBeChanged;
 }
 
 
