@@ -32,6 +32,7 @@ public:
 	bool IsAmmoEmpty() const;
 	void SetAmmoData(FAmmoData NewAmmoData);
 	FOnWeaponShotSignature OnWeaponShotDelegate;
+	USkeletalMeshComponent* GetWeaponMeshComponent() const { return WeaponMesh; }
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
 	USkeletalMeshComponent* WeaponMesh;

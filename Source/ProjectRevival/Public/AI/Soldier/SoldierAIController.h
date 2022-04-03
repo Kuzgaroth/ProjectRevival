@@ -50,6 +50,11 @@ public:
 	void SetBIsDecisionMakingAllowed(bool const bCond) { bIsDecisionMakingAllowed = bCond; }
 	bool GetBIsFiringAllowed() const { return bIsFiringAllowed; }
 	void SetBIsFiringAllowed(bool const bCond) { bIsFiringAllowed = bCond; }
+	bool GetBIsPlayerInSight() const { return bIsPlayerInSight; }
+	void SetBIsPlayerInSight(bool const bCond) { bIsPlayerInSight = bCond; }
+	bool GetBIsAppearing() const { return bIsAppearing; }
+	UFUNCTION(BlueprintCallable)
+	void SetBIsAppearing(bool bCond);
 
 	UPROPERTY(BlueprintAssignable)
 	FPlayerPosDelegate PlayerPosDelegate;
@@ -90,6 +95,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
 	EWing BotWing;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
 	UPRSoldierAIPerceptionComponent* PRPerceptionComponent;
@@ -131,12 +137,14 @@ protected:
 	bool bIsCoverChangeAllowed;
 	bool bIsDecisionMakingAllowed;
 	bool bIsFiringAllowed;
+	bool bIsPlayerInSight;
+	bool bIsAppearing;
 	
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
 private:
 	AActor* GetFocusOnActor();
 };
-

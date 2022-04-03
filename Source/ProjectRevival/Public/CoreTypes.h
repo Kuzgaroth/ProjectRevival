@@ -17,7 +17,9 @@ DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAIPerception, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAITasks, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIServices, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAISoldier, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRStaticObject, Log, All);
 
 USTRUCT(BlueprintType)
 struct FAmmoData
@@ -624,4 +626,30 @@ public:
 		PlayerActor = PlayerPos.PlayerActor;
 		PlayerCover = PlayerPos.PlayerCover;
 	}
+};
+
+UENUM(BlueprintType, Category = "GameRules")
+enum EChangeWorld
+{
+	OrdinaryWorld=0 UMETA(DisplayName = "Ordinary World"),
+	OtherWorld=1 UMETA(DisplayName = "Other World")
+};
+
+UENUM(BlueprintType, Category = "GameRules")
+enum EChangeEditorVisibility
+{
+	DefaultWorld=0 UMETA(DisplayName = "Ordinary World"),
+	AltirnativeWorld=1 UMETA(DisplayName = "Other World"),
+	BothWorlds=2 UMETA(DisplayName = "Both Worlds")
+
+};
+
+UENUM(BlueprintType, Category = "GameRules")
+enum EChangeAllMapEditorVisibility
+{
+	DefaultVisibleWorld=0 UMETA(DisplayName = "Ordinary World"),
+	OtherVisibleWorld=1 UMETA(DisplayName = "Other World"),
+	BothVisibleWorlds=2 UMETA(DisplayName = "Both Worlds"),
+	OwnValuesWorld=3 UMETA(DisplayName = "None World")
+
 };

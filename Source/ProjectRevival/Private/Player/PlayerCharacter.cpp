@@ -384,6 +384,12 @@ void APlayerCharacter::SetChangeWorldPossibility(bool newValue, AStaticObjectToN
 	WorldCanBeChanged=newValue;
 }
 
+void APlayerCharacter::SetChangeWorldPossibility(bool newValue, ASoldierEnemy* overlappedAct)
+{
+	OverlappedChangeWEnemy = overlappedAct;
+	WorldCanBeChanged = newValue;
+}
+
 bool APlayerCharacter::CheckIfWorldCanBeChanged() const
 {
 	if(!WorldCanBeChanged)
@@ -394,7 +400,10 @@ bool APlayerCharacter::CheckIfWorldCanBeChanged() const
 		{
 			OverlappedChangeWActor->ShowChangeWorldObjectByAbility();
 		}
-		
+		if(OverlappedChangeWEnemy)
+		{
+			OverlappedChangeWEnemy->ShowChangeWorldObjectByAbility();
+		}
 	}
 	return WorldCanBeChanged;
 }
@@ -467,12 +476,12 @@ void APlayerCharacter::OnCameraMove()
 
 void APlayerCharacter::OnWorldChanged()
 {
-	TSubclassOf<AChangeWorld> ClassToFind = AChangeWorld::StaticClass();
+	TSubclassOf<AChangeWorld> ClassToFind = AStaticObjectToNothing::StaticClass();
 	TArray<AActor*> OutActors;
 	UGameplayStatics::GetAllActorsOfClass(this, ClassToFind, OutActors);
 	for (int EveryActor = 0; EveryActor < OutActors.Num(); EveryActor++)
 	{
-		Cast<AChangeWorld>(OutActors[EveryActor])->Changing();
+		Cast<AStaticObjectToNothing>(OutActors[EveryActor])->Changing();
 	}
 }
 
