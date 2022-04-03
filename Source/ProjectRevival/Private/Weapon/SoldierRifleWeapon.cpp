@@ -48,6 +48,14 @@ void ASoldierRifleWeapon::StopFire()
 	SetFXActive(false);
 }
 
+void ASoldierRifleWeapon::StopFireExternal()
+{
+	UE_LOG(LogTemp, Log, TEXT("Rifle has stopped fire. It's Owner is: %s"), *GetOwner()->GetName());
+	if (GetWorld()->GetTimerManager().IsTimerActive(BulletsTimerHandle)) {GetWorld()->GetTimerManager().ClearTimer(BulletsTimerHandle);}
+	GetWorld()->GetTimerManager().ClearTimer(ClipsTimerHandle);
+	SetFXActive(false);
+}
+
 void ASoldierRifleWeapon::StopFireBullet()
 {
 	SetFXActive(false);

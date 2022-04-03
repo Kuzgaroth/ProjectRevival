@@ -217,16 +217,18 @@ void ASoldierEnemy::StartCoverSoldierFinish()
 }
 
 void ASoldierEnemy::StopCoverSoldier()
-{//
+{
 	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StopCoverSoldier() was called"))
 	if (bIsFiringBP)
 	{
+		UE_LOG(LogPRAISoldier, Log, TEXT("Character: StopCoverSoldier() at firing"))
 		StopFiringImmediately();
 		GetCharacterMovement()->SetPlaneConstraintEnabled(false);
 		bUseControllerRotationYaw = false;
 		CoverData.StopCover();
 	} else
 	{
+		UE_LOG(LogPRAISoldier, Log, TEXT("Character: StopCoverSoldier() at common"))
 		GetCharacterMovement()->SetPlaneConstraintEnabled(false);
 		bUseControllerRotationYaw = false;
 		CoverData.StopCover();
@@ -449,9 +451,11 @@ void ASoldierEnemy::StopFiring()
 //Called when we want to abort covering during firing. 
 void ASoldierEnemy::StopFiringImmediately()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("Character: StopFiringImmediately was called"))
 	if (Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon()))
 	{
 		if (!RowRifleRef) {return;}
+		RowRifleRef->StopFireExternal();
 		if (RowRifleRef->StoppedFireInWeaponDelegate.IsBound())
 		{
 			RowRifleRef->StoppedFireInWeaponDelegate.RemoveDynamic(this, &ASoldierEnemy::StopFiring);
