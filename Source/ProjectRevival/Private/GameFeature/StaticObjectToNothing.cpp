@@ -61,7 +61,8 @@ void AStaticObjectToNothing::BeginPlay()
 		{
 			for (const auto Material : MeshesMaterials)
 			{
-				Material->SetScalarParameterValue("Amount",MinCurveValue);
+				if (Material!=nullptr)
+					Material->SetScalarParameterValue("Amount",MinCurveValue);
 			}
 		}
 		else
@@ -77,7 +78,8 @@ void AStaticObjectToNothing::BeginPlay()
 		{
 			for (const auto Material : MeshesMaterials)
 			{
-				Material->SetScalarParameterValue("Amount",MaxCurveValue);
+				if (Material!=nullptr)
+					Material->SetScalarParameterValue("Amount",MaxCurveValue);
 			}
 		}
 		else
@@ -240,6 +242,7 @@ void AStaticObjectToNothing::ShowChangeWorldObjectByAbility()
 			{
 				auto reqwar=(MaxCurveValue-MinCurveValue)/TransparencyLevel;
 				reqwar=MaxCurveValue-reqwar;
+				if (Material!=nullptr)
 				Material->SetScalarParameterValue("Amount",reqwar);
 			}
 	}
@@ -254,6 +257,7 @@ void AStaticObjectToNothing::HideChangeWorldObjectByAbility()
 		if(MeshesMaterials.Num()!=0)
 			for (const auto Material : MeshesMaterials)
 			{
+				if (Material!=nullptr)
 				Material->SetScalarParameterValue("Amount",MaxCurveValue);
 			}
 	}
@@ -329,13 +333,14 @@ void AStaticObjectToNothing::TimeLineFloatReturn(float Value)
 	{
 		if(isApearing)
 		{
-			
+			if (Material!=nullptr)
 			Material->SetScalarParameterValue("Amount",Value);
 		}
 		else
 		{
 			float val=MinCurveValue-Value;
 			val=MaxCurveValue+val;
+			if (Material!=nullptr)
 			Material->SetScalarParameterValue("Amount",val);
 		}
 	}

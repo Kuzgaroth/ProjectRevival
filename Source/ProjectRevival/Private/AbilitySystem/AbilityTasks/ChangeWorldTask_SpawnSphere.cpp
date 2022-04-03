@@ -23,10 +23,11 @@ AChangeWorldSphereActor* UChangeWorldTask_SpawnSphere::StartTask(AActor& OwnerAc
 	CollisionParams.AddIgnoredActor(&OwnerActor);
 	FHitResult HitResult;
 	GetWorld()->LineTraceSingleByChannel(HitResult,TraceStart,TraceEnd,ECollisionChannel::ECC_Visibility,CollisionParams);
+	DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
+	DrawDebugSphere(GetWorld(),HitResult.ImpactPoint,10.0f,24,FColor::Red,false,5.0f);
 	if(HitResult.bBlockingHit)
 	{
-		DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
-		DrawDebugSphere(GetWorld(),HitResult.ImpactPoint,10.0f,24,FColor::Red,false,5.0f);
+		
 		FActorSpawnParameters SpawnParams;
 		if(ChangeWorldSphere)
 		{
@@ -34,6 +35,7 @@ AChangeWorldSphereActor* UChangeWorldTask_SpawnSphere::StartTask(AActor& OwnerAc
 			return act;
 		}
 		return nullptr;
+		
 	}
 	return nullptr;
 }

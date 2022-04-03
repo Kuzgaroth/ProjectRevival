@@ -29,7 +29,7 @@ protected:
 	UPROPERTY(EditInstanceOnly)
 	FName CheckpointName;
 	UPROPERTY(EditInstanceOnly)
-	bool FirstCheckPoint=false;
+	bool FirstCheckPoint;
 public:	
 	FORCEINLINE bool IsFirstCheckPoint() const {return FirstCheckPoint;}
 	virtual AActor* GetPlayerStartForCheckpoint() override;
