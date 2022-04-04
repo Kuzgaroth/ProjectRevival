@@ -71,10 +71,29 @@ void ASoldierAIController::SetPlayerPos(const FPlayerPositionData &NewPlayerPos)
 	OnPlayerSpotted.Broadcast(PlayerPos);
 }
 
+void ASoldierAIController::SetBIsPlayerInSight(bool const bCond)
+{
+	bIsPlayerInSight = bCond;
+	if (bIsPlayerInSight)
+	{
+		SetBotState(EBotState::battle);
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimer(LoosePlayerTimer, this, &ASoldierAIController::OnLoosePlayerTimerFired, 30.0f, false, -1);
+	}
+}
+
 void ASoldierAIController::SetBIsAppearing(bool bCond)
 {
 	bIsAppearing = bCond;
-	UE_LOG(LogPRAIController, Warning, TEXT("bIsAppearing is updated in Controller: %s"), bIsAppearing?TEXT("true"):TEXT("false"))
+	if (!bIsAppearing) SetBotState(EBotState::idle);
+}
+
+void ASoldierAIController::SetBotState(EBotState const val)
+{
+	BotState = val;
+	BotStateDelegate.Broadcast(GetBotState());
 }
 
 void ASoldierAIController::OnPossess(APawn* InPawn)
@@ -90,18 +109,15 @@ void ASoldierAIController::OnPossess(APawn* InPawn)
 			const FPlayerPositionData ActorPos(Actor, nullptr);
 			SetPlayerPos(ActorPos);
 		}
+		SetBotState(EBotState::idle);
 		RunBehaviorTree(AIChar->BehaviorTreeAsset);
 		Cast<ASoldierEnemy>(GetPawn())->StopEnteringCoverDelegate.AddDynamic(this, &ASoldierAIController::StopEnteringCover);
 		Cast<ASoldierEnemy>(GetPawn())->StopExitingCoverDelegate.AddDynamic(this, &ASoldierAIController::StopExitingCover);
 		Cast<ASoldierEnemy>(GetPawn())->StopCoverSideMovingDelegate.AddDynamic(this, &ASoldierAIController::StopCoverSideMoving);
 		Cast<ASoldierEnemy>(GetPawn())->StopFireDelegate.AddDynamic(this, &ASoldierAIController::StopFiring);
 		Cast<ASoldierEnemy>(GetPawn())->SoldierWorldChangeDelegate.AddDynamic(this, &ASoldierAIController::SetBIsAppearing);
-		UE_LOG(LogPRAIController, Warning, TEXT("delegate is bound %s"), Cast<ASoldierEnemy>(GetPawn())->SoldierWorldChangeDelegate.IsBound()?TEXT("true"):TEXT("false"))
 		const auto BlackboardComp = GetBlackboardComponent();
-		if (BlackboardComp)
-		{
-			BlackboardComp->SetValueAsEnum(WingKeyName, uint8(BotWing));
-		}
+		if (BlackboardComp) BlackboardComp->SetValueAsEnum(WingKeyName, uint8(BotWing));
 	}
 }
 
@@ -236,6 +252,12 @@ void ASoldierAIController::OnFireTimerFired()
 {
 	SetBIsFiringAllowed(true);
 	GetWorld()->GetTimerManager().ClearTimer(BTFireTimerHandle);
+}
+
+void ASoldierAIController::OnLoosePlayerTimerFired()
+{
+	SetBotState(EBotState::idle);
+	GetWorld()->GetTimerManager().ClearTimer(LoosePlayerTimer);
 }
 
 AActor* ASoldierAIController::GetFocusOnActor()

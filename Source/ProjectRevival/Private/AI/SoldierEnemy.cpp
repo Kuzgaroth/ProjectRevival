@@ -128,8 +128,12 @@ void ASoldierEnemy::Tick(float DeltaSeconds)
 void ASoldierEnemy::SetBIsAppearing(bool const bCond)
 {
 	bIsAppearing = bCond;
-	UE_LOG(LogPRAISoldier, Warning, TEXT("bIsAppearing updated in Soldier: %s"), bIsAppearing?TEXT("true"):TEXT("false"))
 	SoldierWorldChangeDelegate.Broadcast(GetBIsAppearing());
+}
+
+void ASoldierEnemy::SetBotState(EBotState const val)
+{
+	BotState = val;
 }
 
 void ASoldierEnemy::PossessedBy(AController* NewController)
@@ -144,6 +148,7 @@ void ASoldierEnemy::PossessedBy(AController* NewController)
 	SoldierController->StartCoverSideMovingDelegate.AddDynamic(this, &ASoldierEnemy::ChangeCoverSide);
 	SoldierController->StartFiringDelegate.AddDynamic(this, &ASoldierEnemy::StartFiring);
 	SoldierController->PlayerPosDelegate.AddDynamic(this, &ASoldierEnemy::UpdatePlayerCoordinates);
+	SoldierController->BotStateDelegate.AddDynamic(this, &ASoldierEnemy::SetBotState);
 
 	SkeletalMesh = GetMesh();
 	CapsuleComp = GetCapsuleComponent();
@@ -211,6 +216,24 @@ void ASoldierEnemy::UpdateHStateBlackboardKey(uint8 EnumKey)
 		BBComp->SetValueAsEnum("HState", EnumKey);
 		UE_LOG(LogTemp, Log, TEXT("BBComp was updated %i"), EnumKey)
 	}
+}
+
+void ASoldierEnemy::SetBotVisible()
+{
+	SetCollisionResponseToVisible();
+	SetBIsAppearing(true);
+	CapsuleComp->SetCollisionResponseToChannels(CollisionResponseContainer);
+	SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+	SkeletalMesh->SetVisibility(true);
+}
+
+void ASoldierEnemy::SetBotInvisible()
+{
+	SetCollisionResponseToInvisible();
+	SetBIsAppearing(false);
+	CapsuleComp->SetCollisionResponseToChannels(CollisionResponseContainer);
+	SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+	SkeletalMesh->SetVisibility(false);
 }
 
 void ASoldierEnemy::UpdateHealthWidgetVisibility()
@@ -531,30 +554,29 @@ void ASoldierEnemy::ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEd
 		}
 		if(VisibleWorld==World || VisibleWorld==BothWorlds)
 		{
-			SkeletalMesh->SetVisibility(true);
+			SetBotVisible();
 		}
 		else
 		{
-			SkeletalMesh->SetVisibility(false);
+			SetBotInvisible();
 		}
 	}
 	else
 	{
 		VisibleWorld=DefaultWorld;
-		if(VisibleWorld==World || VisibleWorld==BothWorlds)
+		if(VisibleWorld==World)
 		{
-			SkeletalMesh->SetVisibility(true);
+			SetBotVisible();
 		}
 		else
 		{
-			SkeletalMesh->SetVisibility(false);
+			SetBotInvisible();
 		}
 	}
 }
 
 void ASoldierEnemy::Changing()
 {
-	UE_LOG(LogPRAISoldier, Warning, TEXT("Changing func is called"))
 	if(CurrentWorld==OrdinaryWorld)
 	{
 		CurrentWorld=OtherWorld;
@@ -565,48 +587,18 @@ void ASoldierEnemy::Changing()
 	}
 	if (World == CurrentWorld)
 	{
-		SetCollisionResponseToVisible();
-		SetBIsAppearing(true);
-		if(VisualCurve)
-		{
-			CapsuleComp->SetCollisionResponseToChannels(CollisionResponseContainer);
-			SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
-			SkeletalMesh->SetVisibility(true);
-			Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon())->GetWeaponMeshComponent()->SetVisibility(true);
-			TimeLine.PlayFromStart();
-		}
-		else
-		{
-			CapsuleComp->SetCollisionResponseToChannels(CollisionResponseContainer);
-			SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
-			SkeletalMesh->SetVisibility(true);
-			Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon())->GetWeaponMeshComponent()->SetVisibility(true);
-		}
+		SetBotVisible();
+		Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon())->GetWeaponMeshComponent()->SetVisibility(true);
+		if(VisualCurve) TimeLine.PlayFromStart();
 	}
 	else
 	{
-		SetCollisionResponseToInvisible();
+		SetBotInvisible();
 		StopFiringImmediately();
-		SetBIsAppearing(false);
-		if(VisualCurve)
-		{
-			CapsuleComp->SetCollisionResponseToChannels(CollisionResponseContainer);
-			SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
-			SkeletalMesh->SetVisibility(false);
-			Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon())->GetWeaponMeshComponent()->SetVisibility(false);
-			TimeLine.PlayFromStart();
-		}
-		else
-		{
-			CapsuleComp->SetCollisionResponseToChannels(CollisionResponseContainer);
-			SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
-			SkeletalMesh->SetVisibility(false);
-			Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon())->GetWeaponMeshComponent()->SetVisibility(false);
-		}
-		if (bIsInCoverBP)
-		{
-			StopCoverSoldier();
-		}
+		Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon())->GetWeaponMeshComponent()->SetVisibility(false);
+		if(VisualCurve) TimeLine.PlayFromStart();
+		
+		if (bIsInCoverBP) StopCoverSoldier();
 	}
 }
 
@@ -616,14 +608,7 @@ void ASoldierEnemy::PostEditChangeProperty(FPropertyChangedEvent& PropertyChange
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 	if(PropertyChangedEvent.Property->GetName()=="VisibleWorld")
 	{
-		if(VisibleWorld==World || VisibleWorld==BothWorlds)
-		{
-			SkeletalMesh->SetVisibility(true);
-		}
-		else
-		{
-			SkeletalMesh->SetVisibility(false);
-		}
+		SkeletalMesh->SetVisibility(VisibleWorld==World || VisibleWorld==BothWorlds);
 	}
 	if(PropertyChangedEvent.Property->GetName()=="AllObjectVisibleWorld")
 	{
@@ -668,11 +653,8 @@ void ASoldierEnemy::HideChangeWorldObjectByAbility()
 void ASoldierEnemy::OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogPRAISoldier, Warning, TEXT("OnMeshComponentCollision"))
-	UE_LOG(LogPRAISoldier, Warning, TEXT("%s"), *FString(OtherActor->GetName()))
 	if(Cast<AChangeWorldSphereActor>(OtherActor))
 	{
-		UE_LOG(LogPRAISoldier, Warning, TEXT("Cast went successful"))
 		Changing();
 	}
 	auto Player=Cast<APlayerCharacter>(OtherActor);
