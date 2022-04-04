@@ -43,4 +43,13 @@ public:
 
 	UFUNCTION()
 	void SetVolume(float newValue, FString WhatSound);
+
+	UPROPERTY()
+	USoundMix* SoundMix;
+private:
+	UPROPERTY()
+	class UPRGameInstance* MyGameInstance;
+
+	void SaveSoundSettings();
+	void LoadSoundSettings();
 };

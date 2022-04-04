@@ -42,6 +42,11 @@ void AChangeWorldSphereActor::BeginPlay()
 	
 }
 
+void AChangeWorldSphereActor::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+}
+
 // Called every frame
 void AChangeWorldSphereActor::Tick(float DeltaTime)
 {

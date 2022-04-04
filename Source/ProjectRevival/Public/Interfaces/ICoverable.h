@@ -71,7 +71,7 @@ struct FCoverData
 	void StopCover();
 	bool TurnStart(float Amount);
 	void TurnEnd(ECoverSide NewSide);
-	void TrySwitchCoverType(IICoverable* ICoverablePawn);
+	bool TrySwitchCoverType(IICoverable* ICoverablePawn);
 	void OnCoverStatusUpdated(ECoverType CType, ECoverSide CSide, ECoverPart CPart);
 	bool IsInTransition() const;
 	bool IsReadyToFire() const;

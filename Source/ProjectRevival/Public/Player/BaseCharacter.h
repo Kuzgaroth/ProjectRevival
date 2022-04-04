@@ -72,7 +72,7 @@ protected:
 
 	//Смещение анимации относительно капсулы
 	UPROPERTY(EditDefaultsOnly, Category="Cover")
-	float RootDelta = 100.f;
+	float RootDelta = 50.f;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void AddStartupGameplayAbilities();
