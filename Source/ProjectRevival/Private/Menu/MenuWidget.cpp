@@ -64,7 +64,7 @@ void UMenuWidget::OnStartGame()
 	const auto MenuGameMode = GetWorld()->GetAuthGameMode<AMenuGameModeBase>();
 	if (MenuGameMode) MenuGameMode->ClearSaveData();
 	UGameplayStatics::PlaySound2D(GetWorld(), StartGameSound);
-	UGameplayStatics::OpenLevel(this,GameInstance->GetStartupLevel().LevelName);
+	UGameplayStatics::OpenLevel(this,/*GameInstance->GetStartupLevel().LevelName*/"LVL_Conference");
 	
 }
 
@@ -73,7 +73,7 @@ void UMenuWidget::OnContinueGame()
 	const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
 	
 	UGameplayStatics::PlaySound2D(GetWorld(), StartGameSound);
-	UGameplayStatics::OpenLevel(this,GameInstance->GetStartupLevel().LevelName);
+	UGameplayStatics::OpenLevel(this,/*GameInstance->GetStartupLevel().LevelName*/"LVL_Conference");
 }
 
 void UMenuWidget::OnNewGame()

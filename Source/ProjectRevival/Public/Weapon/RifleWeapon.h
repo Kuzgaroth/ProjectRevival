@@ -54,6 +54,8 @@ protected:
 	void InitFX();
 	void SetFXActive(bool IsActive);
 	void SpawnTraceFX(const FVector& TraceStart, const FVector& TraceEnd);
+	bool IsHitInHead(const FHitResult& HitResult);
+	void ProcessEnemyHit(bool IsInHead);
 private:
 	FTimerHandle ShotTimerHandle;
 	
@@ -67,3 +69,4 @@ private:
 	
 	AController* GetController() const;
 };
+

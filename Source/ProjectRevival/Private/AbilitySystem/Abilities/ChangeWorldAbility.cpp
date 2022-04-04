@@ -32,6 +32,10 @@ void UChangeWorldAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	{
 		SpawnedSphereActor->AbilityEnded.AddUObject(this,&UChangeWorldAbility::FinishAbility);
 	}
+	else
+	{
+		FinishAbility();
+	}
 	
 }
 

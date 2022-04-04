@@ -135,10 +135,20 @@ void APRGameModeBase::RestartPlayer(AController* NewPlayer)
 		});
 	}
 	
-	if (Checkpoints.Num()<1) return;
+	if (Checkpoints.Num()<1)
+	{
+		UE_LOG(LogPRSaveSystem, Display, TEXT("----No checkpoints----"))
+		return;
+	}
 	const auto CheckpointInterface = Cast<IICheckpointable>(Checkpoints[0]);
-	if (!CheckpointInterface) return;
+	if (!CheckpointInterface)
+	{
+		UE_LOG(LogPRSaveSystem, Display, TEXT("----No interface in checkpoint----"))
+		return;
+	}
+	
 	AActor* PlayerStart = CheckpointInterface->GetPlayerStartForCheckpoint();
+	UE_LOG(LogPRSaveSystem, Display, TEXT("---Checkpoint to spawn: %s----"), *PlayerStart->GetHumanReadableName());
 	
 	RestartPlayerAtPlayerStart(NewPlayer, PlayerStart);
 	Checkpoints[0]->Destroy(true);
