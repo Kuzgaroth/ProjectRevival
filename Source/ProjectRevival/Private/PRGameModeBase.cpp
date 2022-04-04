@@ -176,6 +176,22 @@ void APRGameModeBase::RestartPlayer(AController* NewPlayer)
 	UE_LOG(LogPRSaveSystem, Display, TEXT("----Load process ended----"))*/
 }
 
+APawn* APRGameModeBase::SpawnDefaultPawnAtTransform_Implementation(AController* NewPlayer,
+	const FTransform& SpawnTransform)
+{
+	FActorSpawnParameters SpawnInfo;
+	SpawnInfo.Instigator = GetInstigator();
+	SpawnInfo.ObjectFlags |= RF_Transient;
+	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	UClass* PawnClass = GetDefaultPawnClassForController(NewPlayer);
+	APawn* ResultPawn = GetWorld()->SpawnActor<APawn>(PawnClass, SpawnTransform, SpawnInfo);
+	if (!ResultPawn)
+	{
+		UE_LOG(LogGameMode, Warning, TEXT("SpawnDefaultPawnAtTransform: Couldn't spawn Pawn of type %s at %s"), *GetNameSafe(PawnClass), *SpawnTransform.ToHumanReadableString());
+	}
+	return ResultPawn;
+}
+
 void APRGameModeBase::ResetOnePlayer(AController* Controller)
 {
 }
