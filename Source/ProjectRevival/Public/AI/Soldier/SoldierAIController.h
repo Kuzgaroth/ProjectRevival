@@ -17,7 +17,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartFiring);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStartEnteringCover, const FVector&, CoverPosition, AActor*, CoverReference);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartExitingCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStartCoverSideMoving, float, SideMovementAmount);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBotStateDelegate, const EBotState, BotStateVal);
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnBotDiedSignature, ASoldierAIController*)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSpottedSignature, FPlayerPositionData)
@@ -52,13 +51,10 @@ public:
 	bool GetBIsFiringAllowed() const { return bIsFiringAllowed; }
 	void SetBIsFiringAllowed(bool const bCond) { bIsFiringAllowed = bCond; }
 	bool GetBIsPlayerInSight() const { return bIsPlayerInSight; }
-	void SetBIsPlayerInSight(bool const bCond);
+	void SetBIsPlayerInSight(bool const bCond) { bIsPlayerInSight = bCond; }
 	bool GetBIsAppearing() const { return bIsAppearing; }
 	UFUNCTION(BlueprintCallable)
 	void SetBIsAppearing(bool bCond);
-	UFUNCTION(BlueprintCallable)
-	EBotState GetBotState() const { return BotState; }
-	void SetBotState(EBotState const val);
 
 	UPROPERTY(BlueprintAssignable)
 	FPlayerPosDelegate PlayerPosDelegate;
@@ -76,8 +72,6 @@ public:
 	FOnPlayerSpottedSignature OnPlayerSpotted;
 	//Делегат для выбора действий ботов в крыльях (надо подключить к BehaviorTree)
 	FOnWingBotsDecision OnBotWingDecision;
-	//Делегат для передачи в павн состояние бота
-	FBotStateDelegate BotStateDelegate;
 	void StartFiring();
 	// Функция, к которой должен быть привязан делегат класса Character
 	UFUNCTION()
@@ -98,7 +92,6 @@ public:
 	void OnGeneralTimerFired();
 	void StartFireTimer(float cooldownSeconds);
 	void OnFireTimerFired();
-	void OnLoosePlayerTimerFired();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
 	EWing BotWing;
@@ -133,13 +126,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Respawn")
 	URespawnComponent* RespawnComponent;
-
-	EBotState BotState;
 	
 	FTimerHandle BTCoverTimerHandle;
 	FTimerHandle BTGeneralTimerHandle;
 	FTimerHandle BTFireTimerHandle;
-	FTimerHandle LoosePlayerTimer;
 	
 	bool bIsFiring;
 	bool bIsInCover;

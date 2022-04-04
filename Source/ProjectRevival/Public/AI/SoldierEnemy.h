@@ -30,9 +30,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool GetBIsAppearing() { return bIsAppearing; }
 	void SetBIsAppearing(bool bCond);
-	EBotState GetBotState() const { return BotState; }
-	UFUNCTION(BlueprintCallable)
-	void SetBotState(EBotState const val);
 	
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FThrowGrenade ThrowGrenadeDelegate;
@@ -198,8 +195,6 @@ protected:
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	float TransparencyLevel=5.0f;
-	
-	EBotState BotState = EBotState::idle;
 
 	FTimeline TimeLine;
 	FOnTimelineEvent OnTimeLineFinished;
@@ -221,8 +216,6 @@ protected:
 private:
 	virtual void UpdateHealthWidgetVisibility() override;
 	virtual void UpdateHStateBlackboardKey(uint8 EnumKey) override;
-	void SetBotVisible();
-	void SetBotInvisible();
 	void CoverCrouch();
 
 	UFUNCTION()
