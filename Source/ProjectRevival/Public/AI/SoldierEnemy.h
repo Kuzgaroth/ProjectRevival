@@ -136,6 +136,9 @@ public:
 	bool bIsFiringBP;
 
 	UPROPERTY(BlueprintReadOnly)
+	bool bCanFireBP;
+
+	UPROPERTY(BlueprintReadOnly)
 	FCoverData CoverData;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -144,6 +147,12 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	FRotator AimRotator;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float IdleMaxSpeed = 300.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float BattleMaxSpeed = 400.f;
+	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
 	TEnumAsByte<EChangeWorld> CurrentWorld = OrdinaryWorld;
@@ -195,7 +204,7 @@ protected:
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	float TransparencyLevel=5.0f;
-
+	
 	FTimeline TimeLine;
 	FOnTimelineEvent OnTimeLineFinished;
 	FOnTimelineFloat InterpFunction;
