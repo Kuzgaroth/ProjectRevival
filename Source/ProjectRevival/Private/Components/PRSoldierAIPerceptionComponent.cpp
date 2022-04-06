@@ -82,18 +82,18 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 
 	const auto PawnPos = Pawn->GetActorLocation();
 	const auto PlayerPos = (Controller->GetPlayerPos().GetActor()!=nullptr) ? Controller->GetPlayerPos().GetActor()->GetActorLocation():FVector::ZeroVector;
-	UE_LOG(LogPRAIPerception, Log, TEXT("Perception: CoverPos  input is %s"), *CoverPos.ToString())
-	UE_LOG(LogPRAIPerception, Log, TEXT("Perception: PlayerPos input is %s"), *PlayerPos.ToString())
+	UE_LOG(LogPRAIPerception, Log, TEXT("CoverPos  input is %s"), *CoverPos.ToString())
+	UE_LOG(LogPRAIPerception, Log, TEXT("PlayerPos input is %s"), *PlayerPos.ToString())
 	float BestDist = MAX_FLT;
 	FVector StartingCoverPos = CoverPos;
 	FVector CoverPosTemp = CoverPos;
 	
 	for (const auto Actor : PerceivedActors)
 	{
-		UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Bool : %s"), Actor->ActorHasTag(TEXT("Cover")) ? TEXT("t") : TEXT("f"))
+		UE_LOG(LogPRAIPerception, Log, TEXT("Bool : %s"), Actor->ActorHasTag(TEXT("Cover")) ? TEXT("t") : TEXT("f"))
 		if (Actor && Actor->ActorHasTag(TEXT("Cover")))
 		{
-			UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Actor Has Cover Tag"))
+			UE_LOG(LogPRAIPerception, Log, TEXT("Actor Has Cover Tag"))
 			const auto Cover = Cast<IIChangingWorldActor>(Actor);
 			if (Cover && Cover->TryToFindCoverPoint(PlayerPos, CoverPosTemp))
 			{
@@ -103,59 +103,59 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 				UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Cover pos X: %0.2f, Y: %0.2f"), CoverPosTemp.X, CoverPosTemp.Y)
 				float LineEquation = A * CoverPosTemp.X + B * CoverPosTemp.Y + C;
 				float DistToLine = abs(A * CoverPosTemp.X + B * CoverPosTemp.Y + C) / sqrt(A * A + B * B);
-				UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Dist to Line: %0.2f"), DistToLine)
-				UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Line Equation: %0.2f"), LineEquation)
+				UE_LOG(LogPRAIPerception, Log, TEXT("Dist to Line: %0.2f"), DistToLine)
+				UE_LOG(LogPRAIPerception, Log, TEXT("Line Equation: %0.2f"), LineEquation)
 				if (Wing == EWing::Left)
 				{
-					UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Entered best dist v1"))
+					UE_LOG(LogPRAIPerception, Log, TEXT("Entered best dist v1"))
 					if (FVector::Dist(PlayerPos, CoverPosTemp) > 600.f && BestDist > FVector::Dist(PlayerPos, CoverPosTemp))
 					{
-						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Set best dist v1"))
+						UE_LOG(LogPRAIPerception, Log, TEXT("Set best dist v1"))
 						BestDist = FVector::Dist(PlayerPos, CoverPosTemp);
 						BestCoverRef = Actor;
-						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Preset CoverPosTemp X: %0.2f, Y: %0.2f"), CoverPosTemp.X, CoverPosTemp.Y)
+						UE_LOG(LogPRAIPerception, Log, TEXT("Preset CoverPosTemp X: %0.2f, Y: %0.2f"), CoverPosTemp.X, CoverPosTemp.Y)
 						BestCoverPos = CoverPosTemp;
-						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: New    BestCoverPos X: %0.2f, Y: %0.2f"), BestCoverPos.X, BestCoverPos.Y)
+						UE_LOG(LogPRAIPerception, Log, TEXT("New    BestCoverPos X: %0.2f, Y: %0.2f"), BestCoverPos.X, BestCoverPos.Y)
 					}
 				}
 				else if (Wing == EWing::Center)
 				{
-					UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Entered best dist v2"))
+					UE_LOG(LogPRAIPerception, Log, TEXT("Entered best dist v2"))
 					if (FVector::Dist(PlayerPos, CoverPosTemp) > 300.f && BestDist > FVector::Dist(PlayerPos, CoverPosTemp))
 					{
-						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Set best dist v2"))
+						UE_LOG(LogPRAIPerception, Log, TEXT("Set best dist v2"))
 						BestDist = FVector::Dist(PlayerPos, CoverPosTemp);
 						BestCoverRef = Actor;
-						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Preset CoverPosTemp X: %0.2f, Y: %0.2f"), CoverPosTemp.X, CoverPosTemp.Y)
+						UE_LOG(LogPRAIPerception, Log, TEXT("Preset CoverPosTemp X: %0.2f, Y: %0.2f"), CoverPosTemp.X, CoverPosTemp.Y)
 						BestCoverPos = CoverPosTemp;
-						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: New    BestCoverPos X: %0.2f, Y: %0.2f"), BestCoverPos.X, BestCoverPos.Y)
+						UE_LOG(LogPRAIPerception, Log, TEXT("New    BestCoverPos X: %0.2f, Y: %0.2f"), BestCoverPos.X, BestCoverPos.Y)
 					}
 				}
 				else if (Wing == EWing::Right)
 				{
-					UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Entered best dist v3"))
+					UE_LOG(LogPRAIPerception, Log, TEXT("Entered best dist v3"))
 					if (FVector::Dist(PlayerPos, CoverPosTemp) > 600.f && BestDist > FVector::Dist(PlayerPos, CoverPosTemp))
 					{
-						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Set best dist v3"))
+						UE_LOG(LogPRAIPerception, Log, TEXT("Set best dist v3"))
 						BestDist = FVector::Dist(PlayerPos, CoverPosTemp);
 						BestCoverRef = Actor;
-						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Preset CoverPosTemp X: %0.2f, Y: %0.2f"), CoverPosTemp.X, CoverPosTemp.Y)
+						UE_LOG(LogPRAIPerception, Log, TEXT("Preset CoverPosTemp X: %0.2f, Y: %0.2f"), CoverPosTemp.X, CoverPosTemp.Y)
 						BestCoverPos = CoverPosTemp;
-						UE_LOG(LogPRAIPerception, Log, TEXT("Perception: New    BestCoverPos X: %0.2f, Y: %0.2f"), BestCoverPos.X, BestCoverPos.Y)
+						UE_LOG(LogPRAIPerception, Log, TEXT("New    BestCoverPos X: %0.2f, Y: %0.2f"), BestCoverPos.X, BestCoverPos.Y)
 					}
 				}
 			}
 		}
 	}
-	UE_LOG(LogPRAIPerception, Log, TEXT("Perception: *before ending* StartingCoverPos X: %0.2f, Y: %0.2f"), StartingCoverPos.X, StartingCoverPos.Y)
-	UE_LOG(LogPRAIPerception, Log, TEXT("Perception: *before ending* BestCoverPos     X: %0.2f, Y: %0.2f"), BestCoverPos.X, BestCoverPos.Y)
+	UE_LOG(LogPRAIPerception, Log, TEXT("*before ending* StartingCoverPos X: %0.2f, Y: %0.2f"), StartingCoverPos.X, StartingCoverPos.Y)
+	UE_LOG(LogPRAIPerception, Log, TEXT("*before ending* BestCoverPos     X: %0.2f, Y: %0.2f"), BestCoverPos.X, BestCoverPos.Y)
 	if (StartingCoverPos == BestCoverPos || BestCoverPos.IsZero())
 	{
-		UE_LOG(LogPRAISoldier, Log, TEXT("Perception: GetBestCoverWing v1 not found"))
+		UE_LOG(LogPRAIPerception, Log, TEXT("GetBestCoverWing v1 not found"))
 		return false;
 	} else
 	{
-		UE_LOG(LogPRAISoldier, Log, TEXT("Perception: GetBestCoverWing v2 was found"))
+		UE_LOG(LogPRAIPerception, Log, TEXT("GetBestCoverWing v2 was found"))
 		CoverRef = BestCoverRef;
 		CoverPos = BestCoverPos;
 		Cast<IIChangingWorldActor>(BestCoverRef)->SetLastCoverPointStatus(false);

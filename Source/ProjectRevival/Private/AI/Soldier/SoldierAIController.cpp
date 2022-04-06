@@ -135,32 +135,32 @@ void ASoldierAIController::StartFiring()
 
 void ASoldierAIController::StopFiring()
 {
-	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StopFiring() was called"))
+	UE_LOG(LogPRAIController, Log, TEXT("StopFiring() was called"))
 	SetBIsFiring(false);
 }
 
 void ASoldierAIController::StartEnteringCover()
 {
-	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StartEnteringCover() was called"))
-	UE_LOG(LogPRAIController, Log, TEXT("Controller: %i Cover pos X: %0.2f, Y: %0.2f"), BotWing, CoverPos.X, CoverPos.Y)
+	UE_LOG(LogPRAIController, Log, TEXT("StartEnteringCover() was called"))
+	UE_LOG(LogPRAIController, Log, TEXT("%i Cover pos X: %0.2f, Y: %0.2f"), BotWing, CoverPos.X, CoverPos.Y)
 	StartEnteringCoverDelegate.Broadcast(CoverPos, CoverRef);
 }
 
 void ASoldierAIController::StopEnteringCover()
 {
-	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StopEnteringCover() was called"))
+	UE_LOG(LogPRAIController, Log, TEXT("StopEnteringCover() was called"))
 	SetBIsInCover(true);
 }
 
 void ASoldierAIController::StartExitingCover()
 {
-	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StartExitingCover() was called"))
+	UE_LOG(LogPRAIController, Log, TEXT("StartExitingCover() was called"))
 	StartExitingCoverDelegate.Broadcast();
 }
 
 void ASoldierAIController::StopExitingCover()
 {
-	UE_LOG(LogPRAISoldier, Log, TEXT("Controller: StopExitingCover() was called"))
+	UE_LOG(LogPRAIController, Log, TEXT("StopExitingCover() was called"))
 	SetBIsInCover(false);
 }
 
@@ -183,8 +183,8 @@ bool ASoldierAIController::FindNewCover()
 	if (bFlag && BlackboardComp)
 	{
 		const auto PlayerCoordinates = PlayerPos.GetActorPosition();
-		UE_LOG(LogPRAIController, Log, TEXT("Controller: Player pos X: %0.2f, Y: %0.2f"), PlayerCoordinates.X, PlayerCoordinates.Y)
-		UE_LOG(LogPRAIController, Log, TEXT("Controller: Cover pos was set X: %0.2f, Y: %0.2f"), CoverPos.X, CoverPos.Y)
+		UE_LOG(LogPRAIController, Log, TEXT("Player pos X: %0.2f, Y: %0.2f"), PlayerCoordinates.X, PlayerCoordinates.Y)
+		UE_LOG(LogPRAIController, Log, TEXT("Cover pos was set X: %0.2f, Y: %0.2f"), CoverPos.X, CoverPos.Y)
 		BlackboardComp->SetValueAsVector(CoverPosKeyName, CoverPos);
 		BlackboardComp->SetValueAsObject(CoverRefKeyName, CoverRef);
 		return true;

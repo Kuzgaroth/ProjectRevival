@@ -9,6 +9,8 @@
 class UWeaponFXComponent;
 class UNiagaraComponent;
 class UNiagaraSystem;
+class UParticleSystemComponent;
+class UParticleSystem;
 class UAudioComponent;
 class USoundCue;
 
@@ -54,16 +56,17 @@ protected:
 	void InitFX();
 	void SetFXActive(bool IsActive);
 	void SpawnTraceFX(const FVector& TraceStart, const FVector& TraceEnd);
-private:
-	FTimerHandle ShotTimerHandle;
-	
+
 	UPROPERTY()
 	UNiagaraComponent* MuzzleFXComponentNiagara;
 	UPROPERTY()
 	UParticleSystemComponent* MuzzleFXComponentCascade;
-
+	
 	UPROPERTY()
 	UAudioComponent* FireAudioComponent;
+	
+private:
+	FTimerHandle ShotTimerHandle;
 	
 	AController* GetController() const;
 };
