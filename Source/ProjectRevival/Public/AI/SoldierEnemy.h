@@ -155,6 +155,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float BattleMaxSpeed = 400.f;
+
+	UPROPERTY()
+	float CoverCostylSpeed = 0.01f;
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
@@ -208,7 +211,7 @@ protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	float TransparencyLevel=5.0f;
 	
-	EBotState BotState = EBotState::idle;
+	EBotState BotState = EBotState::Idle;
 
 	FTimeline TimeLine;
 	FOnTimelineEvent OnTimeLineFinished;

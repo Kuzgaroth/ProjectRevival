@@ -53,8 +53,8 @@ struct FWeaponData
 UENUM()
 enum class EBotState : uint8
 {
-	idle = 0,
-	battle = 1
+	Idle = 0,
+	Battle = 1
 };
 
 //Health

@@ -37,5 +37,6 @@ bool UBTD_CheckForBotState::CalcCondition(UBehaviorTreeComponent& OwnerComp, uin
 {
 	const auto Controller = Cast<ASoldierAIController>(OwnerComp.GetAIOwner());
 	if (!Controller) return false;
-	return Controller->GetBotState() == EBotState::battle;
+	UE_LOG(LogPRAIDecorators, Log, TEXT("Current bot state is: %s"), Controller->GetBotState() == EBotState::Battle ? TEXT("Battle") : TEXT("Idle"))
+	return Controller->GetBotState() == EBotState::Battle;
 }

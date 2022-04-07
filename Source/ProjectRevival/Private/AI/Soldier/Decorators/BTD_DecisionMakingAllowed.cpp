@@ -38,6 +38,6 @@ bool UBTD_DecisionMakingAllowed::CalcCondition(UBehaviorTreeComponent& OwnerComp
 	const auto Controller = Cast<ASoldierAIController>(OwnerComp.GetAIOwner());
 	if (!Controller) return false;
 
-	UE_LOG(LogPRAIDecorators, Log, TEXT("%b"), Controller->GetBIsDecisionMakingAllowed());
+	UE_LOG(LogPRAIDecorators, Log, TEXT("Decision making is allowed: %s"), Controller->GetBIsDecisionMakingAllowed() ? TEXT("true") : TEXT("false"));
 	return Controller->GetBIsDecisionMakingAllowed() && Controller->GetBIsFiringAllowed();
 }

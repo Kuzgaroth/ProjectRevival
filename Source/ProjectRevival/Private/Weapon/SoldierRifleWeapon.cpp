@@ -161,11 +161,20 @@ void ASoldierRifleWeapon::InitFX()
 	{
 		MuzzleFXComponentNiagara = UNiagaraFunctionLibrary::SpawnSystemAttached(MuzzleFXNiagara, WeaponMesh, MuzzelSocketName, FVector::ZeroVector,
 		FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
+		if (MuzzleFXComponentNiagara)
+		{
+			MuzzleFXComponentNiagara->SetPaused(false);
+			MuzzleFXComponentNiagara->SetVisibility(false, true);
+		}
 	}
 	else
 	{
 		MuzzleFXComponentCascade = UGameplayStatics::SpawnEmitterAttached(MuzzleFXCascade, WeaponMesh, MuzzelSocketName, FVector::ZeroVector,
 		FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
+		if (MuzzleFXComponentCascade)
+		{
+			MuzzleFXComponentCascade->SetVisibility(false, true);
+		}
 	}
 }
 

@@ -114,6 +114,8 @@ void ASoldierAIController::OnPossess(APawn* InPawn)
 		}
 		*/
 		RunBehaviorTree(AIChar->BehaviorTreeAsset);
+		BlackboardComponent = GetBlackboardComponent();
+		SetBotState(EBotState::Idle);
 		Cast<ASoldierEnemy>(GetPawn())->StopEnteringCoverDelegate.AddDynamic(this, &ASoldierAIController::StopEnteringCover);
 		Cast<ASoldierEnemy>(GetPawn())->StopExitingCoverDelegate.AddDynamic(this, &ASoldierAIController::StopExitingCover);
 		Cast<ASoldierEnemy>(GetPawn())->StopCoverSideMovingDelegate.AddDynamic(this, &ASoldierAIController::StopCoverSideMoving);
@@ -133,7 +135,7 @@ void ASoldierAIController::Tick(float DeltaSeconds)
 		{
 			SetBIsPatrolling(false);
 			Cast<APatrolPathActor>(PatrolPathRef)->DeletePatrollingBot();
-			SetBotState(EBotState::battle);
+			SetBotState(EBotState::Battle);
 			UE_LOG(LogPRAIController, Log, TEXT("State set to Battle"))
 		}
 	}
@@ -146,7 +148,7 @@ void ASoldierAIController::Tick(float DeltaSeconds)
 											   PlayerLooseTime, false, -1);
 		}
 	}
-	if (!bIsAppearing) SetBotState(EBotState::idle);
+	if (!bIsAppearing) SetBotState(EBotState::Idle);
 	
 	//const auto AimActor = GetFocusOnActor();
 	//SetFocus(AimActor);
@@ -315,7 +317,7 @@ void ASoldierAIController::OnLoosePlayerTimerFired()
 {
 	UE_LOG(LogPRAIController, Log, TEXT("OnLoosePlayerTimerFired"))
 	SetBIsPlayerInSight(false);
-	SetBotState(EBotState::idle);
+	SetBotState(EBotState::Idle);
 	UE_LOG(LogPRAIController, Log, TEXT("State set to Idle"))
 	if (GetBIsInCover())
 	{

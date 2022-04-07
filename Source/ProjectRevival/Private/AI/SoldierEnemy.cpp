@@ -143,8 +143,7 @@ void ASoldierEnemy::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 	ASoldierAIController* SoldierController = Cast<ASoldierAIController>(NewController);
-	PlayerCoordinates = SoldierController->GetPlayerPos();
-	//UpdateAimRotator();
+	UpdateAimRotator();
 	SoldierController->StartEnteringCoverDelegate.AddDynamic(this, &ASoldierEnemy::StartCoverSoldier);
 	SoldierController->StartExitingCoverDelegate.AddDynamic(this, &ASoldierEnemy::StopCoverSoldier);
 	SoldierController->StartCoverSideMovingDelegate.AddDynamic(this, &ASoldierEnemy::ChangeCoverSide);
@@ -294,7 +293,6 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, AActor* CoverRef)
 	// DrawDebugLine(GetWorld(),GetActorLocation(),GetActorLocation()+GetActorForwardVector()*100,FColor::Purple,false,15.0f,0,3.0f);
 	AddActorLocalRotation(RotationToCover);
 	CoverData.IsInCoverTransition = true;
-	// StartEnteringCoverForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StartCoverSoldierFinish()
@@ -309,21 +307,10 @@ void ASoldierEnemy::StartCoverSoldierFinish()
 void ASoldierEnemy::StopCoverSoldier()
 {
 	UE_LOG(LogPRAISoldier, Log, TEXT("StopCoverSoldier() was called"))
-	if (CoverData.IsFiring)
-	{
-		UE_LOG(LogPRAISoldier, Log, TEXT("StopCoverSoldier() at firing"))
-		GetCharacterMovement()->SetPlaneConstraintEnabled(false);
-		bUseControllerRotationYaw = false;
-		StopFiringImmediately();
-		CoverData.StopCover();
-	}
-	else
-	{
-		UE_LOG(LogPRAISoldier, Log, TEXT("StopCoverSoldier() at common"))
-		GetCharacterMovement()->SetPlaneConstraintEnabled(false);
-		bUseControllerRotationYaw = false;
-		CoverData.StopCover();
-	}
+	GetCharacterMovement()->SetPlaneConstraintEnabled(false);
+	bUseControllerRotationYaw = false;
+	if (CoverData.IsFiring) StopFiringImmediately();
+	CoverData.StopCover();
 }
 
 void ASoldierEnemy::StopCoverSoldierFinish()
@@ -481,8 +468,6 @@ void ASoldierEnemy::StartFiring()
 			RowRifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
 			RowRifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
 			UpdateRowRifleDelegateHandle = RowRifleRef->OnWeaponShotDelegate.AddUObject(this, &ASoldierEnemy::UpdateAimRotator);
-			UE_LOG(LogPRAISoldier, Log, TEXT("StartFiring() StoppedFireInWeaponDelegate IsBound %s"), RowRifleRef->StoppedFireInWeaponDelegate.IsBound() ? TEXT("true") : TEXT("false"))
-			UE_LOG(LogPRAISoldier, Log, TEXT("StartFiring() OnWeaponShotDelegate        IsBound %s"), RowRifleRef->OnWeaponShotDelegate.IsBound() ? TEXT("true") : TEXT("false"))
 			RowRifleRef->StartFire();
 		}
 		else
@@ -634,9 +619,6 @@ void ASoldierEnemy::Changing()
 	else
 	{
 		SetBotInvisible();
-		SetCollisionResponseToInvisible();
-		//TODO
-		
 		StopFiringImmediately();
 		Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon())->GetWeaponMeshComponent()->SetVisibility(false);
 		if(VisualCurve) TimeLine.PlayFromStart();
@@ -717,33 +699,6 @@ void ASoldierEnemy::OnMeshComponentEndCollision(UPrimitiveComponent* OverlappedC
 		Player->SetChangeWorldPossibility(true, ptr);
 		HideChangeWorldObjectByAbility();
 	}
-}
-
-//This function is only for inner usage.
-//Called when we want to abort covering during firing. 
-void ASoldierEnemy::StopFiringImmediately()
-{
-	if (Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon()))
-	{
-		if (!RowRifleRef) { return; }
-		RowRifleRef->StopFireExternal();
-		if (RowRifleRef->StoppedFireInWeaponDelegate.IsBound())
-		{
-			RowRifleRef->StoppedFireInWeaponDelegate.RemoveDynamic(this, &ASoldierEnemy::StopFiring);
-		}
-		if (RowRifleRef->OnWeaponShotDelegate.IsBound())
-		{
-			RowRifleRef->OnWeaponShotDelegate.Remove(UpdateRowRifleDelegateHandle);
-		}
-		RowRifleRef = nullptr;
-	}
-	else
-	{
-		WeaponComponent->StopFire();
-	}
-	CoverData.IsFiring = false;
-	bIsFiringBP = false;
-	StopFireDelegate.Broadcast();
 }
 
 TArray<FAmmoData> ASoldierEnemy::GetPlayerWeapons() const
