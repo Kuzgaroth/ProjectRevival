@@ -58,3 +58,10 @@ void ALauncherWeapon::StopFire()
 {
 	
 }
+
+TSubclassOf<ABaseProjectile*> ALauncherWeapon::GetProjectile() const
+{
+	return *ProjectileClass;
+}
+
+

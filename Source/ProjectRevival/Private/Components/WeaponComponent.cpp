@@ -78,6 +78,20 @@ void UWeaponComponent::SetWeponData(FAmmoData NewAmmoData)
 	}
 }
 
+void UWeaponComponent::AddWeapon(FWeaponData NewWeaponData)
+{
+	WeaponDatas.Add(NewWeaponData);
+}
+
+void UWeaponComponent::DeleteWeapon(FWeaponData WeaponDataToDelite)
+{
+	//if(CurrentWeapon==Cast<ABaseWeapon>(WeaponDataToDelite.WeaponClass))
+	//{
+	//	return;
+	//}
+	//WeaponDatas.Remove(WeaponDataToDelite);
+}
+
 bool UWeaponComponent::GetCurrentWeaponUIData(FWeaponUIData& UIData) const
 {
 	if (CurrentWeapon)
@@ -173,7 +187,6 @@ void UWeaponComponent::SpawnWeapons()
 {
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
 	if (!Character || !GetWorld()) return;
-	
 	for (auto WeaponData : WeaponDatas)
 	{
 		auto Weapon = GetWorld()->SpawnActor<ABaseWeapon>(WeaponData.WeaponClass);

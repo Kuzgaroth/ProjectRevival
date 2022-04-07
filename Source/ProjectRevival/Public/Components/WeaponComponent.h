@@ -40,6 +40,8 @@ public:
 	ABaseWeapon* GetCurrentWeapon();
 	TArray<FAmmoData> GetAllWeapons();
 	void SetWeponData(FAmmoData NewAmmoData);
+	void AddWeapon(FWeaponData NewWeaponData);
+	void DeleteWeapon(FWeaponData WeaponDataToDelite);
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TArray<FWeaponData> WeaponDatas;
