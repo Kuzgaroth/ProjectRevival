@@ -8,6 +8,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/HorizontalBox.h"
 #include "Menu/CreditsWidget.h"
+#include "Menu/DifficultySelectionWidget.h"
 #include "Menu/OptionsWidget.h"
 #include "ProjectRevival/Public/Menu/LevelItemWidget.h"
 #include "Sound/SoundCue.h"
@@ -26,16 +27,6 @@ void UMenuWidget::NativeOnInitialized()
 	if (ContinueGameButton)
 	{
 		ContinueGameButton->OnClicked.AddDynamic(this, &UMenuWidget::OnContinueGame);
-	}
-
-	if (NewGameButton)
-	{
-		NewGameButton->OnClicked.AddDynamic(this, &UMenuWidget::OnNewGame);
-	}
-
-	if (LoadGameButton)
-	{
-		LoadGameButton->OnClicked.AddDynamic(this, &UMenuWidget::OnLoadGame);
 	}
 
 	if (OptionsButton)
@@ -58,18 +49,22 @@ void UMenuWidget::NativeOnInitialized()
 
 void UMenuWidget::OnStartGame()
 {
-	const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
-	UGameplayStatics::PlaySound2D(GetWorld(), StartGameSound);
-	UGameplayStatics::OpenLevel(this,GameInstance->GetStartupLevel().LevelName);
+	// const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
+	// UGameplayStatics::PlaySound2D(GetWorld(), StartGameSound);
+	// UGameplayStatics::OpenLevel(this,GameInstance->GetStartupLevel().LevelName);
+	//
+	if (DifficultySelectorWidgetClass)
+	{
+		RemoveFromParent();
+		UDifficultySelectionWidget* DifficultySelectionWidget = CreateWidget<UDifficultySelectionWidget>(GetWorld(), DifficultySelectorWidgetClass);
+		DifficultySelectionWidget->AddToViewport();
+	}
 	
 }
 
 void UMenuWidget::OnContinueGame()
 {
-}
-
-void UMenuWidget::OnNewGame()
-{
+	
 }
 
 void UMenuWidget::OnOptions()
@@ -79,10 +74,6 @@ void UMenuWidget::OnOptions()
 		LeaveEvent();
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UMenuWidget::OpenOptions, 1.0f, false, 0.125f);
 	}
-}
-
-void UMenuWidget::OnLoadGame()
-{
 }
 
 void UMenuWidget::OnQuitGame()
