@@ -21,15 +21,16 @@ void UFindEnemyInSight::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	if (PerceptionComponent)
 	{
 		PlayerPos = PerceptionComponent->GetClosestEnemy();
-		if (PlayerPos.GetActor())
+		UE_LOG(LogPRAITasks, Log, TEXT("From Task"))
+		if (PlayerPos.GetActor() != nullptr)
 		{
+			Controller->SetPlayerPos(PlayerPos, false);
 			Controller->SetBIsPlayerInSight(true);
 		}
 		else
 		{
 			Controller->SetBIsPlayerInSight(false);
 		}
-		Controller->SetPlayerPos(PlayerPos);
 	}
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 }

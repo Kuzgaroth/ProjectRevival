@@ -20,6 +20,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogPRAITasks, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAIServices, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAISoldier, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogPRStaticObject, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRPatrolPath, Log, All);
 
 USTRUCT(BlueprintType)
 struct FAmmoData
@@ -46,6 +47,13 @@ struct FWeaponData
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Weapon")
 	UAnimMontage* ReloadAnimMontage;
+};
+
+UENUM()
+enum class EBotState : uint8
+{
+	idle = 0,
+	battle = 1
 };
 
 //Health
@@ -361,6 +369,32 @@ struct FCoverPointsAndPossibility
 	TMap<UBoxComponent*,bool> PointIsNotTaken;
 	TArray<FVector> PositionsOfCoverPoints;
 	
+};
+
+USTRUCT(BlueprintType)
+struct FPatrolPath
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	int PatrolPointsAmount;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	int MaxNumOfPatrollingBots;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	int CurrentNumOfPatrollingBots;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	bool bIsLooped;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	bool bCanBeTaken;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	bool bIsReversed;
+
+	TArray<TTuple<UBoxComponent*, FVector>> PatrolPointsPos;
 };
 
 UCLASS()

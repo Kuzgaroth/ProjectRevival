@@ -38,7 +38,7 @@ public:
 	ASoldierAIController();
 
 	FPlayerPositionData GetPlayerPos() const { return PlayerPos; }
-	void SetPlayerPos(const FPlayerPositionData &NewPlayerPos);
+	void SetPlayerPos(const FPlayerPositionData &NewPlayerPos, bool bIsFromCoordinator = false);
 	bool GetBIsFiring() const { return bIsFiring; }
 	void SetBIsFiring(bool const bCond) { bIsFiring = bCond; }
 	bool GetBIsInCover() const { return bIsInCover; }
@@ -59,6 +59,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	EBotState GetBotState() const { return BotState; }
 	void SetBotState(EBotState const val);
+	bool GetBIsPatrolling() const { return bIsPatrolling; }
+	void SetBIsPatrolling(bool const bCond) { bIsPatrolling = bCond; }
+	bool GetBIsLoosePlayerTimerSet() const { return bIsLoosePlayerTimerSet; }
+	void SetBIsLoosePlayerTimerSet(bool const bCond) { bIsLoosePlayerTimerSet = bCond; }
 
 	UPROPERTY(BlueprintAssignable)
 	FPlayerPosDelegate PlayerPosDelegate;
@@ -92,6 +96,8 @@ public:
 	UFUNCTION()
 	void StopCoverSideMoving();
 	bool FindNewCover();
+	bool FindPatrolPath();
+	void FindNextPatrolPoint();
 	void StartCoverTimer();
 	void OnCoverTimerFired();
 	void StartGeneralTimer();
@@ -107,6 +113,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
 	UPRSoldierAIPerceptionComponent* PRPerceptionComponent;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
+	UBlackboardComponent* BlackboardComponent;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
 	FPlayerPositionData PlayerPos;
 
@@ -115,6 +124,18 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
 	AActor* CoverRef;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	FVector PatrolPathPos;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	AActor* PatrolPathRef;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	FVector PatrolPointPos;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	UBoxComponent* PatrolPointRef;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
 	float SideMovementAmount;
@@ -129,10 +150,19 @@ protected:
 	FName CoverRefKeyName = "CoverRef";
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	FName PatrolPointPosKeyName = "PatrolPointPos";
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
 	FName WingKeyName = "WingSide";
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	FName BotStateKeyName = "BotState";
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Respawn")
 	URespawnComponent* RespawnComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	float PlayerLooseTime;
 
 	EBotState BotState;
 	
@@ -149,6 +179,8 @@ protected:
 	bool bIsFiringAllowed;
 	bool bIsPlayerInSight;
 	bool bIsAppearing;
+	bool bIsPatrolling;
+	bool bIsLoosePlayerTimerSet;
 	
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void Tick(float DeltaSeconds) override;
