@@ -44,7 +44,7 @@ void UMenuWidget::NativeOnInitialized()
 		CreditsButton->OnClicked.AddDynamic(this, &UMenuWidget::OnCredits);
 	}
 
-	InitLevelItems();
+	// InitLevelItems();
 }
 
 void UMenuWidget::OnStartGame()
