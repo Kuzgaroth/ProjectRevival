@@ -9,6 +9,7 @@
 #include "Perception/AISense_Hearing.h"
 #include "Perception/AISense_Sight.h"
 #include "GameFeature/CoverObject.h"
+#include "GameFeature/PatrolPathActor.h"
 #include "Interfaces/IChangingWorldActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Math/Vector.h"
@@ -20,12 +21,12 @@ FPlayerPositionData UPRSoldierAIPerceptionComponent::GetClosestEnemy() const
 	TArray<AActor*> PerceiveActors;
 	GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceiveActors);
 	FPlayerPositionData PlayerPos;
-	if (PerceiveActors.Num()==0)
+	if (PerceiveActors.Num() == 0)
 	{
 		UE_LOG(LogPRAIPerception, Log, TEXT("Enemy: Empty Sight"))
 		GetCurrentlyPerceivedActors(UAISense_Hearing::StaticClass(), PerceiveActors);
 	}
-	if (PerceiveActors.Num()==0)
+	if (PerceiveActors.Num() == 0)
 	{
 		UE_LOG(LogPRAIPerception, Log, TEXT("Enemy: Empty Hearing"))
 		return PlayerPos;
@@ -48,8 +49,8 @@ FPlayerPositionData UPRSoldierAIPerceptionComponent::GetClosestEnemy() const
 		const auto AreEnemies = PerceivePawn && PRUtils::AreEnemies(Controller, PerceivePawn->Controller);
 		if (HealthComponent && !HealthComponent->IsDead() && AreEnemies)
 		{
-			const auto CurrentDistance = (Actor->GetActorLocation()-Pawn->GetActorLocation()).Size();
-			if (CurrentDistance<BestDistance)
+			const auto CurrentDistance = (Actor->GetActorLocation() - Pawn->GetActorLocation()).Size();
+			if (CurrentDistance < BestDistance)
 			{
 				BestDistance = CurrentDistance;
 				BestPawn = Actor;
@@ -67,12 +68,12 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 	FVector BestCoverPos = FVector(0, 0, 0);
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName(TEXT("Cover")), PerceivedActors);
 	//GetCurrentlyPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
-	if (PerceivedActors.Num()==0)
+	if (PerceivedActors.Num() == 0)
 	{
-		UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Cover: matching objects not found"))
+		UE_LOG(LogPRAIPerception, Log, TEXT("Matching Cover objects not found"))
 		return false;
 	}
-	UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Cover: matching objects found"))
+	UE_LOG(LogPRAIPerception, Log, TEXT("Matching Cover objects found"))
 
 	const auto Controller = Cast<ASoldierAIController>(GetOwner());
 	if (!Controller) return false;
@@ -80,14 +81,15 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 	const auto Pawn = Controller->GetPawn();
 	if (!Pawn) return false;
 
-	const auto PawnPos = Pawn->GetActorLocation();
-	const auto PlayerPos = (Controller->GetPlayerPos().GetActor()!=nullptr) ? Controller->GetPlayerPos().GetActor()->GetActorLocation():FVector::ZeroVector;
+	const auto PlayerPos = (Controller->GetPlayerPos().GetActor() != nullptr)
+		                       ? Controller->GetPlayerPos().GetActor()->GetActorLocation()
+		                       : FVector::ZeroVector;
 	UE_LOG(LogPRAIPerception, Log, TEXT("CoverPos  input is %s"), *CoverPos.ToString())
 	UE_LOG(LogPRAIPerception, Log, TEXT("PlayerPos input is %s"), *PlayerPos.ToString())
 	float BestDist = MAX_FLT;
 	FVector StartingCoverPos = CoverPos;
 	FVector CoverPosTemp = CoverPos;
-	
+
 	for (const auto Actor : PerceivedActors)
 	{
 		UE_LOG(LogPRAIPerception, Log, TEXT("Bool : %s"), Actor->ActorHasTag(TEXT("Cover")) ? TEXT("t") : TEXT("f"))
@@ -97,18 +99,11 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 			const auto Cover = Cast<IIChangingWorldActor>(Actor);
 			if (Cover && Cover->TryToFindCoverPoint(PlayerPos, CoverPosTemp))
 			{
-				float A = PlayerPos.Y - PawnPos.Y;
-				float B = PlayerPos.X - PawnPos.X;
-				float C = PlayerPos.Y * B - PawnPos.X * A;
-				UE_LOG(LogPRAIPerception, Log, TEXT("Perception: Cover pos X: %0.2f, Y: %0.2f"), CoverPosTemp.X, CoverPosTemp.Y)
-				float LineEquation = A * CoverPosTemp.X + B * CoverPosTemp.Y + C;
-				float DistToLine = abs(A * CoverPosTemp.X + B * CoverPosTemp.Y + C) / sqrt(A * A + B * B);
-				UE_LOG(LogPRAIPerception, Log, TEXT("Dist to Line: %0.2f"), DistToLine)
-				UE_LOG(LogPRAIPerception, Log, TEXT("Line Equation: %0.2f"), LineEquation)
 				if (Wing == EWing::Left)
 				{
 					UE_LOG(LogPRAIPerception, Log, TEXT("Entered best dist v1"))
-					if (FVector::Dist(PlayerPos, CoverPosTemp) > 600.f && BestDist > FVector::Dist(PlayerPos, CoverPosTemp))
+					if (FVector::Dist(PlayerPos, CoverPosTemp) > 600.f && BestDist > FVector::Dist(
+						PlayerPos, CoverPosTemp))
 					{
 						UE_LOG(LogPRAIPerception, Log, TEXT("Set best dist v1"))
 						BestDist = FVector::Dist(PlayerPos, CoverPosTemp);
@@ -153,7 +148,8 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 	{
 		UE_LOG(LogPRAIPerception, Log, TEXT("GetBestCoverWing v1 not found"))
 		return false;
-	} else
+	}
+	else
 	{
 		UE_LOG(LogPRAIPerception, Log, TEXT("GetBestCoverWing v2 was found"))
 		CoverRef = BestCoverRef;
@@ -161,4 +157,48 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 		Cast<IIChangingWorldActor>(BestCoverRef)->SetLastCoverPointStatus(false);
 		return true;
 	}
+}
+
+bool UPRSoldierAIPerceptionComponent::GetBestPatrollingPath(FVector& PathPointPos, AActor*& PatrolPathRef)
+{
+	TArray<AActor*> PerceivedActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APatrolPathActor::StaticClass(), PerceivedActors);
+	
+	if (PerceivedActors.Num() == 0) return false;
+
+	const auto Controller = Cast<ASoldierAIController>(GetOwner());
+	if (!Controller) return false;
+
+	const auto Pawn = Controller->GetPawn();
+	if (!Pawn) return false;
+
+	TMap<AActor*, float> ListOfPatrolPaths;
+	for (const auto Elem : PerceivedActors)
+	{
+		const float Dist = FVector::Dist(Pawn->GetActorLocation(), Elem->GetActorLocation());
+		ListOfPatrolPaths.Add(Elem, Dist);
+	}
+	ListOfPatrolPaths.ValueSort(FSortAscending());
+	AActor* BestPath = nullptr;
+	int BestPathInd = -1;
+	int i = 0;
+	for (const auto Elem : ListOfPatrolPaths)
+	{
+		const auto Path = Cast<APatrolPathActor>(Elem.Key);
+		UE_LOG(LogPRAIPerception, Warning, TEXT("%s %s"), *FString(Path->GetName()), Path->GetBCanBeTaken()?TEXT("true"):TEXT("false"))
+		if (Path && Path->GetBCanBeTaken())
+		{
+			BestPathInd = i;
+			BestPath = Elem.Key;
+			break;
+		}
+		i++;
+	}
+	if (BestPathInd >= 0)
+	{
+		PatrolPathRef = BestPath;
+		PathPointPos = PatrolPathRef->GetActorLocation();
+		return true;
+	}
+	return false;
 }

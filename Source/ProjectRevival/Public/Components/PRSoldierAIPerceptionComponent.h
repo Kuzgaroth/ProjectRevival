@@ -13,6 +13,15 @@
 /**
  * 
  */
+
+struct FSortAscending
+{
+	FORCEINLINE bool operator()(const float A, const float B) const
+	{
+		return A < B;
+	}
+};
+
 UCLASS()
 class PROJECTREVIVAL_API UPRSoldierAIPerceptionComponent : public UAIPerceptionComponent
 {
@@ -21,4 +30,5 @@ class PROJECTREVIVAL_API UPRSoldierAIPerceptionComponent : public UAIPerceptionC
 public:
 	FPlayerPositionData GetClosestEnemy() const;
 	bool GetBestCoverWing(EWing Wing, FVector& CoverPos, AActor*& CoverRef);
+	bool GetBestPatrollingPath(FVector& PathPointPos, AActor*& PatrolPathRef);
 };
