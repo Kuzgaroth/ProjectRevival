@@ -41,7 +41,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UHealthComponent* HealthComponent;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Animation")
+	UPROPERTY(EditDefaultsOnly, Category="Death")
 	UAnimMontage* DeathAnimMontage;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Movement")
@@ -56,7 +56,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Team")
 	FName MaterialColorName = "Paint Color";
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Sound")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Death")
 	USoundCue* DeathSound;
 	
 	/* Компонент для управления способностями */
