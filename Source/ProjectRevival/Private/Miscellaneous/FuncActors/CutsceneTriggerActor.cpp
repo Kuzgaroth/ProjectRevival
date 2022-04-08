@@ -15,7 +15,7 @@ ACutsceneTriggerActor::ACutsceneTriggerActor()
 	CollisionComponent->SetCollisionProfileName(TEXT("Trigger"));
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	CollisionComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-	CollisionComponent->SetupAttachment(RootComponent);
+	
 	
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ACutsceneTriggerActor::OnOverlapBegin);
 }
