@@ -155,9 +155,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float BattleMaxSpeed = 400.f;
-
-	UPROPERTY()
-	float CoverCostylSpeed = 0.01f;
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	TEnumAsByte<EChangeWorld> World = OrdinaryWorld;

@@ -143,9 +143,9 @@ void ASoldierAIController::Tick(float DeltaSeconds)
 	{
 		if (!GetBIsLoosePlayerTimerSet())
 		{
-			SetBIsLoosePlayerTimerSet(true);
-			GetWorld()->GetTimerManager().SetTimer(LoosePlayerTimer, this, &ASoldierAIController::OnLoosePlayerTimerFired,
-											   PlayerLooseTime, false, -1);
+			// SetBIsLoosePlayerTimerSet(true);
+			// GetWorld()->GetTimerManager().SetTimer(LoosePlayerTimer, this, &ASoldierAIController::OnLoosePlayerTimerFired,
+			// 								   PlayerLooseTime, false, -1);
 		}
 	}
 	if (!bIsAppearing) SetBotState(EBotState::Idle);

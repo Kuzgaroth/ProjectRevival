@@ -289,8 +289,7 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, AActor* CoverRef)
 	RotationToCover.Pitch = 0.f;
 	RotationToCover.Roll = 0.f;
 	RotationToCover.Yaw = RotationToCover.Yaw - GetActorRotation().Yaw;
-	// DrawDebugLine(GetWorld(),HitResults[IndexFound].ImpactPoint,GetActorLocation(),FColor::Orange,false,15.0f,0,3.0f);
-	// DrawDebugLine(GetWorld(),GetActorLocation(),GetActorLocation()+GetActorForwardVector()*100,FColor::Purple,false,15.0f,0,3.0f);
+	DrawDebugLine(GetWorld(),GetActorLocation(),GetActorLocation()+GetActorForwardVector()*100,FColor::Purple,false,15.0f,0,3.0f);
 	AddActorLocalRotation(RotationToCover);
 	CoverData.IsInCoverTransition = true;
 }
