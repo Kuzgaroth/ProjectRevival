@@ -214,7 +214,6 @@ void APRGameModeBase::GameOver()
 			Pawn->DisableInput(nullptr);
 		}
 	}
-	SetMatchState(EMatchState::GameOver);
 }
 
 void APRGameModeBase::SetCurrentWorld(EChangeWorld NewWorld)
