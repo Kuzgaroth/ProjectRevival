@@ -136,6 +136,10 @@ void ASoldierEnemy::SetBIsAppearing(bool const bCond)
 
 void ASoldierEnemy::SetBotState(EBotState const val)
 {
+	if (val == EBotState::Battle)
+	{
+		GetCharacterMovement()->StopMovementImmediately();
+	}
 	BotState = val;
 }
 
@@ -273,8 +277,8 @@ void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, AActor* CoverRef)
 		CleanCoverData();
 		return;
 	}
-
-	if (bIsFiringBP) StopFiringImmediately();
+	
+	StopFiringImmediately();
 
 	CoverData.CoverObject = CoverRef;
 	CoverData.CoverObject->ActorHasTag(FName(TEXT("High"))) ? CoverData.CoverType = High : CoverData.CoverType = Low;
@@ -308,8 +312,24 @@ void ASoldierEnemy::StopCoverSoldier()
 	UE_LOG(LogPRAISoldier, Log, TEXT("StopCoverSoldier() was called"))
 	GetCharacterMovement()->SetPlaneConstraintEnabled(false);
 	bUseControllerRotationYaw = false;
-	if (CoverData.IsFiring) StopFiringImmediately();
-	CoverData.StopCover();
+	if (CoverData.IsFiring)
+	{
+		if (GetCoverIndex() == 2 || GetCoverIndex() == 3)
+		{
+			StopFiring();
+			CoverData.StopCover();
+		}
+		else if (GetCoverIndex() > 3)
+		{
+			StopFiringImmediately();
+			CoverData.StopCover();
+		}
+	}
+	else
+	{
+		CoverData.StopCover();
+	}
+	
 }
 
 void ASoldierEnemy::StopCoverSoldierFinish()
@@ -436,7 +456,6 @@ void ASoldierEnemy::StartFiring()
 	if (bIsInCoverBP && !CoverData.IsFiring && !bIsFiringBP && !CoverData.IsInTransition() && bCanFireBP && GetCoverIndex() >= 2)
 	{
 		StartCoverToFire();
-		return;
 	}
 	else if (bIsInCoverBP && CoverData.IsFiring && !bIsFiringBP && !CoverData.IsInTransition() && bCanFireBP)
 	{
@@ -449,13 +468,13 @@ void ASoldierEnemy::StartFiring()
 			RowRifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
 			RowRifleRef->OnWeaponShotDelegate.AddUObject(this, &ASoldierEnemy::UpdateAimRotator);
 			RowRifleRef->StartFire();
+			bIsFiringBP = true;
 		}
 		else
 		{
 			WeaponComponent->StartFire();
+			bIsFiringBP = true;
 		}
-		bIsFiringBP = true;
-		return;
 	}// The following line exists in case we would need different logic for firing in and out of cover. But for now it works fine like that.
 	else if (!bIsInCoverBP && !CoverData.IsInTransition() && bCanFireBP && !bIsFiringBP)
 	{
@@ -468,13 +487,13 @@ void ASoldierEnemy::StartFiring()
 			RowRifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
 			UpdateRowRifleDelegateHandle = RowRifleRef->OnWeaponShotDelegate.AddUObject(this, &ASoldierEnemy::UpdateAimRotator);
 			RowRifleRef->StartFire();
+			bIsFiringBP = true;
 		}
 		else
 		{
 			WeaponComponent->StartFire();
+			bIsFiringBP = true;
 		}
-		bIsFiringBP = true;
-		return;
 	}
 }
 
@@ -499,7 +518,6 @@ void ASoldierEnemy::StopFiring()
 			WeaponComponent->StopFire();
 		}
 		StartCoverFromFire();
-		return;
 	}
 	else if (!bIsInCoverBP && !CoverData.IsFiring && bIsFiringBP)
 	{

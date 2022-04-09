@@ -81,7 +81,7 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 	const auto Pawn = Controller->GetPawn();
 	if (!Pawn) return false;
 
-	const auto PlayerPos = (Controller->GetPlayerPos().GetActor() != nullptr)
+	const auto PlayerPos = Controller->GetPlayerPos().GetActor() != nullptr
 		                       ? Controller->GetPlayerPos().GetActor()->GetActorLocation()
 		                       : FVector::ZeroVector;
 	UE_LOG(LogPRAIPerception, Log, TEXT("CoverPos  input is %s"), *CoverPos.ToString())
@@ -102,8 +102,7 @@ bool UPRSoldierAIPerceptionComponent::GetBestCoverWing(EWing Wing, FVector& Cove
 				if (Wing == EWing::Left)
 				{
 					UE_LOG(LogPRAIPerception, Log, TEXT("Entered best dist v1"))
-					if (FVector::Dist(PlayerPos, CoverPosTemp) > 600.f && BestDist > FVector::Dist(
-						PlayerPos, CoverPosTemp))
+					if (FVector::Dist(PlayerPos, CoverPosTemp) > 600.f && BestDist > FVector::Dist(PlayerPos, CoverPosTemp))
 					{
 						UE_LOG(LogPRAIPerception, Log, TEXT("Set best dist v1"))
 						BestDist = FVector::Dist(PlayerPos, CoverPosTemp);

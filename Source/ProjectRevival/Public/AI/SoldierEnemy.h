@@ -105,6 +105,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void StopFiring();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void StopFiringImmediately();
 	
 
 	virtual void ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld) override;
@@ -170,8 +173,7 @@ protected:
 	
 	virtual void BeginPlay() override;
 	virtual void OnHealthChanged(float CurrentHealth, float HealthDelta) override;
-
-	virtual void StopFiringImmediately();
+	
 	virtual TEnumAsByte<ECoverSide> CheckSideByNormal(FVector Forward, FVector Normal);
 	virtual TEnumAsByte<ECoverPart> GetCoverPart(int8 PartPos);
 	virtual void CleanCoverData();

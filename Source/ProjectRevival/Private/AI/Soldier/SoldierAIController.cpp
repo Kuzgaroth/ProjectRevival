@@ -252,6 +252,14 @@ bool ASoldierAIController::FindPatrolPath()
 		BlackboardComponent->SetValueAsVector(PatrolPointPosKeyName, PatrolPointPos);
 		UE_LOG(LogPRAIController, Warning, TEXT("Adding patrol bot"))
 		PatrolPath->AddPatrollingBot();
+		// if (bIsInCover)
+		// {
+		// 	StartExitingCover();
+		// }
+		// else if (bIsFiring)
+		// {
+		// 	Cast<ASoldierEnemy>(GetPawn())->StopFiringImmediately();
+		// }
 		return true;
 	}
 	return false;
