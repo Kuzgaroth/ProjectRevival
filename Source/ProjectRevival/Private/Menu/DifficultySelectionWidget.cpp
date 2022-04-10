@@ -7,6 +7,7 @@
 
 #include "PRGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "Menu/MenuGameModeBase.h"
 #include "Menu/MenuWidget.h"
 
 void UDifficultySelectionWidget::NativeOnInitialized()
@@ -64,6 +65,13 @@ void UDifficultySelectionWidget::SetDifficulty(FString DifficultyName)
 void UDifficultySelectionWidget::OpenLevel()
 {
 	const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
+	
+	const auto MenuGameMode = GetWorld()->GetAuthGameMode<AMenuGameModeBase>();
+	if (MenuGameMode) MenuGameMode->ClearSaveData();
 	UGameplayStatics::PlaySound2D(GetWorld(), StartGameSound);
-	UGameplayStatics::OpenLevel(this, GameInstance->GetLevelsData()[0].LevelName);
+	UGameplayStatics::OpenLevel(this,/*GameInstance->GetStartupLevel().LevelName*/"LVL_Conference");
+	
+	// const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
+	// UGameplayStatics::PlaySound2D(GetWorld(), StartGameSound);
+	// UGameplayStatics::OpenLevel(this, GameInstance->GetLevelsData()[0].LevelName);
 }

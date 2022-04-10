@@ -52,7 +52,7 @@ void UOptionsSoundWidget::NativeOnInitialized()
 
 void UOptionsSoundWidget::SaveSoundSettings()
 {
-	MyGameInstance->SaveSoundData(Slider_0->Value, Slider->Value, Slider_1->Value, Slider_2->Value);
+	MyGameInstance->SaveSoundData(MasterVolumeSlider->Value, EffectVolumeSlider->Value, MusicVolumeSlider->Value, VoiceVolumeSlider->Value);
 }
 
 void UOptionsSoundWidget::LoadSoundSettings()
