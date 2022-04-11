@@ -2,10 +2,14 @@
 
 
 #include "Weapon/RifleWeapon.h"
+
+#include "BasePlayerController.h"
 #include "Weapon/Components/WeaponFXComponent.h"
 #include "DrawDebugHelpers.h"
+#include "GameHUD.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "PlayerHUDWidget.h"
 #include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
@@ -17,13 +21,13 @@ void ARifleWeapon::MakeShot()
 		StopFire();
 		return;
 	}
-	
+
 	FVector TraceStart;
-    FVector TraceEnd;
-    if (!GetTraceData(TraceStart, TraceEnd)) return;
+	FVector TraceEnd;
+	if (!GetTraceData(TraceStart, TraceEnd)) return;
 
 	FHitResult HitResult;
-	MakeHit(HitResult,TraceStart, TraceEnd);
+	MakeHit(HitResult, TraceStart, TraceEnd);
 
 	FVector TraceFXEnd = TraceEnd;
 	if (HitResult.bBlockingHit)
@@ -34,7 +38,7 @@ void ARifleWeapon::MakeShot()
 		MakeDamage(HitResult);
 		WeaponFXComponent->PlayImpactFX(HitResult);
 	}
-	if(MuzzleFXComponentCascade)
+	if (MuzzleFXComponentCascade)
 	{
 		MuzzleFXComponentCascade->Activate();
 	}
@@ -42,8 +46,6 @@ void ARifleWeapon::MakeShot()
 	if (OnWeaponShotDelegate.IsBound()) OnWeaponShotDelegate.Broadcast();
 	PlayForceEffects();
 	DecreaseAmmo();
-	
-	
 }
 
 bool ARifleWeapon::GetTraceData(FVector& TraceStart, FVector& TraceEnd)
@@ -51,11 +53,12 @@ bool ARifleWeapon::GetTraceData(FVector& TraceStart, FVector& TraceEnd)
 	FVector ViewLocation;
 	FRotator ViewRotation;
 	if (!GetPlayerViewPoint(ViewLocation, ViewRotation)) return false;
-	
+
 	TraceStart = ViewLocation;
 	const auto HalfRad = FMath::DegreesToRadians(BulletSpread);
-	const FVector ShootDirection = FMath::VRandCone(ViewRotation.Vector(),HalfRad);//SocketTransform.GetRotation().GetForwardVector();
-	TraceEnd = TraceStart+ShootDirection*ShootingRange;
+	const FVector ShootDirection = FMath::VRandCone(ViewRotation.Vector(), HalfRad);
+	//SocketTransform.GetRotation().GetForwardVector();
+	TraceEnd = TraceStart + ShootDirection * ShootingRange;
 	return true;
 }
 
@@ -83,19 +86,44 @@ void ARifleWeapon::MakeDamage(FHitResult& HitResult)
 	if (!DamagedActor) return;
 
 	ProcessEnemyHit(IsHitInHead(HitResult));
-	
-	DamagedActor->TakeDamage(ShotDamage,FDamageEvent{},GetController(),this);
+
+	DamagedActor->TakeDamage(ShotDamage, FDamageEvent{}, GetController(), this);
 }
 
 bool ARifleWeapon::IsHitInHead(const FHitResult& HitResult)
 {
-	return false;
+	return true;
 }
 
 void ARifleWeapon::ProcessEnemyHit(bool IsInHead)
 {
 	//UI logic stuff
-	
+
+	if (GetWorld()->GetFirstPlayerController())
+	{
+		auto PlayerController = Cast<ABasePlayerController>(GetWorld()->GetFirstPlayerController());
+		if (PlayerController)
+		{
+			auto PlayerHUD = PlayerController->GetHUD<AGameHUD>();
+			if (PlayerHUD)
+			{
+				auto HUDWidget = PlayerHUD->GetPlayerHUDWidget();
+				if (HUDWidget)
+				{
+					auto PlayerHUDWidget = Cast<UPlayerHUDWidget>(HUDWidget);
+					if (PlayerHUDWidget)
+					{
+						auto CrosshairWidget = PlayerHUDWidget->GetCrosshairWidget();
+
+						if (CrosshairWidget)
+						{
+							CrosshairWidget->OnHitDetected(IsInHead);
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 void ARifleWeapon::BeginPlay()
@@ -120,10 +148,10 @@ void ARifleWeapon::InitFX()
 			MuzzleFXComponentCascade = SpawnMuzzleFXCascade();
 		}
 	}
-	
+
 	if (!FireAudioComponent)
 	{
-		FireAudioComponent =  UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzelSocketName);
+		FireAudioComponent = UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzelSocketName);
 	}
 	SetFXActive(true);
 }
@@ -164,7 +192,8 @@ void ARifleWeapon::SpawnTraceFX(const FVector& TraceStart, const FVector& TraceE
 {
 	if (bUseNiagaraTraceEffect == true)
 	{
-		const auto TraceFXComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TraceFXNiagara, TraceStart);
+		const auto TraceFXComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(), TraceFXNiagara, TraceStart);
 		if (TraceFXComponent)
 		{
 			TraceFXComponent->SetNiagaraVariableVec3(TraceTargetName, TraceEnd);

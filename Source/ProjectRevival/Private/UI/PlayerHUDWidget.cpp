@@ -63,6 +63,16 @@ UCirclePBWidget* UPlayerHUDWidget::GetWidgetByAction(EGASInputActions AbilityAct
 	return nullptr;
 }
 
+UCrosshairWidget* UPlayerHUDWidget::GetCrosshairWidget() const
+{
+	if (Crosshair)
+	{
+		return Crosshair;
+	}
+
+	return nullptr;
+}
+
 void UPlayerHUDWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
