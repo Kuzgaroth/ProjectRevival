@@ -10,6 +10,7 @@
 #include "RHI.h"
 #include "Components/Button.h"
 
+
 void UOptionsGraphicsWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
@@ -18,10 +19,13 @@ void UOptionsGraphicsWidget::NativeOnInitialized()
 	{
 		ApplyButton->OnClicked.AddDynamic(this, &UOptionsGraphicsWidget::ApplyChanges);	
 	}
-
+	if (ApplyDefaultButton)
+	{
+		ApplyDefaultButton->OnClicked.AddDynamic(this, &UOptionsGraphicsWidget::ApplyDefaultChanges);
+	}
+	
 	TArray<FText> ResolutionList;
 	FScreenResolutionArray Resolutions;
-	UGameUserSettings* GameSettings = GEngine->GetGameUserSettings();
 	if (RHIGetAvailableResolutions(Resolutions, false))
 	{
 		for (const FScreenResolutionRHI& EachResolution : Resolutions)
@@ -31,11 +35,11 @@ void UOptionsGraphicsWidget::NativeOnInitialized()
 			if (ResolutionBoxString)
 			{
 				ResolutionBoxString->AddOption(FString::Printf(TEXT("%dx%d  %dHz"), EachResolution.Width,
-																EachResolution.Height, EachResolution.RefreshRate));
-				ResolutionBoxString->SetSelectedIndex(PossibleResolutions.Find(GameSettings->GetScreenResolution()));
+                                                                EachResolution.Height, EachResolution.RefreshRate));
 			}
 		}
 	}
+
 	if (ShadowsBoxString)
 	{
 		ShadowsBoxString->AddOption("Low");
@@ -43,10 +47,7 @@ void UOptionsGraphicsWidget::NativeOnInitialized()
 		ShadowsBoxString->AddOption("High");
 		ShadowsBoxString->AddOption("Epic");
 		ShadowsBoxString->AddOption("Cinematic");
-
-		ShadowsBoxString->SetSelectedIndex(GameSettings->GetShadingQuality());
 	}
-
 	if (AntiAliasingBoxString)
 	{
 		AntiAliasingBoxString->AddOption("Low");
@@ -54,7 +55,50 @@ void UOptionsGraphicsWidget::NativeOnInitialized()
 		AntiAliasingBoxString->AddOption("High");
 		AntiAliasingBoxString->AddOption("Epic");
 		AntiAliasingBoxString->AddOption("Cinematic");
+	}
+	
+	SetView();
+}
 
+void UOptionsGraphicsWidget::SetView()
+{
+	UGameUserSettings* GameSettings = GEngine->GetGameUserSettings();
+
+	if (ResolutionBoxString)
+	{
+		ResolutionBoxString->SetSelectedIndex(PossibleResolutions.Find(GameSettings->GetScreenResolution()));
+	}
+	// Setting fullscreen mode
+	if (FullScreenCheckBox)
+	{
+		if (GameSettings->GetFullscreenMode() == EWindowMode::Fullscreen)
+		{
+			FullScreenCheckBox->SetIsChecked(true);	
+		}
+		else
+		{
+			FullScreenCheckBox->SetIsChecked(false);
+		}
+	}
+	if (VSyncCheckBox)
+	{
+		if (GameSettings->IsVSyncEnabled())
+		{
+			VSyncCheckBox->SetIsChecked(true);	
+		}
+		else
+		{
+			VSyncCheckBox->SetIsChecked(false);
+		}
+	}
+	// Setting shadow quality
+	if (ShadowsBoxString)
+	{
+		ShadowsBoxString->SetSelectedIndex(GameSettings->GetShadingQuality());
+	}
+	// Setting graphics quality
+	if (AntiAliasingBoxString)
+	{
 		AntiAliasingBoxString->SetSelectedIndex(GameSettings->GetAntiAliasingQuality());
 	}
 }
@@ -99,4 +143,48 @@ void UOptionsGraphicsWidget::ApplyChanges()
 	}
 	
 	GameSettings->ApplySettings(false);
+}
+
+void UOptionsGraphicsWidget::ApplyDefaultChanges()
+{
+	UGameUserSettings* GameSettings = GEngine->GetGameUserSettings();
+	if (GameSettings)
+	{
+		GameSettings->SetToDefaults();
+		GameSettings->SetFullscreenMode(EWindowMode::Fullscreen);
+		GameSettings->SetScreenResolution(PossibleResolutions.Last());
+		GameSettings->ApplySettings(false);
+		SetView();
+	}
+}
+
+bool UOptionsGraphicsWidget::HasUnsavedChanges()
+{
+	UGameUserSettings* GameSettings = GEngine->GetGameUserSettings();
+	if (PossibleResolutions[ResolutionBoxString->GetSelectedIndex()] != GameSettings->GetScreenResolution())
+	{
+		return true;
+	}
+	if (FullScreenCheckBox->IsChecked() && GameSettings->GetFullscreenMode() != EWindowMode::Fullscreen)
+	{
+		return true;
+	}
+	if (!FullScreenCheckBox->IsChecked() && GameSettings->GetFullscreenMode() == EWindowMode::Fullscreen)
+	{
+		return true;
+	}
+	if (VSyncCheckBox->IsChecked() != GameSettings->IsVSyncEnabled())
+	{
+		return true;
+	}
+	if (ShadowsBoxString->GetSelectedIndex() != GameSettings->GetShadingQuality())
+	{
+		return true;
+	}
+	if (AntiAliasingBoxString->GetSelectedIndex() != GameSettings->GetAntiAliasingQuality())
+	{
+		return true;
+	}
+	
+	return false;
 }

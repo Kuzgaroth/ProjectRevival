@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "ConfirmationWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/WidgetSwitcher.h"
 
@@ -36,6 +38,9 @@ protected:
 	UPROPERTY(meta=(BindWidget))
 	UButton* SoundButton;
 	
+	UPROPERTY(meta=(BindWidget))
+	UButton* GameButton;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> MenuWidgetClass;
 
@@ -51,9 +56,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> OptionsGraphicsWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
+	TSubclassOf<UUserWidget> OptionsGameWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
+	TSubclassOf<UUserWidget> ConfirmationWidgetClass;
+
 	virtual void NativeOnInitialized() override;
 
 private:
+	UPROPERTY()
+	UConfirmationWidget* ConfirmationWidget;
+	
 	UFUNCTION()
     void OnBack();
 
@@ -67,7 +81,22 @@ private:
 	void OnSound();
 
 	UFUNCTION()
+	void OnGame();
+
+	UFUNCTION()
+	void ChooseLevel();
+
+	UFUNCTION()
 	void OpenMenu();
+
+	UFUNCTION()
+	bool CheckUnsavedChanges() const;
+
+	UFUNCTION()
+	void ApplyAllChanges();
+
+	UFUNCTION()
+	void CloseConfirmationWidget();
 
 	FTimerHandle TimerHandle;
 };
