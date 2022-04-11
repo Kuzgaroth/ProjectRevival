@@ -2,8 +2,11 @@
 
 
 #include "UI/PauseWidget.h"
+
+#include "PRGameInstance.h"
 #include "Components/Button.h"
 #include "GameFramework/GameModeBase.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Menu/ConfirmationWidget.h"
 #include "Menu/OptionsWidget.h"
@@ -90,13 +93,18 @@ void UPauseWidget::OnQuitGame()
 void UPauseWidget::LoadCheckPoint()
 {
 	CloseConfirmationWidget();
-	/*load the last check point code here*/
+	const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
+	
+	UGameplayStatics::OpenLevel(this,/*GameInstance->GetStartupLevel().LevelName*/"LVL_Conference");
 }
 
 void UPauseWidget::PlayAgain()
 {
 	CloseConfirmationWidget();
-	/*play again code here*/
+	const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
+	
+	UGameplayStatics::OpenLevel(this,/*GameInstance->GetStartupLevel().LevelName*/"LVL_Conference");
+	
 }
 
 void UPauseWidget::QuitGame()
