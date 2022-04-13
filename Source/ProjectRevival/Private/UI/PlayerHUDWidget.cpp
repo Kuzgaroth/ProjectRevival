@@ -59,6 +59,8 @@ UCirclePBWidget* UPlayerHUDWidget::GetWidgetByAction(EGASInputActions AbilityAct
 			return CircleWidget;
 		}
 	}
+	UE_LOG(LogPRAbilitySystemBase, Error,
+                                    TEXT("No such ability named %s"), *UEnum::GetDisplayValueAsText(AbilityAction).ToString());
 
 	return nullptr;
 }
@@ -81,10 +83,11 @@ void UPlayerHUDWidget::NativeOnInitialized()
 		GetOwningPlayer()->GetOnNewPawnNotifier().AddUObject(this,&UPlayerHUDWidget::OnNewPawn);
 		OnNewPawn(GetOwningPlayerPawn());
 	}
-	
+
 	CirclePBWidgets.Add(GhostPB);
 	CirclePBWidgets.Add(VisorPB);
 	CirclePBWidgets.Add(FlipPB);
+	CirclePBWidgets.Add(ChangeWorldPB);
 }
 
 void UPlayerHUDWidget::OnHealthChanged(float Health, float DeltaHealth)

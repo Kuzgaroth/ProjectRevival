@@ -59,6 +59,9 @@ protected:
 	UCirclePBWidget* FlipPB;
 
 	UPROPERTY(meta=(BindWidget))
+	UCirclePBWidget* ChangeWorldPB;
+
+	UPROPERTY(meta=(BindWidget))
 	UCrosshairWidget* Crosshair;
 	
 	virtual void NativeOnInitialized() override;
