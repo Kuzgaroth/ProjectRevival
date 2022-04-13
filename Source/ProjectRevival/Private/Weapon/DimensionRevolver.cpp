@@ -32,6 +32,7 @@ void ADimensionRevolver::MakeShot()
 	
 	if (Projectile)
 	{
+		Projectile->SetHealPercentage(HealPercent);
 		Projectile->SetShotDirection(Direction);
 		Projectile->SetOwner(GetOwner());
 		Projectile->FinishSpawning(SpawnTransform);
@@ -48,4 +49,9 @@ void ADimensionRevolver::MakeShot()
 	
 
 	UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzelSocketName);
+}
+
+void ADimensionRevolver::SetHealPercentToBullet(float Percent)
+{
+	HealPercent=Percent;
 }

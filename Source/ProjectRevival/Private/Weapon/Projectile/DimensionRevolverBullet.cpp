@@ -11,10 +11,6 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
-FComponentHitSignature ADimensionRevolverBullet::GetHitDelegate() const
-{
-	return CollisionComponent->OnComponentHit;
-}
 
 void ADimensionRevolverBullet::BeginPlay()
 {
@@ -34,17 +30,17 @@ void ADimensionRevolverBullet::OnProjectileHit(UPrimitiveComponent* HitComponent
 	GLog->Log(GetOwner()->GetName());
 	if (!GetWorld()) return;
 	MovementComponent->StopMovementImmediately();
-
 	if(OtherActor)
 	{
-		auto Bot=Cast<ABaseCharacter>(OtherActor);
+		const auto Bot=Cast<ABaseCharacter>(OtherActor);
 		if(Bot)
 		{
-			UGameplayStatics::ApplyRadialDamage(GetWorld(), DamageAmount, GetActorLocation() , DamageRadius,
+			const auto Damage= Bot->GetHealthComponent()->GetMaxHeatlh();
+			UGameplayStatics::ApplyRadialDamage(GetWorld(), Damage, GetActorLocation() , DamageRadius,
 			UDamageType::StaticClass(), {}, this, GetController(), bDoFullDamage);
-			auto Player=Cast<APlayerCharacter>(GetOwner());
-			auto PlayerHealthComponent=Player->GetHealthComponent();
-			PlayerHealthComponent->TryToAddHealth(30.0f);
+			const auto Player=Cast<APlayerCharacter>(GetOwner());
+			const auto PlayerHealthComponent=Player->GetHealthComponent();
+			PlayerHealthComponent->TryToAddHealthPercentage(HealHealthPercent);
 		}
 	}
 	//DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRadius, 24, FColor::Red, false, 5.0f);
@@ -53,12 +49,6 @@ void ADimensionRevolverBullet::OnProjectileHit(UPrimitiveComponent* HitComponent
 
 }
 
-void ADimensionRevolverBullet::LifeSpanExpired()
-{
-	FHitResult result;
-	CollisionComponent->OnComponentHit.Broadcast(nullptr,nullptr,nullptr,FVector::ZeroVector,result);
-	Super::LifeSpanExpired();
-}
 
 
 

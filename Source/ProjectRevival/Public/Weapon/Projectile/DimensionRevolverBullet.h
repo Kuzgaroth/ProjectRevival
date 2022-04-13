@@ -14,11 +14,10 @@ class PROJECTREVIVAL_API ADimensionRevolverBullet : public ABaseProjectile
 {
 	GENERATED_BODY()
 public:
-	FComponentHitSignature GetHitDelegate() const;
+	void SetHealPercentage(const float Percentage){HealHealthPercent=Percentage;}
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
-	virtual void LifeSpanExpired() override;
-	
+	float HealHealthPercent=30.0f;
 
 };

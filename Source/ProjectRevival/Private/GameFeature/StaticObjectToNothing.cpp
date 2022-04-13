@@ -62,7 +62,10 @@ void AStaticObjectToNothing::BeginPlay()
 			for (const auto Material : MeshesMaterials)
 			{
 				if (Material!=nullptr)
+				{
 					Material->SetScalarParameterValue("Amount",MinCurveValue);
+					Material->SetVectorParameterValue("Color",FLinearColor::Blue);
+				}
 			}
 		}
 		else
@@ -79,7 +82,10 @@ void AStaticObjectToNothing::BeginPlay()
 			for (const auto Material : MeshesMaterials)
 			{
 				if (Material!=nullptr)
+				{
 					Material->SetScalarParameterValue("Amount",MaxCurveValue);
+					Material->SetVectorParameterValue("Color",FLinearColor::Red);
+				}
 			}
 		}
 		else

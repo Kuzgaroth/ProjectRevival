@@ -23,11 +23,13 @@ public:
 	FOnDeath OnDeath;
 	FOnHealthChanged OnHealthChanged;
 	bool TryToAddHealth(float HealthAmount);
+	bool TryToAddHealthPercentage(float HealedPercent);
 	bool IsHealthFull() const;
 	
 	UFUNCTION(BlueprintCallable, Category="Health")
 	FORCEINLINE float GetHealthPercentage() const {return Health/MaxHealth;};
 	void SetHealth(float NewHealth);
+	float GetMaxHeatlh()const{return MaxHealth;};
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(ClampMin="50", ClampMax="300"))
 	float MaxHealth;

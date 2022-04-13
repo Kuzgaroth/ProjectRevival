@@ -42,9 +42,10 @@ TArray<UMaterialInstanceDynamic*> UWeaponComponent::GetCurrentWeaponMaterials()
 
 void UWeaponComponent::NextWeapon()
 {
-	return;
+	//return;
 	if (!CanEquip()) return;
 	CurrentWeaponIndex = (CurrentWeaponIndex+1) % Weapons.Num();
+
 	EquipWeapon(CurrentWeaponIndex);
 }
 
@@ -78,18 +79,24 @@ void UWeaponComponent::SetWeponData(FAmmoData NewAmmoData)
 	}
 }
 
-void UWeaponComponent::AddWeapon(FWeaponData NewWeaponData)
+void UWeaponComponent::AddWeapon(TSubclassOf<ABaseWeapon> NewWeaponData)
 {
-	WeaponDatas.Add(NewWeaponData);
+
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	const auto Weapon = GetWorld()->SpawnActor<ABaseWeapon>(NewWeaponData);
+	if (!Weapon) return;
+	Weapon->SetOwner(Character);
+	Weapons.Add(Weapon);
+	Weapon->OnWeaponShotDelegate.AddUObject(this, &UWeaponComponent::OnShotMade);
+
 }
 
-void UWeaponComponent::DeleteWeapon(FWeaponData WeaponDataToDelite)
+void UWeaponComponent::DeleteWeapon()
 {
-	//if(CurrentWeapon==Cast<ABaseWeapon>(WeaponDataToDelite.WeaponClass))
-	//{
-	//	return;
-	//}
-	//WeaponDatas.Remove(WeaponDataToDelite);
+	EquipWeapon(0);
+	GetWorld()->DestroyActor(Weapons[Weapons.Num()-1]);
+	//GetWorld()->RemoveActor(Weapons[Weapons.Num()-1],true);
+	Weapons.RemoveAt(Weapons.Num()-1);
 }
 
 bool UWeaponComponent::GetCurrentWeaponUIData(FWeaponUIData& UIData) const

@@ -49,6 +49,8 @@ public:
 
 	UFUNCTION()
 	bool CheckIfWorldCanBeChanged() const;
+
+	UBaseCharacterMovementComponent* GetMovementComponent()const {return PlayerMovementComponent;}
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoomBlueprint PlayerAimZoom;
