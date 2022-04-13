@@ -4,67 +4,88 @@
 #include "Menu/OptionsSoundWidget.h"
 
 #include "PRGameInstance.h"
+
+#include "Components/Button.h"
 #include "Components/Slider.h"
 #include "Kismet/GameplayStatics.h"
 #include "Menu/MenuLevelTheme.h"
 #include "Menu/SaveGameClass.h"
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
-
-bool UOptionsSoundWidget::Initialize()
+void UOptionsSoundWidget::NativeOnInitialized()
 {
-	const auto InitStatus = Super::Initialize();
+	if (MasterVolumeSlider)
+	{
+		MasterVolumeSlider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnMasterVolumeChange);
+	}
+	if (EffectVolumeSlider)
+	{
+		EffectVolumeSlider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnEffectsVolumeChange);
+	}
+	if (MusicVolumeSlider)
+	{
+		MusicVolumeSlider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnMusicVolumeChange);
+	}
+	if (VoiceVolumeSlider)
+	{
+		VoiceVolumeSlider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnVoiceVolumeChange);
+	}
+
+	if (ApplyButton)
+	{
+		ApplyButton->OnClicked.AddDynamic(this, &UOptionsSoundWidget::ApplyChanges);	
+	}
+	if (ApplyDefaultButton)
+	{
+		ApplyDefaultButton->OnClicked.AddDynamic(this, &UOptionsSoundWidget::ApplyDefaultChanges);
+	}
 	
-	Slider_0->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnMasterVolumeChange);
-	Slider->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnEffectsVolumeChange);
-	Slider_1->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnMusicVolumeChange);
-	Slider_2->OnValueChanged.AddDynamic(this, &UOptionsSoundWidget::OnVoiceVolumeChange);
+	SetView();
 
 	MyGameInstance = Cast<UPRGameInstance>
-			(UGameplayStatics::GetGameInstance(GetWorld()));
+        (UGameplayStatics::GetGameInstance(GetWorld()));
 
 	LoadSoundSettings();
 	
-	return InitStatus;
 }
 
 
 void UOptionsSoundWidget::SaveSoundSettings()
 {
-	MyGameInstance->SaveSoundData(Slider_0->Value, Slider->Value, Slider_1->Value, Slider_2->Value);
+	MyGameInstance->SaveSoundData(MasterVolumeSlider->Value, EffectVolumeSlider->Value, MusicVolumeSlider->Value, VoiceVolumeSlider->Value);
 }
 
 void UOptionsSoundWidget::LoadSoundSettings()
 {
-	Slider_0->Value = MyGameInstance->LoadSoundData()->SaveSlider_0Value;
-	Slider->Value = MyGameInstance->LoadSoundData()->SaveSliderValue;
-	Slider_1->Value = MyGameInstance->LoadSoundData()->SaveSlider_1Value;
-	Slider_2->Value = MyGameInstance->LoadSoundData()->SaveSlider_2Value;
+	MasterVolumeSlider->Value = MyGameInstance->LoadSoundData()->SaveSlider_0Value;
+	EffectVolumeSlider->Value = MyGameInstance->LoadSoundData()->SaveSliderValue;
+	MusicVolumeSlider->Value = MyGameInstance->LoadSoundData()->SaveSlider_1Value;
+	VoiceVolumeSlider->Value = MyGameInstance->LoadSoundData()->SaveSlider_2Value;
 }
 
 
 void UOptionsSoundWidget::OnMasterVolumeChange(float newValue)
 {
-	Slider_0->Value = newValue;
+	MasterVolumeSlider->Value = newValue;
 	SetVolume(newValue, "Master");
 }
 
 void UOptionsSoundWidget::OnEffectsVolumeChange(float newValue)
 {
-	Slider->Value = newValue;
+	EffectVolumeSlider->Value = newValue;
 	SetVolume(newValue, "Effects");
 }
 
 void UOptionsSoundWidget::OnMusicVolumeChange(float newValue)
 {
-	Slider_1->Value = newValue;
+	MusicVolumeSlider->Value = newValue;
 	SetVolume(newValue, "Music");
 }
 
 
 void UOptionsSoundWidget::OnVoiceVolumeChange(float newValue)
 {
-	Slider_2->Value = newValue;
+	VoiceVolumeSlider->Value = newValue;
 	SetVolume(newValue, "Voice");
 }
 
@@ -79,4 +100,28 @@ void UOptionsSoundWidget::SetVolume(float newValue, FString WhatSound)
 	{
 		Cast<AMenuLevelTheme>(OutActors[EveryActor])->ChangeVolume(newValue, WhatSound);
 	}
+}
+
+void UOptionsSoundWidget::SetView()
+{
+	// Set current slider levels here
+}
+
+void UOptionsSoundWidget::ApplyChanges()
+{
+	// Apply and save changes here
+}
+
+void UOptionsSoundWidget::ApplyDefaultChanges()
+{
+	// Set default values here
+	
+	SetView();
+}
+
+bool UOptionsSoundWidget::HasUnsavedChanges()
+{
+	// Check your unsaved changes here
+	
+	return false;
 }
