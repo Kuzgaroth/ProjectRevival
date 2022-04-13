@@ -45,10 +45,10 @@ bool UPlayerHUDWidget::IsPlayerAlive() const
 	return HealthComponent && !HealthComponent->IsDead();
 }
 
-void UPlayerHUDWidget::OnEnergyValueChanged(float Energy)
-{
-	EnergyPB->ChangePercent(Energy);
-}
+// void UPlayerHUDWidget::OnEnergyValueChanged(float Energy)
+// {
+// 	EnergyPB->ChangePercent(Energy);
+// }
 
 UCirclePBWidget* UPlayerHUDWidget::GetWidgetByAction(EGASInputActions AbilityAction) const
 {
@@ -110,5 +110,5 @@ void UPlayerHUDWidget::OnNewPawn(APawn* NewPawn)
 		Character->OnEnergyValueChangedHandle.BindUFunction(this, FName("OnEnergyValueChanged"));
 	}
 	HealthPB->ChangePercent(GetHealthPercentage());
-	EnergyPB->ChangePercent(1);
+	// EnergyPB->ChangePercent(1);
 }
