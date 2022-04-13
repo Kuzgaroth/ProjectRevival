@@ -52,6 +52,7 @@ protected:
 	EChangeWorld CurrentWorld = EChangeWorld::OrdinaryWorld;
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual void RestartPlayer(AController* NewPlayer) override;
+	virtual APawn* SpawnDefaultPawnAtTransform_Implementation(AController* NewPlayer, const FTransform& SpawnTransform) override;
 private:
 	EMatchState MatchState = EMatchState::WaitingToStart;
 	

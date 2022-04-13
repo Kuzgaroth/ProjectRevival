@@ -7,6 +7,7 @@
 #include "Player/PlayerCharacter.h"
 #include "AICharacter.h"
 #include "DrawDebugHelpers.h"
+#include "PRGameInstance.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/InputComponent.h"
@@ -287,11 +288,25 @@ void APlayerCharacter::OnCooldownExpired(const FActiveGameplayEffect& ExpiredEff
 
 void APlayerCharacter::OnDeath()
 {
-	Super::OnDeath();
-	/*if (Controller)
+	GetCharacterMovement()->DisableMovement();
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	WeaponComponent->StopFire();
+	AbilitySystemComponent->CancelAbilities();
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation());
+	if (DeathVFX)
 	{
-		Controller->ChangeState(NAME_Spectating);
-	}*/
+		UGameplayStatics::SpawnEmitterAttached(DeathVFX,RootComponent);
+	}
+	if (DeathAnimMontage)
+	{
+		
+		const float Duration = PlayAnimMontage(DeathAnimMontage);
+		if (Duration>0)
+		{
+			GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &APlayerCharacter::EnterDeathWorld, Duration);
+		}
+	}
+	else EnterDeathWorld();
 }
 
 void APlayerCharacter::BeginPlay()
@@ -533,4 +548,10 @@ bool APlayerCharacter::StopCover_Internal()
 	PlayerMovementComponent->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
 	return true;
+}
+
+void APlayerCharacter::EnterDeathWorld()
+{
+	GetWorldTimerManager().ClearTimer(DeathTimerHandle);
+	UGameplayStatics::OpenLevel(this,/*GameInstance->GetStartupLevel().LevelName*/GetGameInstance<UPRGameInstance>()->GetDeathWorldLevelName(),true);
 }
