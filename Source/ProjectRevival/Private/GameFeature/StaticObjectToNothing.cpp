@@ -183,7 +183,7 @@ void AStaticObjectToNothing::Changing()
 		if(VisualCurve)
 		{
 			isApearing=false;
-			SuperMesh->SetCollisionProfileName("OverlapAll");
+
 			TimeLine.PlayFromStart();
 
 		}
@@ -328,6 +328,7 @@ void AStaticObjectToNothing::TimeLineFinished()
 {
 	if(!isApearing)
 	{
+		SuperMesh->SetCollisionProfileName("OverlapAll");
 		ClearComponentTags(SuperMesh);
 
 	}

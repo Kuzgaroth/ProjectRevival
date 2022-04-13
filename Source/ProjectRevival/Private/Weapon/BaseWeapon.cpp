@@ -44,8 +44,8 @@ void ABaseWeapon::BeginPlay()
 		}
 		else CurrentAmmo = DefaultAmmo;
 	}
-	
 	SetupDynMaterialsFromMesh(this, DynamicMaterials);
+	
 }
 
 void ABaseWeapon::PostInitializeComponents()
@@ -187,6 +187,11 @@ bool ABaseWeapon::IsAmmoEmpty() const
 void ABaseWeapon::SetAmmoData(FAmmoData NewAmmoData)
 {
 	CurrentAmmo = NewAmmoData;
+}
+
+void ABaseWeapon::Changing()
+{
+	
 }
 
 bool ABaseWeapon::IsClipEmpty() const
