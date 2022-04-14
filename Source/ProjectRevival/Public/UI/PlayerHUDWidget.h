@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 
 #include "CirclePBWidget.h"
+#include "CrosshairWidget.h"
 #include "HealthPBWidget.h"
 #include "AbilitySystem/PRAbilityTypes.h"
 #include "Blueprint/UserWidget.h"
@@ -38,6 +39,8 @@ public:
 	void OnEnergyValueChanged(float Energy);
 
 	UCirclePBWidget* GetWidgetByAction(EGASInputActions AbilityAction) const;
+
+	UCrosshairWidget* GetCrosshairWidget() const;
 	
 protected:
 	UPROPERTY(meta=(BindWidget))
@@ -54,6 +57,9 @@ protected:
 
 	UPROPERTY(meta=(BindWidget))
 	UCirclePBWidget* FlipPB;
+
+	UPROPERTY(meta=(BindWidget))
+	UCrosshairWidget* Crosshair;
 	
 	virtual void NativeOnInitialized() override;
 private:
