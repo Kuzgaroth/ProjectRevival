@@ -17,7 +17,11 @@ UWeaponComponent::UWeaponComponent()
 
 void UWeaponComponent::StartFire()
 {
-	if (!CanFire()) return;
+	if (!CanFire())
+	{
+		ShootingInProgress = false;
+		return;
+	}
 	CurrentWeapon->StartFire();
 	ShootingInProgress = true;
 }

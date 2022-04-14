@@ -57,7 +57,6 @@ void AKWeapon::MakeShot()
 		return;
 	}
 	SpawnShell(ShutterSocketName);
-	//Magazines.Last()->GetMeshComponent()->SetRelativeScale3D(MagazineScale);
 }
 
 void AKWeapon::SpawnShell(FName SocketName) const
