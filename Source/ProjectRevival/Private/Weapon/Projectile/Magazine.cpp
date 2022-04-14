@@ -17,6 +17,7 @@ AMagazine::AMagazine()
 	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovementComponent");
 	MovementComponent->bSimulationEnabled = false;
 	MovementComponent->InitialSpeed = 10.f;
+	MovementComponent->MaxSpeed = 600.f;
 }
 
 void AMagazine::DetachMagazine()

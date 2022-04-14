@@ -57,7 +57,7 @@ void AKWeapon::MakeShot()
 		return;
 	}
 	SpawnShell(ShutterSocketName);
-	Magazines.Last()->GetMeshComponent()->SetRelativeScale3D(MagazineScale);
+	//Magazines.Last()->GetMeshComponent()->SetRelativeScale3D(MagazineScale);
 }
 
 void AKWeapon::SpawnShell(FName SocketName) const
@@ -102,6 +102,7 @@ void AKWeapon::SpawnMagazine(FName SocketName)
 	{
 		Magazines.Add(SpawnedMagazine);
 		SpawnedMagazine->AttachToComponent(Parent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
+		//UE_LOG(LogActor,Warning,TEXT("Spawned magazine: %s"), *Magazines.Last()->GetName());
 	}
 	else
 	{

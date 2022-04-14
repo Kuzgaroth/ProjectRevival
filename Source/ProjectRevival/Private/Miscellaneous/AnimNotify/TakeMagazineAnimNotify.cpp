@@ -16,5 +16,6 @@ void UTakeMagazineAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequ
 	if(!Weapon) return;
 	
 	Super::Notify(MeshComp, Animation);
+	
 	Weapon->Take();
 }
