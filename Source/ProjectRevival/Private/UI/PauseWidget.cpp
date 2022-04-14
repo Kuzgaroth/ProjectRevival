@@ -102,7 +102,7 @@ void UPauseWidget::PlayAgain()
 {
 	CloseConfirmationWidget();
 	const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
-	
+	UGameplayStatics::DeleteGameInSlot("SaveSlot",0);
 	UGameplayStatics::OpenLevel(this,/*GameInstance->GetStartupLevel().LevelName*/"LVL_Conference");
 	
 }
