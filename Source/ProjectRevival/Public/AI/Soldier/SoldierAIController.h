@@ -190,3 +190,4 @@ protected:
 private:
 	AActor* GetFocusOnActor();
 };
+

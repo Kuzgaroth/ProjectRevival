@@ -5,8 +5,8 @@
 
 #include "PauseWidget.h"
 #include "Components/Button.h"
-#include "PRGameInstance.h"
 #include "Menu/OptionsControlsWidget.h"
+#include "Menu/OptionsGameWidget.h"
 #include "Menu/OptionsGraphicsWidget.h"
 #include "Menu/OptionsSoundWidget.h"
 #include "ProjectRevival/Public/Menu/MenuWidget.h"
@@ -34,6 +34,11 @@ void UOptionsWidget::NativeOnInitialized()
 		SoundButton->SetBackgroundColor(FLinearColor(1, 1, 1, 0));
 		SoundButton->OnClicked.AddDynamic(this, &UOptionsWidget::OnSound);
 	}
+	if (GameButton)
+	{
+		GameButton->SetBackgroundColor(FLinearColor(1, 1, 1, 0));
+		GameButton->OnClicked.AddDynamic(this, &UOptionsWidget::OnGame);
+	}
 	if (OptionsGraphicsWidgetClass)
 	{
 		UOptionsGraphicsWidget* OptionsGraphicsWidget = CreateWidget<UOptionsGraphicsWidget>(GetWorld(),
@@ -51,27 +56,30 @@ void UOptionsWidget::NativeOnInitialized()
 		UOptionsSoundWidget* OptionsSoundWidget = CreateWidget<UOptionsSoundWidget>(GetWorld(), OptionsSoundWidgetClass);
 		OptionsWidgetSwitcher->AddChild(OptionsSoundWidget);
 	}
+	if (OptionsGameWidgetClass)
+	{
+		UOptionsGameWidget* OptionsGameWidget = CreateWidget<UOptionsGameWidget>(GetWorld(), OptionsGameWidgetClass);
+		OptionsWidgetSwitcher->AddChild(OptionsGameWidget);
+	}
 }
 
 void UOptionsWidget::OnBack()
 {
-	UWorld* MyWorld = GetWorld();
-	FString CurrentMapName = MyWorld->GetMapName();
-	if (CurrentMapName.Equals("MenuLevel"))
+	if (CheckUnsavedChanges())
 	{
-		if (MenuWidgetClass)
+		if (ConfirmationWidgetClass)
 		{
-			LeaveEvent();
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UOptionsWidget::OpenMenu, 1.0f, false, 0.125f);
+			ConfirmationWidget = CreateWidget<UConfirmationWidget>(GetWorld(), ConfirmationWidgetClass);
+			ConfirmationWidget->ConfirmButton->OnClicked.AddDynamic(this, &UOptionsWidget::ApplyAllChanges);
+			ConfirmationWidget->DeclineButton->OnClicked.AddDynamic(this, &UOptionsWidget::CloseConfirmationWidget);
+			ConfirmationWidget->SetLabelText(FText::FromString("Do you want to save your changes?"));
+			ConfirmationWidget->AddToViewport();
 		}
 	}
 	else
 	{
-		if (PauseMenuWidgetClass)
-		{
-			RemoveFromParent();
-		}
-	}	
+		ChooseLevel();
+	}
 }
 
 void UOptionsWidget::OnControls()
@@ -95,6 +103,35 @@ void UOptionsWidget::OnSound()
 	if (OptionsWidgetSwitcher)
 	{
 		OptionsWidgetSwitcher->SetActiveWidgetIndex(2);
+	}
+}
+
+void UOptionsWidget::OnGame()
+{
+	if (OptionsWidgetSwitcher)
+	{
+		OptionsWidgetSwitcher->SetActiveWidgetIndex(3);
+	}
+}
+
+void UOptionsWidget::ChooseLevel()
+{
+	UWorld* MyWorld = GetWorld();
+	FString CurrentMapName = MyWorld->GetMapName();
+	if (CurrentMapName.Equals("MenuLevel"))
+	{
+		if (MenuWidgetClass)
+		{
+			LeaveEvent();
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UOptionsWidget::OpenMenu, 1.0f, false, 0.125f);
+		}
+	}
+	else
+	{
+		if (PauseMenuWidgetClass)
+		{
+			RemoveFromParent();
+		}
 	}
 }
 
@@ -124,4 +161,41 @@ void UOptionsWidget::OpenMenu()
 	}
 }
 
+bool UOptionsWidget::CheckUnsavedChanges() const
+{
+	if (Cast<UOptionsGraphicsWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(0))->HasUnsavedChanges())
+	{
+		return true;
+	}
+	if (Cast<UOptionsSoundWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(2))->HasUnsavedChanges())
+	{
+		return true;
+	}
+	if (Cast<UOptionsGameWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(3))->HasUnsavedChanges())
+	{
+		return true;
+	}
 
+	return false;
+}
+
+void UOptionsWidget::ApplyAllChanges()
+{
+	if (OptionsWidgetSwitcher)
+	{
+		Cast<UOptionsGraphicsWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(0))->ApplyChanges();
+		Cast<UOptionsSoundWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(2))->ApplyChanges();
+		Cast<UOptionsGameWidget>(OptionsWidgetSwitcher->GetWidgetAtIndex(3))->ApplyChanges();	
+	}
+	
+	CloseConfirmationWidget();
+}
+
+void UOptionsWidget::CloseConfirmationWidget()
+{
+	if (ConfirmationWidget)
+	{
+		ConfirmationWidget->RemoveFromParent();
+	}
+	ChooseLevel();
+}

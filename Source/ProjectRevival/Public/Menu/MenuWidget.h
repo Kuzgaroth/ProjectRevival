@@ -33,12 +33,6 @@ protected:
 
 	UPROPERTY(meta=(BindWidget))
 	UButton* ContinueGameButton;
-
-	UPROPERTY(meta=(BindWidget))
-	UButton* NewGameButton;
-
-	UPROPERTY(meta=(BindWidget))
-	UButton* LoadGameButton;
 	
 	UPROPERTY(meta=(BindWidget))
 	UButton* OptionsButton;
@@ -61,6 +55,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> CreditsWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="UI")
+	TSubclassOf<UUserWidget> DifficultySelectorWidgetClass;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Sound")
 	USoundCue* StartGameSound;
 	
@@ -76,13 +73,7 @@ private:
 	void OnContinueGame();
 
 	UFUNCTION()
-	void OnNewGame();
-
-	UFUNCTION()
 	void OnOptions();
-
-	UFUNCTION()
-	void OnLoadGame();
 	
 	UFUNCTION()
 	void OnQuitGame();

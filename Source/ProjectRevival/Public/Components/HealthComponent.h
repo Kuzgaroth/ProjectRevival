@@ -28,6 +28,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Health")
 	FORCEINLINE float GetHealthPercentage() const {return Health/MaxHealth;};
 	void SetHealth(float NewHealth);
+	void PlayerFinallyDied();
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(ClampMin="50", ClampMax="300"))
 	float MaxHealth;

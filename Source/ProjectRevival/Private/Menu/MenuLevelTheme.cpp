@@ -3,34 +3,36 @@
 
 #include "Menu/MenuLevelTheme.h"
 
+#include "PRGameInstance.h"
+#include "SampleBuffer.h"
 #include "Components/AudioComponent.h"
-#include "Components/Slider.h"
+#include "Kismet/GameplayStatics.h"
 #include "Menu/OptionsSoundWidget.h"
+#include "Menu/SaveGameClass.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values
 AMenuLevelTheme::AMenuLevelTheme()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	SongComponent = CreateDefaultSubobject<UAudioComponent>("SongComponent");
-	SongComponent->bAutoActivate = false;
-	SongComponent->bAlwaysPlay = true;
 }
 
 // Called when the game starts or when spawned
 void AMenuLevelTheme::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *SongComponent->Sound->SoundClassObject->GetName());
 
-	float startTime = 9.f;
-	float volume = 1.0f;
-	float fadeTime = 1.0f;
-	SongComponent->FadeIn(fadeTime, volume, startTime);
+	MasterVolume = MainSoundMix->SoundClassEffects[0].SoundClassObject->Properties.Volume;
+	//UE_LOG(LogTemp, Warning, TEXT("The integer value is: %d"), SoundMix->SoundClassEffects.Num());
+
+	MyGameInstance = Cast<UPRGameInstance>
+			(UGameplayStatics::GetGameInstance(GetWorld()));
 	
-	SongComponent->Play();
+	ChangeVolume(MyGameInstance->LoadSoundData()->SaveSlider_0Value, "Master");
+	ChangeVolume(MyGameInstance->LoadSoundData()->SaveSliderValue, "Effects");
+	ChangeVolume(MyGameInstance->LoadSoundData()->SaveSlider_1Value, "Music");
+	ChangeVolume(MyGameInstance->LoadSoundData()->SaveSlider_2Value, "Voice");
 }
 
 // Called every frame
@@ -42,19 +44,22 @@ void AMenuLevelTheme::Tick(float DeltaTime)
 
 void AMenuLevelTheme::ChangeVolume(float Value, FString WhatSound)
 {
-	if (SongComponent) {
-		if (WhatSound == "Master") MasterVolume = Value;
-		if (WhatSound == "Effects" && SongComponent->Sound->SoundClassObject->GetName() == "SC_Effects" || WhatSound == "Music" && SongComponent->Sound->SoundClassObject->GetName() == "SC_Music" || WhatSound == "Voice" && SongComponent->Sound->SoundClassObject->GetName() == "SC_Voice")
-			MyVolume = Value;
-		if (Value > 0)
-		{
-			SongComponent->SetVolumeMultiplier(MasterVolume * MyVolume);
-		}
-		else
-		{
-			if (WhatSound == "Effects" && SongComponent->Sound->SoundClassObject->GetName() == "SC_Effects" || WhatSound == "Music" && SongComponent->Sound->SoundClassObject->GetName() == "SC_Music" || WhatSound == "Voice" && SongComponent->Sound->SoundClassObject->GetName() == "SC_Voice" || WhatSound == "Master")
-			SongComponent->SetVolumeMultiplier(0.0001);
-		}
+    /*StrangeThings*/
+	if (Value > 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Effects: %s"), *EffectsSoundMix->SoundClassEffects[0].SoundClassObject->GetName());
+
+		if (WhatSound == "Master") MainSoundMix->SoundClassEffects[0].SoundClassObject->Properties.Volume = Value, MasterVolume = Value;
+		if (WhatSound == "Effects") EffectsSoundMix->SoundClassEffects[0].SoundClassObject->Properties.Volume = Value * MasterVolume;
+		if (WhatSound == "Music") MusicSoundMix->SoundClassEffects[0].SoundClassObject->Properties.Volume = Value * MasterVolume;
+		if (WhatSound == "Voice") VoiceSoundMix->SoundClassEffects[0].SoundClassObject->Properties.Volume = Value * MasterVolume;
+	}
+	else
+	{
+		if (WhatSound == "Master") MainSoundMix->SoundClassEffects[0].SoundClassObject->Properties.Volume = 0.0001;
+		if (WhatSound == "Effects") EffectsSoundMix->SoundClassEffects[0].SoundClassObject->Properties.Volume = 0.0001;
+		if (WhatSound == "Music") MusicSoundMix->SoundClassEffects[0].SoundClassObject->Properties.Volume = 0.0001;
+		if (WhatSound == "Voice") VoiceSoundMix->SoundClassEffects[0].SoundClassObject->Properties.Volume = 0.0001;
 	}
 }
 

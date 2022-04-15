@@ -22,7 +22,9 @@ public class ProjectRevival : ModuleRules
 			"GameplayTags",
 			"RHI",
 			"SlateCore", 
-			"GameplayCameras"
+			"GameplayCameras",
+			"LevelSequence",
+			"MovieScene"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
