@@ -45,10 +45,10 @@ bool UPlayerHUDWidget::IsPlayerAlive() const
 	return HealthComponent && !HealthComponent->IsDead();
 }
 
-void UPlayerHUDWidget::OnEnergyValueChanged(float Energy)
-{
-	EnergyPB->ChangePercent(Energy);
-}
+// void UPlayerHUDWidget::OnEnergyValueChanged(float Energy)
+// {
+// 	EnergyPB->ChangePercent(Energy);
+// }
 
 UCirclePBWidget* UPlayerHUDWidget::GetWidgetByAction(EGASInputActions AbilityAction) const
 {
@@ -59,6 +59,8 @@ UCirclePBWidget* UPlayerHUDWidget::GetWidgetByAction(EGASInputActions AbilityAct
 			return CircleWidget;
 		}
 	}
+	UE_LOG(LogPRAbilitySystemBase, Error,
+                                    TEXT("No such ability named %s"), *UEnum::GetDisplayValueAsText(AbilityAction).ToString());
 
 	return nullptr;
 }
@@ -81,10 +83,11 @@ void UPlayerHUDWidget::NativeOnInitialized()
 		GetOwningPlayer()->GetOnNewPawnNotifier().AddUObject(this,&UPlayerHUDWidget::OnNewPawn);
 		OnNewPawn(GetOwningPlayerPawn());
 	}
-	
+
 	CirclePBWidgets.Add(GhostPB);
 	CirclePBWidgets.Add(VisorPB);
 	CirclePBWidgets.Add(FlipPB);
+	CirclePBWidgets.Add(ChangeWorldPB);
 }
 
 void UPlayerHUDWidget::OnHealthChanged(float Health, float DeltaHealth)
@@ -107,5 +110,5 @@ void UPlayerHUDWidget::OnNewPawn(APawn* NewPawn)
 		Character->OnEnergyValueChangedHandle.BindUFunction(this, FName("OnEnergyValueChanged"));
 	}
 	HealthPB->ChangePercent(GetHealthPercentage());
-	EnergyPB->ChangePercent(1);
+	// EnergyPB->ChangePercent(1);
 }

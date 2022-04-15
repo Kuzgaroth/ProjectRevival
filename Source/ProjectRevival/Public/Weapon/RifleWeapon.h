@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Weapon/BaseWeapon.h"
 #include "RifleWeapon.generated.h"
 
@@ -11,6 +12,14 @@ class UNiagaraComponent;
 class UNiagaraSystem;
 class UAudioComponent;
 class USoundCue;
+
+UENUM(BlueprintType)
+enum EBodyPart
+{
+	Body,
+	Head,
+	NonePart
+};
 
 UCLASS()
 class PROJECTREVIVAL_API ARifleWeapon : public ABaseWeapon
@@ -45,6 +54,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float BulletSpread=1.5f;
+
+	UPROPERTY(EditDefaultsOnly, Category="VFX")
+	TMap<UPhysicalMaterial*, TEnumAsByte<EBodyPart>> BodyMaterialMap;
 	
 	virtual void MakeShot() override;
 	virtual bool GetTraceData(FVector& TraceStart, FVector& TraceEnd) override;
@@ -54,8 +66,8 @@ protected:
 	void InitFX();
 	void SetFXActive(bool IsActive);
 	void SpawnTraceFX(const FVector& TraceStart, const FVector& TraceEnd);
-	bool IsHitInHead(const FHitResult& HitResult);
-	void ProcessEnemyHit(bool IsInHead);
+	bool IsHitInHead(const UPhysicalMaterial* PhysMaterial);
+	void ProcessEnemyHit(const FHitResult& HitResult);
 private:
 	FTimerHandle ShotTimerHandle;
 	

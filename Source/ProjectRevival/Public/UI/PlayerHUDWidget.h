@@ -35,8 +35,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category="UI")
 	void OnTakeDamage(float Health);
 
-	UFUNCTION(BlueprintCallable, Category="UI")
-	void OnEnergyValueChanged(float Energy);
+	// UFUNCTION(BlueprintCallable, Category="UI")
+	// void OnEnergyValueChanged(float Energy);
 
 	UCirclePBWidget* GetWidgetByAction(EGASInputActions AbilityAction) const;
 
@@ -46,8 +46,8 @@ protected:
 	UPROPERTY(meta=(BindWidget))
 	UHealthPBWidget* HealthPB;
 
-	UPROPERTY(meta=(BindWidget))
-	UHealthPBWidget* EnergyPB;
+	// UPROPERTY(meta=(BindWidget))
+	// UHealthPBWidget* EnergyPB;
 
 	UPROPERTY(meta=(BindWidget))
 	UCirclePBWidget* GhostPB;
@@ -57,6 +57,9 @@ protected:
 
 	UPROPERTY(meta=(BindWidget))
 	UCirclePBWidget* FlipPB;
+
+	UPROPERTY(meta=(BindWidget))
+	UCirclePBWidget* ChangeWorldPB;
 
 	UPROPERTY(meta=(BindWidget))
 	UCrosshairWidget* Crosshair;
