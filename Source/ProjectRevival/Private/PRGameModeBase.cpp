@@ -113,7 +113,8 @@ void APRGameModeBase::InitCrates()
 {
 	for (TActorIterator<AAmmoCrate> It(GetWorld()); It; ++It)
 	{
-		It->SetCurrentClipsAmount(SaveGame->AmmoCrates.Find(*It->GetName)->CurrentClips);
+		AAmmoCrate* Crate = Cast<AAmmoCrate>(*It);
+		Crate->SetCurrentClipsAmount(SaveGame->AmmoCrates.Find(*Crate->GetName())->CurrentClips);
 	}
 }
 

@@ -76,8 +76,8 @@ bool AAmmoCrate::GivePickUpTo(APawn* PlayerPawn)
 	const auto WeaponComponent = PRUtils::GetCharacterComponent<UWeaponComponent>(PlayerPawn);
 	if(WeaponComponent)
 	{
-		const bool bIsPickupNecessary = !(WeaponComponent->GetCurrentWeaponBullets() == WeaponComponent->GetMaxWeaponBullets())
-					&& (WeaponComponent->GetCurrentWeaponClips() == WeaponComponent->GetMaxWeaponClips());
+		const bool bIsPickupNecessary = !((WeaponComponent->GetCurrentWeaponBullets() == WeaponComponent->GetMaxWeaponBullets())
+					&& (WeaponComponent->GetCurrentWeaponClips() == WeaponComponent->GetMaxWeaponClips()));
 	
 		if (CurrentClipsAmount > 0 && bIsPickupNecessary)
 		{
@@ -97,6 +97,7 @@ bool AAmmoCrate::GivePickUpTo(APawn* PlayerPawn)
 		}
 		else
 		{
+			UE_LOG(LogPlayerCharacter, Warning, TEXT("PbIsPickupNecessary"));
 			return false;
 		}
 	}
