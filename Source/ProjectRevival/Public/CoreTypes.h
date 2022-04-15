@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+
 #include "Camera/CameraComponent.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -166,19 +168,19 @@ struct FPlayerAimZoomBlueprint
 	UCurveVector* CurveVector;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timeline")
-	FVector Offset = FVector(120.0, 60.0, 0.0);
+	FVector Offset = FVector(20.0, 60.0, 0.0);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	FVector CoverHighOffset = FVector(170.0, 120.0, 0.0);
+	FVector CoverHighOffset = FVector(-70.0, -100.0, 5.0);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	FVector CoverHighCrouchOffset = FVector(170.0, 120.0, 120.0);
+	FVector CoverHighCrouchOffset = FVector(-70.0, 120.0, 120.0);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	FVector CoverLowOffset = FVector(130.0, 20.0, 70.0);
+	FVector CoverLowOffset = FVector(-70.0, 70.0, 55.0);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	FVector CoverLowMiddleOffset = FVector(70.0, -83.0, 120.0);
+	FVector CoverLowMiddleOffset = FVector(-70.0, 70.0, 100.0);
 	
 	UPROPERTY()
 	FVector StartLoc;
@@ -263,6 +265,12 @@ struct FLeftSideViewBlueprint
 
 	UPROPERTY()
 	bool bIsFirstTimeChange = false;
+
+	UPROPERTY()
+	float LeftPosSave = 0.0;
+	
+	UPROPERTY()
+    float RightPosSave = 0.0;
 };
 
 UCLASS()
@@ -293,10 +301,10 @@ struct FCameraCover
 	UCurveVector* CoverVector;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	FVector CameraCover = FVector(80.0, 0.0, -10.0);
+	FVector CameraCover = FVector(30.0, -90.0, -10.0);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	float Low = 120.0;
+	float Low = 95.0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
 	UCurveFloat* CoverFloat;
@@ -305,7 +313,7 @@ struct FCameraCover
 	float FieldOfView = 60.0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	float CoverZoomFieldOfView = 60.0;
+	float CoverZoomFieldOfView = 45.0;
 	
 	UPROPERTY()
 	float CurrentFieldOfView;
@@ -348,6 +356,12 @@ struct FCameraCover
 
 	UPROPERTY()
 	bool bIsHighLong = true;
+
+	UPROPERTY()
+	int IsFirstLow = 0;
+
+	UPROPERTY()
+	int IsFirstHigh = 0;
 };
 
 USTRUCT(BlueprintType)
@@ -473,16 +487,52 @@ inline void UPlayerAimZoomFunctions::CameraZoomIn(USpringArmComponent*& SpringAr
 	if (LeftSideViewBlueprint.CamPos == false)
 	{
 		if (!(CoverData.IsInCover())) LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.Offset.Y / 1.2;
-		else if (CameraCoverFunctions->CoverType == ECoverType::High) LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.CoverHighOffset.Y / 18.0;
-		else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == true) LocalPlayerAimZoomBlueprint.EndLoc.Y += LocalPlayerAimZoomBlueprint.CoverLowOffset.Y / 1.2;
-		else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == false) LocalPlayerAimZoomBlueprint.EndLoc.Y += LocalPlayerAimZoomBlueprint.CoverLowMiddleOffset.Y / 1.2;
+		else if (CameraCoverFunctions->CoverType == ECoverType::High)
+		{
+			LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.CoverHighOffset.Y;
+			if (LocalPlayerAimZoomBlueprint.EndLoc.Y < 55.0) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+			else if (LocalPlayerAimZoomBlueprint.EndLoc.Y > 65.0) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+			if (LocalPlayerAimZoomBlueprint.EndLoc.Y > 65.0) LocalPlayerAimZoomBlueprint.EndLoc.Y = 160.0;
+		}
+		else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == true)
+		{
+			LocalPlayerAimZoomBlueprint.EndLoc.Y += LocalPlayerAimZoomBlueprint.CoverLowOffset.Y;
+			if (LocalPlayerAimZoomBlueprint.EndLoc.Y < 86.0) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+			//else if (LocalPlayerAimZoomBlueprint.EndLoc.Y > 94.0) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+			if (CameraCover.IsFirstLow == 0) CameraCover.IsFirstLow = 1;
+			else if (CameraCover.IsFirstLow == 2) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+		}
+		else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == false)
+		{
+			LocalPlayerAimZoomBlueprint.EndLoc.Y += LocalPlayerAimZoomBlueprint.CoverLowMiddleOffset.Y;
+			if (LocalPlayerAimZoomBlueprint.EndLoc.Y > 64.0) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+			//else if (LocalPlayerAimZoomBlueprint.EndLoc.Y < 56.0) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+			if (CameraCover.IsFirstLow == 0) CameraCover.IsFirstLow = 2;
+			else if (CameraCover.IsFirstLow == 1) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+		}
 	}
-	else if (!(CoverData.IsInCover())) LocalPlayerAimZoomBlueprint.EndLoc.Y += LocalPlayerAimZoomBlueprint.Offset.Y / 2.0;
-	else if (CameraCoverFunctions->CoverType == ECoverType::High) LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.CoverHighOffset.Y / 2.8;
-		else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == true) LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.CoverLowOffset.Y * 2.5;
-			else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == false) LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.CoverLowMiddleOffset.Y / 2.0;
-	if (CameraCover.bIsShift == true && LeftSideViewBlueprint.CamPos == false) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
-	else if (CameraCover.bIsShift == true && LeftSideViewBlueprint.CamPos == true) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+	else if (!(CoverData.IsInCover())) LocalPlayerAimZoomBlueprint.EndLoc.Y += LocalPlayerAimZoomBlueprint.Offset.Y / 2.0 - 15.0;
+	else if (CameraCoverFunctions->CoverType == ECoverType::High)
+	{
+		LocalPlayerAimZoomBlueprint.EndLoc.Y += LocalPlayerAimZoomBlueprint.CoverHighOffset.Y + 20.0;
+		if (LocalPlayerAimZoomBlueprint.EndLoc.Y < -35.0) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+		else if (LocalPlayerAimZoomBlueprint.EndLoc.Y > -25.0) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+		if (CameraCover.IsFirstHigh == 0) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+	}
+		else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == true)
+		{
+			LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.CoverLowOffset.Y - 10.0;
+			//if (LocalPlayerAimZoomBlueprint.EndLoc.Y < -64.0) LocalPlayerAimZoomBlueprint.EndLoc.Y = -60.0;
+			/*else*/ if (LocalPlayerAimZoomBlueprint.EndLoc.Y > -56.0) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+		}
+			else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == false)
+			{
+				LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.CoverLowMiddleOffset.Y - 70.0;
+				if (LocalPlayerAimZoomBlueprint.EndLoc.Y < -64.0) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+				//else if (LocalPlayerAimZoomBlueprint.EndLoc.Y > -56.0) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+			}
+	//if (CameraCover.bIsShift == true && LeftSideViewBlueprint.CamPos == false) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+	//else if (CameraCover.bIsShift == true && LeftSideViewBlueprint.CamPos == true) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
 	if (!(CoverData.IsInCover())) LocalPlayerAimZoomBlueprint.CurrentFieldOfView = LocalPlayerAimZoomBlueprint.FieldOfView;
 	else LocalPlayerAimZoomBlueprint.CurrentFieldOfView = CameraCover.CoverZoomFieldOfView;
 
@@ -562,19 +612,26 @@ inline void ULeftSideViewFunctions::OnCameraMove(USpringArmComponent*& SpringArm
 
 	if (CoverData.IsInCover())
 	{
-		if (CameraCover.bIsShift == true && LocalLeftSideViewBlueprint.CamPos == false)
+		if (LocalLeftSideViewBlueprint.CamPos == false)
 		{
-			LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift;
+			LocalLeftSideViewBlueprint.EndPos.Y -= 2.5 * CameraCover.CoverYShift;
+			//if (CameraCover.bIsShift == true) LocalLeftSideViewBlueprint.EndPos.Y -= CameraCover.CoverYShift;
+			if (LocalLeftSideViewBlueprint.EndPos.Y < -36.0) LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift;
+			else if (LocalLeftSideViewBlueprint.EndPos.Y > -24.0) LocalLeftSideViewBlueprint.EndPos.Y -= CameraCover.CoverYShift;
 			CameraCover.bIsShift = false;
 		}
-		else if (CameraCover.bIsShift == true && LocalLeftSideViewBlueprint.CamPos == true)
+		else if (LocalLeftSideViewBlueprint.CamPos == true)
 		{
-			LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift;
+			LocalLeftSideViewBlueprint.EndPos.Y -= 2.5 * CameraCover.CoverYShift;
+			//if (CameraCover.bIsShift == true) LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift;
+			if (LocalLeftSideViewBlueprint.EndPos.Y > 66.0) LocalLeftSideViewBlueprint.EndPos.Y -= CameraCover.CoverYShift;
+			else if (LocalLeftSideViewBlueprint.EndPos.Y < 54.0) LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift;
 			CameraCover.bIsShift = false;
 		}
 
 		//if (LocalLeftSideViewBlueprint.bIsFirstTimeChange == false) {LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift; LocalLeftSideViewBlueprint.bIsFirstTimeChange = true;}
 	}
+	CameraCover.IsFirstHigh = 1;
 	LocalLeftSideViewBlueprint.Block = true;
 	LocalLeftSideViewBlueprint.IsMoving = true;
 	LocalLeftSideViewBlueprint.Repeat = false;
