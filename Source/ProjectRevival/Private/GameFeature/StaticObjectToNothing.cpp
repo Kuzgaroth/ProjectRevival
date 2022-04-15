@@ -181,9 +181,7 @@ void AStaticObjectToNothing::Changing()
 		if(VisualCurve)
 		{
 			isApearing=false;
-
 			TimeLine.PlayFromStart();
-
 		}
 		else
 		{
