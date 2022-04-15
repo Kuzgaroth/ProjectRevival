@@ -53,9 +53,15 @@ void UDimensionShotAbility::InputPressed(const FGameplayAbilitySpecHandle Handle
 	}
 }
 
+void UDimensionShotAbility::InterruptAbility()
+{
+	FinishAbility();
+	EndAbility(GetCurrentAbilitySpecHandle(),GetCurrentActorInfo(),GetCurrentActivationInfo(),true,true);
+}
+
 void UDimensionShotAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-	const FGameplayEventData* TriggerEventData)
+                                            const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+                                            const FGameplayEventData* TriggerEventData)
 {
 	//Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 	ShotBeingMade=true;

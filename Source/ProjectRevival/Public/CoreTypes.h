@@ -5,6 +5,9 @@
 #include "Interfaces/ICoverable.h"
 #include "CoreTypes.generated.h"
 
+class UDimensionShotAbility;
+
+
 class UBoxComponent;
 //Weapon
 class ABaseWeapon;
@@ -255,6 +258,8 @@ struct FDimensionShotStruct
 	GENERATED_BODY()
 	bool IsInRevolverTransition=false;
 	bool IsInRevolverAim=false;
+
+	UDimensionShotAbility* Ability;
 };
 
 UCLASS()

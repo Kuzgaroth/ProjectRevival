@@ -5,6 +5,7 @@
 #include "DimensionRevolver.h"
 #include "DimensionRevolverBullet.h"
 #include "PlayerCharacter.h"
+#include "AbilitySystem/Abilities/DimensionShotAbility.h"
 
 void UDimensionShotTask_GiveRevolver::Activate()
 {
@@ -26,6 +27,7 @@ ABaseWeapon* UDimensionShotTask_GiveRevolver::StartTask()
 	auto player=Cast<APlayerCharacter>(GetOwnerActor());
 	player->CameraZoomIn();
 	player->DimensionShotAbStruct.IsInRevolverAim=true;
+	player->DimensionShotAbStruct.Ability=Cast<UDimensionShotAbility>(Ability);
 	const auto WeaponComponent=player->GetWeaponComponent();
 	
 	WeaponComponent->AddWeapon(RevolverData);
