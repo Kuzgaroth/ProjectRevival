@@ -26,8 +26,8 @@ void UFlipAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const 
 	{
 		const APlayerCharacter* Character = Cast<APlayerCharacter>(ActorInfo->OwnerActor.Get());
 		const APlayerController* Controller = Cast<APlayerController>(Character->GetController());
-		if(!GetDirectionalMontage(Character, Controller)) K2_EndAbility();;
-		
+		if(!GetDirectionalMontage(Character, Controller)) K2_EndAbility();
+		FlipDuration = FlipMontage->GetPlayLength() - 0.5f;
 		FlipTask = UFlipTask_FlipToggle::FlipInit(this, FlipCurve, FlipStrength, FlipDuration,
 			FlipMontage, FlipDirection);
         DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, FlipDuration);
