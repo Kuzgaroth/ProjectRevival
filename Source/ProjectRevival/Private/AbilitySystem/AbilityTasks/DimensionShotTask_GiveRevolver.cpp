@@ -25,7 +25,7 @@ ABaseWeapon* UDimensionShotTask_GiveRevolver::StartTask()
 {
 	auto player=Cast<APlayerCharacter>(GetOwnerActor());
 	player->CameraZoomIn();
-	player->PlayerAimZoom.IsZooming=false;
+	player->DimensionShotAbStruct.IsInRevolverAim=true;
 	const auto WeaponComponent=player->GetWeaponComponent();
 	
 	WeaponComponent->AddWeapon(RevolverData);

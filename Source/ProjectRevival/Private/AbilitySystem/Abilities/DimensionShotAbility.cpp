@@ -38,13 +38,7 @@ bool UDimensionShotAbility::CanActivateAbility(const FGameplayAbilitySpecHandle 
 
 void UDimensionShotAbility::ShotWasMade()
 {
-	auto player=Cast<APlayerCharacter>(GetActorInfo().OwnerActor.Get());
-	player->PlayerAimZoom.IsZooming=true;
-	player->CameraZoomOut();
-	auto weaponcomponent=player->GetWeaponComponent();
-	weaponcomponent->DeleteWeapon();
-	CommitExecute(GetCurrentAbilitySpecHandle(),GetCurrentActorInfo(),GetCurrentActivationInfo());
-	GiveRevolverTask->EndTask();
+	FinishAbility();
 	EndAbility(GetCurrentAbilitySpecHandle(),GetCurrentActorInfo(),GetCurrentActivationInfo(),true,false);
 }
 
@@ -54,12 +48,7 @@ void UDimensionShotAbility::InputPressed(const FGameplayAbilitySpecHandle Handle
 	Super::InputPressed(Handle, ActorInfo, ActivationInfo);
 	if(ShotBeingMade)
 	{
-		auto player=Cast<APlayerCharacter>(GetActorInfo().OwnerActor.Get());
-		player->PlayerAimZoom.IsZooming=true;
-		player->CameraZoomOut();
-		auto weaponcomponent=player->GetWeaponComponent();
-		weaponcomponent->DeleteWeapon();
-		GiveRevolverTask->EndTask();
+		FinishAbility();
 		EndAbility(GetCurrentAbilitySpecHandle(),GetCurrentActorInfo(),GetCurrentActivationInfo(),true,true);
 	}
 }
@@ -77,13 +66,7 @@ void UDimensionShotAbility::ActivateAbility(const FGameplayAbilitySpecHandle Han
 	Revolver->SetHealPercentToBullet(HealPercent);
 }
 
-void UDimensionShotAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
-                                          const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
-{
-	
-	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
 
-}
 
 void UDimensionShotAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
@@ -101,5 +84,10 @@ void UDimensionShotAbility::CancelAbility(const FGameplayAbilitySpecHandle Handl
 
 void UDimensionShotAbility::FinishAbility()
 {
-	
+	auto player=Cast<APlayerCharacter>(GetActorInfo().OwnerActor.Get());
+	player->DimensionShotAbStruct.IsInRevolverAim=false;
+	player->CameraZoomOut();
+	auto weaponcomponent=player->GetWeaponComponent();
+	weaponcomponent->DeleteWeapon();
+	GiveRevolverTask->EndTask();
 }

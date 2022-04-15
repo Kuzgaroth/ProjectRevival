@@ -69,6 +69,8 @@ public:
 
 	UPROPERTY()
 	UCameraCoverFunctions* CameraCoverFunctions;
+
+	FDimensionShotStruct DimensionShotAbStruct;
 	
 	USpringArmComponent* GetPlayerSpringArmComponent(){ return SpringArmComponent; }
 	void CameraZoomIn();

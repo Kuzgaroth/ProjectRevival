@@ -32,41 +32,44 @@ void UPRGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 		CooldownEffect->DurationMagnitude.GetStaticMagnitudeIfPossible(1.f, CooldownMagnitude);
 		UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Cooldown is %f seconds"), CooldownMagnitude);
 	}
-	ApplyCooldown(Handle, ActorInfo, ActivationInfo);
-	if (ActorInfo)
+	if(!bWasCancelled)
 	{
-		if (ActorInfo->PlayerController.IsValid())
+		ApplyCooldown(Handle, ActorInfo, ActivationInfo);
+		if (ActorInfo)
 		{
-			auto Controller = ActorInfo->PlayerController.Get();
-			if (Controller)
+			if (ActorInfo->PlayerController.IsValid())
 			{
-				auto PlayerController = Cast<ABasePlayerController>(Controller);
-				if (PlayerController)
+				auto Controller = ActorInfo->PlayerController.Get();
+				if (Controller)
 				{
-					auto PlayerHUD = PlayerController->GetHUD<AGameHUD>();
-					if (PlayerHUD)
+					auto PlayerController = Cast<ABasePlayerController>(Controller);
+					if (PlayerController)
 					{
-						auto HUDWidget = PlayerHUD->GetPlayerHUDWidget();
-						if (HUDWidget)
+						auto PlayerHUD = PlayerController->GetHUD<AGameHUD>();
+						if (PlayerHUD)
 						{
-							auto PlayerHUDWidget = Cast<UPlayerHUDWidget>(HUDWidget);
-							if (PlayerHUDWidget)
+							auto HUDWidget = PlayerHUD->GetPlayerHUDWidget();
+							if (HUDWidget)
 							{
-								AbilityWidget = PlayerHUDWidget->GetWidgetByAction(AbilityAction);
-	
-								if (!AbilityWidget) UE_LOG(LogPRAbilitySystemBase, Error,
-									TEXT("Widget have not found. Check Blueprint version on AbilityAction parameter or widget method directly"));
-								if (AbilityWidget)
+								auto PlayerHUDWidget = Cast<UPlayerHUDWidget>(HUDWidget);
+								if (PlayerHUDWidget)
 								{
-									AbilityWidget->StartCooldown(CooldownMagnitude);	
+									AbilityWidget = PlayerHUDWidget->GetWidgetByAction(AbilityAction);
+	
+									if (!AbilityWidget) UE_LOG(LogPRAbilitySystemBase, Error,
+										TEXT("Widget have not found. Check Blueprint version on AbilityAction parameter or widget method directly"));
+									if (AbilityWidget)
+									{
+										AbilityWidget->StartCooldown(CooldownMagnitude);	
+									}
 								}
 							}
 						}
 					}
 				}
 			}
-		}
 			
+		}
 	}
 	
 	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("%s has ended"), *GetName());

@@ -229,6 +229,10 @@ void APlayerCharacter::CheckCameraOverlap()
 
 void APlayerCharacter::Falling()
 {
+	if(DimensionShotAbStruct.IsInRevolverAim)
+	{
+		DimensionShotAbStruct.IsInRevolverAim=false;
+	}
 	CameraZoomOut();
 	PlayerMovementComponent->JumpPressEnded();
 	Super::Falling();
@@ -451,7 +455,7 @@ void APlayerCharacter::CameraZoomIn()
 
 void APlayerCharacter::CameraZoomOut()
 {
-	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true)
+	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true && !DimensionShotAbStruct.IsInRevolverAim)
 	{
 		if (CoverData.IsInTransition()) return;
 		if (CoverData.IsInCover() && CoverData.IsFiring)

@@ -249,6 +249,14 @@ struct FLeftSideViewBlueprint
 	bool bIsFirstTimeChange = false;
 };
 
+USTRUCT(BlueprintType)
+struct FDimensionShotStruct
+{
+	GENERATED_BODY()
+	bool IsInRevolverTransition=false;
+	bool IsInRevolverAim=false;
+};
+
 UCLASS()
 class PROJECTREVIVAL_API ULeftSideViewFunctions : public UObject
 {
