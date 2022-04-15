@@ -92,7 +92,7 @@ void ARifleWeapon::MakeDamage(FHitResult& HitResult)
 
 bool ARifleWeapon::IsHitInHead(const FHitResult& HitResult)
 {
-	return true;
+	return false;
 }
 
 void ARifleWeapon::ProcessEnemyHit(bool IsInHead)
