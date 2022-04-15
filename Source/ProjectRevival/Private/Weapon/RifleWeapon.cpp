@@ -3,6 +3,7 @@
 
 #include "Weapon/RifleWeapon.h"
 
+#include "AICharacter.h"
 #include "BasePlayerController.h"
 #include "Weapon/Components/WeaponFXComponent.h"
 #include "DrawDebugHelpers.h"
@@ -85,20 +86,30 @@ void ARifleWeapon::MakeDamage(FHitResult& HitResult)
 	const auto DamagedActor = HitResult.GetActor();
 	if (!DamagedActor) return;
 
-	ProcessEnemyHit(IsHitInHead(HitResult));
-
-	DamagedActor->TakeDamage(ShotDamage, FDamageEvent{}, GetController(), this);
+	float Damage = ShotDamage;
+	if (DamagedActor->IsA<AAICharacter>() && BodyMaterialMap.Contains(HitResult.PhysMaterial.Get()))
+	{
+		ProcessEnemyHit(HitResult);
+		Damage = IsHitInHead(HitResult.PhysMaterial.Get()) ? ShotDamage*10.f : ShotDamage;
+	}
+	
+	DamagedActor->TakeDamage(Damage, FDamageEvent{}, GetController(), this);
 }
 
-bool ARifleWeapon::IsHitInHead(const FHitResult& HitResult)
+bool ARifleWeapon::IsHitInHead(const UPhysicalMaterial* PhysMaterial)
 {
-	return true;
+	const auto BodyPart = BodyMaterialMap[PhysMaterial].GetValue();
+	return BodyPart==EBodyPart::Head;
 }
 
-void ARifleWeapon::ProcessEnemyHit(bool IsInHead)
+void ARifleWeapon::ProcessEnemyHit(const FHitResult& HitResult)
 {
 	//UI logic stuff
-
+	
+	const auto BodyPart = BodyMaterialMap[HitResult.PhysMaterial.Get()].GetValue();
+	if (BodyPart==NonePart) return;
+	
+	const bool IsInHead = IsHitInHead(HitResult.PhysMaterial.Get());
 	if (GetWorld()->GetFirstPlayerController())
 	{
 		auto PlayerController = Cast<ABasePlayerController>(GetWorld()->GetFirstPlayerController());
