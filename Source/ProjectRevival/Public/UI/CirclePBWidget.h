@@ -34,6 +34,9 @@ public:
 	UMaterialInterface* ExternalCircleMaterial;
 
 	UFUNCTION(BlueprintCallable)
+	void StartAbility();
+
+	UFUNCTION(BlueprintCallable)
 	void StartCooldown(float NewCooldownTime);
 
 	UFUNCTION(BlueprintImplementableEvent, Category="UI")

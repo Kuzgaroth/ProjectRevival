@@ -2,7 +2,6 @@
 
 
 #include "Weapon/RifleWeapon.h"
-
 #include "AICharacter.h"
 #include "BasePlayerController.h"
 #include "Weapon/Components/WeaponFXComponent.h"
