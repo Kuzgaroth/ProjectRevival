@@ -144,7 +144,7 @@ void ARifleWeapon::BeginPlay()
 
 void ARifleWeapon::InitFX()
 {
-	if (bUseNiagaraMuzzleEffect == true)
+	if (bUseNiagaraMuzzleEffect)
 	{
 		if (!MuzzleFXComponentNiagara)
 		{
@@ -168,7 +168,7 @@ void ARifleWeapon::InitFX()
 
 void ARifleWeapon::SetFXActive(bool IsActive)
 {
-	if (bUseNiagaraMuzzleEffect == true)
+	if (bUseNiagaraMuzzleEffect)
 	{
 		if (MuzzleFXComponentNiagara)
 		{
@@ -181,14 +181,7 @@ void ARifleWeapon::SetFXActive(bool IsActive)
 		if (MuzzleFXComponentCascade)
 		{
 			MuzzleFXComponentCascade->SetVisibility(IsActive, true);
-			if (IsActive == true)
-			{
-				MuzzleFXComponentCascade->Activate();
-			}
-			else
-			{
-				MuzzleFXComponentCascade->Deactivate();
-			}
+			IsActive ? MuzzleFXComponentCascade->Activate() : MuzzleFXComponentCascade->Deactivate();
 		}
 	}
 

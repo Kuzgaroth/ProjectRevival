@@ -29,9 +29,11 @@ public:
 	FWeaponUIData GetUIData() const {return UIData;}
 	FAmmoData GetAmmoData() const {return CurrentAmmo;}
 	FAmmoData GetDefaultAmmoData() const {return DefaultAmmo;}
+	UFUNCTION(BlueprintCallable)
 	bool IsAmmoEmpty() const;
 	void SetAmmoData(FAmmoData NewAmmoData);
 	FOnWeaponShotSignature OnWeaponShotDelegate;
+	USkeletalMeshComponent* GetWeaponMeshComponent() const { return WeaponMesh; }
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
 	USkeletalMeshComponent* WeaponMesh;
@@ -81,20 +83,21 @@ protected:
 	bool GetPlayerViewPoint(FVector& ViewLocation, FRotator& ViewRotation) const;
 	FVector GetMuzzleWorldLocation() const;
 	virtual bool GetTraceData(FVector& TraceStart, FVector& TraceEnd);
-	void MakeHit(FHitResult& HitResult, FVector& TraceStart, FVector& TraceEnd);
+	virtual void MakeHit(FHitResult& HitResult, FVector& TraceStart, FVector& TraceEnd);
 	void DecreaseAmmo();
 	
 	bool IsClipEmpty() const;
 	bool IsAmmoFull() const;
 	UNiagaraComponent* SpawnMuzzleFXNiagara();
 	UParticleSystemComponent* SpawnMuzzleFXCascade();
+	
+	FAmmoData CurrentAmmo;
 public:	
 	virtual void StartFire();
 	virtual void StopFire();
 	bool TryToAddAmmo(int32 ClipsAmount);
 	virtual TArray<UMaterialInstanceDynamic*> GetDynMaterials() override;
 private:
-	FAmmoData CurrentAmmo;
 	UPROPERTY()
 	TArray<UMaterialInstanceDynamic*> DynamicMaterials;
 };

@@ -60,6 +60,7 @@ private:
 	void ResetPlayers();
 	void ResetOnePlayer(AController* Controller);
 	void LogPlayerInfo();
+	void InitCrates();
 	
 	void SetMatchState(EMatchState State);
 	void LoadSaveGame();

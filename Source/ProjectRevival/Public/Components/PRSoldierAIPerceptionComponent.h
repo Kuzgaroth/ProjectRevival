@@ -7,20 +7,28 @@
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "PRSoldierAIPerceptionComponent.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogPRAIPerception, Log, All);
-
 // Структура для распределения ботов по направлениям
 
 
 /**
  * 
  */
+
+struct FSortAscending
+{
+	FORCEINLINE bool operator()(const float A, const float B) const
+	{
+		return A < B;
+	}
+};
+
 UCLASS()
 class PROJECTREVIVAL_API UPRSoldierAIPerceptionComponent : public UAIPerceptionComponent
 {
 	GENERATED_BODY()
 
 public:
-	AActor* GetClosestEnemy() const;
-	FVector GetBestCoverWing(EWing Wing);
+	FPlayerPositionData GetClosestEnemy() const;
+	bool GetBestCoverWing(EWing Wing, FVector& CoverPos, AActor*& CoverRef);
+	bool GetBestPatrollingPath(FVector& PathPointPos, AActor*& PatrolPathRef);
 };
