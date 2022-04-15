@@ -39,6 +39,9 @@ protected:
 	UPROPERTY(BlueprintReadWrite, meta=(BindWidget))
 	UImage* CrosshairImage;
 
+	UPROPERTY(BlueprintReadWrite, meta=(BindWidget))
+	UImage* DotImage;
+
 	UFUNCTION(BlueprintCallable)
 	void OnStopAnimation();
 
