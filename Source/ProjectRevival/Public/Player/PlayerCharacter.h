@@ -11,6 +11,9 @@
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "PlayerCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FVisorPressed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FVisorReleased);
+
 class UCameraComponent;
 class USpringArmComponent;
 class USphereComponent;
@@ -50,6 +53,12 @@ public:
 
 	UFUNCTION()
 	bool CheckIfWorldCanBeChanged() const;
+
+	UPROPERTY(BlueprintAssignable)
+	FVisorPressed VisorPressedDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FVisorReleased VisorReleasedDelegate;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoomBlueprint PlayerAimZoom;
@@ -116,6 +125,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
 	float HighlightRadius = 2000.f;
 
+	//Time for effect to remain after turn off 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
+	float DestroyDelay = 1.0f;
+
 	//Trace Channel we use to detect all the stuff
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
 	TEnumAsByte<ECollisionChannel> TraceChannelProvided;
@@ -163,7 +176,6 @@ private:
 	UPROPERTY()
 	class USphereComponent* SphereDetectingHighlightables;
 	
-	bool IsInCover=false;
 	FTimerHandle THandle;
 	const float FlipTime = 0.5f;
 	const float FlipStrength = 2000.f;

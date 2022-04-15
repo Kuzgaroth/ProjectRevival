@@ -32,6 +32,8 @@ public:
 	void SetBIsAppearing(bool bCond);
 	EBotState GetBotState() const { return BotState; }
 	UFUNCTION(BlueprintCallable)
+	bool GetIsInBattle() {return BotState == EBotState::Battle ? true : false;} 
+	UFUNCTION(BlueprintCallable)
 	void SetBotState(EBotState const val);
 	
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
