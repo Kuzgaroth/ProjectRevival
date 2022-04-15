@@ -7,17 +7,10 @@ AMagazine::AMagazine()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	
-	
 	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("SkeletalMeshComponent");
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	MeshComponent->SetSimulatePhysics(false);
-	
 	RootComponent = MeshComponent;
-
-	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovementComponent");
-	MovementComponent->bSimulationEnabled = false;
-	MovementComponent->InitialSpeed = 10.f;
-	MovementComponent->MaxSpeed = 600.f;
 }
 
 void AMagazine::DetachMagazine()
@@ -25,10 +18,9 @@ void AMagazine::DetachMagazine()
 	const FDetachmentTransformRules TransformRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld,
 		EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, true);
 	this->DetachFromActor(TransformRules);
-	
-	MovementComponent->bSimulationEnabled = true;
-	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	MovementComponent->Velocity = -this->GetActorUpVector() * MovementComponent->InitialSpeed; 
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	MeshComponent->SetSimulatePhysics(true);
+	this->MeshComponent->AddImpulse((-this->GetActorUpVector() + this->GetActorRightVector()) * InitialFallingSpeed);
 	SetLifeSpan(LifeSeconds);
 }
 

@@ -33,6 +33,8 @@ public:
 	bool CanReload();
 	UFUNCTION(BlueprintCallable)
 	bool IsShooting();
+	UFUNCTION(BlueprintCallable)
+	bool IsReloading();
 	bool IsWeaponBlocked() const { return bIsWeaponBlocked; }
 	void SetWeaponBlocked(const bool bIsBlocked) { bIsWeaponBlocked = bIsBlocked; }
 	TArray<UMaterialInstanceDynamic*> GetCurrentWeaponMaterials();

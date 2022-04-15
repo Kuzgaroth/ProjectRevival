@@ -37,6 +37,10 @@ bool UWeaponComponent::IsShooting()
 {
 	return ShootingInProgress;
 }
+bool UWeaponComponent::IsReloading()
+{
+	return ReloadAnimInProgress;
+}
 
 TArray<UMaterialInstanceDynamic*> UWeaponComponent::GetCurrentWeaponMaterials()
 {

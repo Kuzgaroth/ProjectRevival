@@ -107,6 +107,14 @@ void APRGameModeBase::InitGame(const FString& MapName, const FString& Options, F
 		UE_LOG(LogPRSaveSystem, Display, TEXT("Destroying %s"), *(*Checkpoint)->GetName())
 		(*Checkpoint)->Destroy(true);
 	}
+	
+	//TArray<AAmmoCrate*> SavedCrates; 
+	TArray<AActor*> SavedCrates; 
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAmmoCrate::StaticClass(), SavedCrates);
+	UE_LOG(LogPRSaveSystem, Display, TEXT("----Destroying coordinators----"))
+	for (auto CrateName: SaveGame->AmmoCrates)
+	{
+	}
 }
 
 void APRGameModeBase::RestartPlayer(AController* NewPlayer)
@@ -235,6 +243,11 @@ void APRGameModeBase::WriteSaveGame(FName CheckpointName)
 	PlayerSaveData.LastCheckpointReached = FCheckPointSaveData(CheckpointName);
 	SaveGame->PlayerSaveData = PlayerSaveData;
 	SaveGame->ReachedCheckpoints.Add(FCheckPointSaveData(CheckpointName));
+	for (TActorIterator<AAmmoCrate> It(GetWorld()); It; ++It)
+	{
+		SaveGame->AmmoCrates.Add(*It->GetName(),FAmmoCrateSaveData(It->GetCurrentClipsAmount()));
+		UE_LOG(LogPRSaveSystem, Display, TEXT("SaveGame->AmmoCrates.Add(%s)"), *It->GetName());
+	}
 	UGameplayStatics::AsyncSaveGameToSlot(SaveGame, "SaveSlot", 0, AsyncDelegate);
 }
 
