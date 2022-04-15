@@ -18,30 +18,9 @@ void AChangeWorld::BeginPlay()
 
 }
 
-void AChangeWorld::ClearComponentTags(UStaticMeshComponent* supermesh)
-{
-	this->Tags.Empty();
-}
-
-void AChangeWorld::LoadComponentTags(UStaticMeshComponent* supermesh)
-{
-}
-
 // Called every frame
 void AChangeWorld::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
-
-
-void AChangeWorld::ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld)
-{
-	
-}
-
-void AChangeWorld::Changing()
-{
-	
-}
-

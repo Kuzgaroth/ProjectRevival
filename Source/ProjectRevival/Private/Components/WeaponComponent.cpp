@@ -18,6 +18,7 @@ UWeaponComponent::UWeaponComponent()
 void UWeaponComponent::StartFire()
 {
 	if (!CanFire()) return;
+	UE_LOG(LogPRAISoldier, Log, TEXT("CurrentWeapon is %s"), *CurrentWeapon->GetName());
 	CurrentWeapon->StartFire();
 	ShootingInProgress = true;
 }

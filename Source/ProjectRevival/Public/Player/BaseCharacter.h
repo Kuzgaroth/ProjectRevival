@@ -59,18 +59,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Death")
 	USoundCue* DeathSound;
 	
-	/* Компонент для управления способностями */
+	/* РљРѕРјРїРѕРЅРµРЅС‚ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРїРѕСЃРѕР±РЅРѕСЃС‚СЏРјРё */
 	UPROPERTY()
 	UPRAbilitySystemComponent* AbilitySystemComponent;
 
-	/** Класс атрибутов персонажа */
+	/** РљР»Р°СЃСЃ Р°С‚СЂРёР±СѓС‚РѕРІ РїРµСЂСЃРѕРЅР°Р¶Р° */
 	UPROPERTY()
 	UPRAttributeSet* AttributeSet;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Abilities)
 	TMap<EGASInputActions, TSubclassOf<UPRGameplayAbility>> GameplayAbilities;
 
-	//Смещение анимации относительно капсулы
+	//РЎРјРµС‰РµРЅРёРµ Р°РЅРёРјР°С†РёРё РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РєР°РїСЃСѓР»С‹
 	UPROPERTY(EditDefaultsOnly, Category="Cover")
 	float RootDelta = 50.f;
 	

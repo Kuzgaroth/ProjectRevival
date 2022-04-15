@@ -18,3 +18,4 @@ Content/ExternalContent
 *.sln.*
 *.uproject
 *BuiltData.uasset
+*.sln

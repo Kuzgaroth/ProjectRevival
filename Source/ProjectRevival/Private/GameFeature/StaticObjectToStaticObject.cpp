@@ -142,7 +142,6 @@ void AStaticObjectToStaticObject::BeginPlay()
 
 void AStaticObjectToStaticObject::ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld)
 {
-	Super::ChangeVisibleWorld(VisibleInEditorWorld);
 	if(VisibleInEditorWorld!=OwnValuesWorld)
 	{
 		switch (VisibleInEditorWorld)
@@ -188,6 +187,11 @@ bool AStaticObjectToStaticObject::CheckIsChangeAbleObjIsCover()
 	return SuperMesh1->ComponentTags.Contains("Cover")||SuperMesh2->ComponentTags.Contains("Cover");
 }
 
+void AStaticObjectToStaticObject::ClearComponentTags(UStaticMeshComponent* supermesh)
+{
+	IIChangingWorldActor::ClearComponentTags(supermesh);
+}
+
 // Called every frame
 void AStaticObjectToStaticObject::Tick(float DeltaTime)
 {
@@ -231,8 +235,7 @@ void AStaticObjectToStaticObject::PostEditChangeProperty(FPropertyChangedEvent& 
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(),AChangeWorld::StaticClass(),ChangeAbleObjs);
 		for(auto obj:ChangeAbleObjs)
 		{
-			auto chobj=Cast<AChangeWorld>(obj);
-			chobj->ChangeVisibleWorld(AllObjectVisibleWorld);
+			ChangeVisibleWorld(AllObjectVisibleWorld);
 		}
 	}
 	if(PropertyChangedEvent.Property->GetName()=="CoverPointsAmount")
@@ -363,6 +366,20 @@ void AStaticObjectToStaticObject::OnOtherMeshCollision(UPrimitiveComponent* Over
 	}
 }
 
+void AStaticObjectToStaticObject::SetLastCoverPointStatus(bool bIsFree)
+{
+	FCoverPointsAndPossibility coverstruct;
+	if(SuperMesh1->GetCollisionResponseToChannels()==OrdinaryWorldCollisionResponseContainer)
+	{
+		coverstruct=CoverStructForOrdinaryWObject;
+	}
+	else
+	{
+		coverstruct=CoverStructForOtherWOther;
+	}
+	coverstruct.PointIsNotTaken[Cast<UBoxComponent>(coverstruct.LastCoverPosition)] = bIsFree;
+}
+
 bool AStaticObjectToStaticObject::TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos)
 {
 	FCoverPointsAndPossibility coverstruct;
@@ -375,21 +392,23 @@ bool AStaticObjectToStaticObject::TryToFindCoverPoint(FVector PlayerPos, FVector
 		coverstruct=CoverStructForOtherWOther;
 	}
 	if(coverstruct.CoverPositions.Num()==0) return false;
-	UE_LOG(LogTemp,Warning,TEXT("Found coverpoints in ord world 3"))
-	for(auto covpos:coverstruct.CoverPositions)
+	UE_LOG(LogTemp,Warning,TEXT("StaticToStatic: Found coverpoints in ord world 3"))
+	for(USceneComponent* covpos:coverstruct.CoverPositions)
 	{
 		FVector TraceStart=covpos->GetComponentLocation();
 		FVector TraceEnd=PlayerPos;
 		FHitResult HitResult;
 		FCollisionQueryParams CollisionParams;
 		GetWorld()->LineTraceSingleByChannel(HitResult,TraceStart,TraceEnd,ECollisionChannel::ECC_Visibility,CollisionParams);
-		DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
+		UBoxComponent* box = Cast<UBoxComponent>(covpos);
 		if(HitResult.bBlockingHit)
 		{
-			
-			if(HitResult.Actor==this)
+			DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
+			if(HitResult.Actor==this && coverstruct.PointIsNotTaken.Contains(box) && coverstruct.PointIsNotTaken[box])
 			{
-				CoverPos=TraceStart;
+				UE_LOG(LogPRAISoldier, Log, TEXT("StaticToStatic: covpos set to %s"), *covpos->GetComponentLocation().ToString())
+				CoverPos = TraceStart;
+				coverstruct.LastCoverPosition = covpos;
 				return true;
 			}
 		}
@@ -478,7 +497,6 @@ void AStaticObjectToStaticObject::Changing()
 
 void AStaticObjectToStaticObject::LoadComponentTags(UStaticMeshComponent* supermesh)
 {
-	Super::LoadComponentTags(supermesh);
 	if(supermesh==SuperMesh1)
 	{
 		for(int i=0;i<OrMeshTags.Num();i++)

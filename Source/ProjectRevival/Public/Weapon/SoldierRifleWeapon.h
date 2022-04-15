@@ -8,14 +8,26 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStoppedFireInWeapon);
 
+class UWeaponFXComponent;
+class UNiagaraComponent;
+class UNiagaraSystem;
+class UParticleSystemComponent;
+class UParticleSystem;
+class UAudioComponent;
+class USoundCue;
+
 UCLASS()
-class PROJECTREVIVAL_API ASoldierRifleWeapon : public ARifleWeapon
+class PROJECTREVIVAL_API ASoldierRifleWeapon : public ABaseWeapon
 {
 	GENERATED_BODY()
 	
 public:
+	ASoldierRifleWeapon();
 	virtual void StartFire() override;
+	//Triggers StoppedFireDelegate. Use StopFireExternal() to avoid it
 	virtual void StopFire() override;
+	//Stops fire without broadcasting StoppedFireDelegate.
+	virtual void StopFireExternal();
 	
 	FStoppedFireInWeapon StoppedFireInWeaponDelegate;
 
@@ -29,28 +41,65 @@ public:
 
 	//Number of shots in one row
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="FireMode")
-	int32 BurstBulletsNumber = 10;
+	int32 BurstBulletsNumber = 3;
 
 	//Delay between shoot rows
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="FireMode")
-	float BurstClipsDelay = 0.8;
-
-	//Is completely equal to "TimeBetweenShots" but overrides it. So if they are different than head to the value set here
+	float BurstClipsDelay = 1.5f;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="FireMode")
-	float BurstBulletsDelay = TimeBetweenShots;
+	float BurstBulletsDelay = 0.5f;
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void MakeShot() override;
+	virtual void MakeHit(FHitResult& HitResult, FVector& TraceStart, FVector& TraceEnd) override;
+	virtual bool GetTraceData(FVector& TraceStart, FVector& TraceEnd) override;
+	virtual void MakeDamage(FHitResult& HitResult);
+	virtual void SpawnTraceFX(const FVector& TraceStart, const FVector& TraceEnd);
+	// virtual void InitFX();
+	virtual void InitFX();
+	virtual void PlayFX(bool bActivate);
+	virtual void PlaySound();
+	UFUNCTION()
+	virtual void MakeShotInternal();
+	UFUNCTION()
+	virtual void ShootRowInternal();
+	AController* GetController() const;
+
+	UPROPERTY()
+	float CurrentRowTime;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="FireMod")
+	float BulletSpread = 1.0f;
+
+	//if set to "true" then Niagara is used, otherwise uses Cascade. By default is set to "true"
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
+	bool bUseNiagaraTraceEffect = true;
+	
+	//Niagara effect to play
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
+	UNiagaraSystem* TraceFXNiagara;
+	
+	//Cascade effect to play
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
+	UParticleSystem* TraceFXCascade;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="VFX")
+	FString TraceTargetName = "TraceTarget";
+
+	UPROPERTY(VisibleAnywhere, Category="VFX")
+	UWeaponFXComponent* WeaponFXComponent;
+	
+	UPROPERTY()
+	UNiagaraComponent* MuzzleFXComponentNiagara;
+	UPROPERTY()
+	UParticleSystemComponent* MuzzleFXComponentCascade;
+
 private:
-	int8 CurrentBurstShot;
-	int8 CurrentBurstRow;
-	float OneRowTime;
+	int32 CurrentBurstShot;
+	int32 CurrentBurstRow;
 	
-	void MakeShotInternal();
-	void ShootRowInternal();
-	void StopFireInternal();
-	
-	FTimerHandle ShotTimerHandle;
+	FTimerHandle BulletsTimerHandle;
 	FTimerHandle ClipsTimerHandle;
 };

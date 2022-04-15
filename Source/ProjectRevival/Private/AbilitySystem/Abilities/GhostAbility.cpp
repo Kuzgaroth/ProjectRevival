@@ -6,14 +6,14 @@
 
 UGhostAbility::UGhostAbility()
 {
-	AbilityAction = EGASInputActions::Ghost;
+	AbilityAction = EGASInputActions::Ghost; 
 }
 
 void UGhostAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
-	//далее идет место с твоей логикой, туда ты вставляешь свой код
+	//далее идет место с твоей логикой, туда ты вставляешь свой код.
 	//--------------------------------------------------------------------
 	const auto Owner = ActorInfo->OwnerActor.Get();
 	if (!Owner->Implements<UIDynMaterialsFromMesh>())
