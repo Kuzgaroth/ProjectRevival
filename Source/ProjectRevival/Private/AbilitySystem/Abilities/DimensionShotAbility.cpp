@@ -5,7 +5,6 @@
 
 #include "BaseCharacter.h"
 #include "DimensionRevolver.h"
-#include "DimensionRevolverBullet.h"
 #include "PlayerCharacter.h"
 #include "WeaponComponent.h"
 #include "AbilitySystem/Abilities/GhostAbility.h"
@@ -94,6 +93,10 @@ void UDimensionShotAbility::FinishAbility()
 	player->DimensionShotAbStruct.IsInRevolverAim=false;
 	player->CameraZoomOut();
 	auto weaponcomponent=player->GetWeaponComponent();
+	weaponcomponent->GetCurrentWeapon()->IsAppearing=false;
+	weaponcomponent->GetCurrentWeapon()->Changing();
 	weaponcomponent->DeleteWeapon();
+	weaponcomponent->GetCurrentWeapon()->IsAppearing=true;
+	weaponcomponent->GetCurrentWeapon()->Changing();
 	GiveRevolverTask->EndTask();
 }

@@ -33,6 +33,7 @@ public:
 	void SetAmmoData(FAmmoData NewAmmoData);
 	FOnWeaponShotSignature OnWeaponShotDelegate;
 	void Changing();
+	bool IsAppearing=false;
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
 	USkeletalMeshComponent* WeaponMesh;
@@ -78,8 +79,15 @@ protected:
 
 	FTimeline TimeLine;
 	FOnTimelineFloat InterpFunction;
+
+	UFUNCTION()
+    virtual void TimeLineFinished();
+
+	UFUNCTION()
+	virtual void TimeLineFloatReturn(float Value);
 	
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 	virtual void PostInitializeComponents() override;
 	virtual void MakeShot();
 	virtual void PlayForceEffects();

@@ -3,7 +3,6 @@
 
 #include "AbilitySystem/AbilityTasks/DimensionShotTask_GiveRevolver.h"
 #include "DimensionRevolver.h"
-#include "DimensionRevolverBullet.h"
 #include "PlayerCharacter.h"
 #include "AbilitySystem/Abilities/DimensionShotAbility.h"
 
@@ -31,7 +30,11 @@ ABaseWeapon* UDimensionShotTask_GiveRevolver::StartTask()
 	const auto WeaponComponent=player->GetWeaponComponent();
 	
 	WeaponComponent->AddWeapon(RevolverData);
+	WeaponComponent->GetCurrentWeapon()->IsAppearing=false;
+	WeaponComponent->GetCurrentWeapon()->Changing();
 	WeaponComponent->EquipWeapon(WeaponComponent->GetWeaponNum());
+	WeaponComponent->GetCurrentWeapon()->IsAppearing=true;
+	WeaponComponent->GetCurrentWeapon()->Changing();
 	auto weapon=WeaponComponent->GetCurrentWeapon();
 	Super::Activate();
 	return weapon;

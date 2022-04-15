@@ -7,12 +7,10 @@
 
 #include "PlayerCharacter.h"
 #include "DrawDebugHelpers.h"
-#include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
 #include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/BoxComponent.h"
-#include "UObject/UObjectGlobals.h"
-#include "GameFramework/GameUserSettings.h"
+
 
 // Sets default values
 AStaticObjectToNothing::AStaticObjectToNothing()
