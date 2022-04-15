@@ -14,7 +14,7 @@ EBTNodeResult::Type UBTT_ExitCover::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 {
 	const auto Controller = Cast<ASoldierAIController>(OwnerComp.GetAIOwner());
 	if (!Controller) return EBTNodeResult::Failed;
-
+	UE_LOG(LogPRAITasks, Log, TEXT("Started exiting cover"))
 	Controller->StartExitingCover();
 	return EBTNodeResult::Succeeded;
 }

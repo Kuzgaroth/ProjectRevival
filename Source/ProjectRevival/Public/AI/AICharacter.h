@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AI/Soldier/SoldierAIController.h"
 #include "EnvironmentQuery/EQSTestingPawn.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "Player/BaseCharacter.h"
 #include "AICharacter.generated.h"
 
@@ -47,7 +48,7 @@ public:
 	virtual void OnDeath() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void PossessedBy(AController* NewController) override;
-	virtual void StartFiring(const FVector& PlayerPos);
+	virtual void StartFiring();
 	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")

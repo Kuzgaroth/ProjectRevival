@@ -25,7 +25,7 @@ void UFindEnemyService::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		const auto PerceptionComponent = PRUtils::GetCharacterComponent<UPRSoldierAIPerceptionComponent>(Controller);
 		if (PerceptionComponent)
 		{
-			Blackboard->SetValueAsObject(EnemyActorKey.SelectedKeyName, PerceptionComponent->GetClosestEnemy());
+			Blackboard->SetValueAsObject(EnemyActorKey.SelectedKeyName, PerceptionComponent->GetClosestEnemy().GetActor());
 		}
 	}
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);

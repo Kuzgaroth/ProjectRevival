@@ -2,17 +2,14 @@
 
 
 #include "GameFeature/StaticObjectToNothing.h"
-
 #include <string>
-
 #include "PlayerCharacter.h"
 #include "DrawDebugHelpers.h"
-#include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
 #include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/BoxComponent.h"
-#include "UObject/UObjectGlobals.h"
-#include "GameFramework/GameUserSettings.h"
+
+DEFINE_LOG_CATEGORY(LogPRStaticObject);
 
 // Sets default values
 AStaticObjectToNothing::AStaticObjectToNothing()
@@ -137,8 +134,7 @@ void AStaticObjectToNothing::PostEditChangeProperty(FPropertyChangedEvent& Prope
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(),AChangeWorld::StaticClass(),ChangeAbleObjs);
 		for(auto obj:ChangeAbleObjs)
 		{
-			auto chobj=Cast<AChangeWorld>(obj);
-			chobj->ChangeVisibleWorld(AllObjectVisibleWorld);
+			Cast<AStaticObjectToNothing>(obj)->ChangeVisibleWorld(AllObjectVisibleWorld);
 		}
 	}
 }
@@ -192,7 +188,6 @@ void AStaticObjectToNothing::Changing()
 
 void AStaticObjectToNothing::ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld)
 {
-	Super::ChangeVisibleWorld(VisibleInEditorWorld);
 	if(VisibleInEditorWorld!=OwnValuesWorld)
 	{
 		switch (VisibleInEditorWorld)
@@ -246,7 +241,6 @@ void AStaticObjectToNothing::ShowChangeWorldObjectByAbility()
 				Material->SetScalarParameterValue("Amount",reqwar);
 			}
 	}
-	
 }
 
 void AStaticObjectToNothing::HideChangeWorldObjectByAbility()
@@ -266,8 +260,11 @@ void AStaticObjectToNothing::HideChangeWorldObjectByAbility()
 void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG(LogPRStaticObject, Warning, TEXT("StaticObject OnMeshComponentCollision"))
+	UE_LOG(LogPRStaticObject, Warning, TEXT("%s"), *FString(OtherActor->GetName()))
 	if(Cast<AChangeWorldSphereActor>(OtherActor))
 	{
+		UE_LOG(LogPRStaticObject, Warning, TEXT("StaticObject Changing"))
 		Changing();
 	}
 	auto Player=Cast<APlayerCharacter>(OtherActor);
@@ -284,7 +281,8 @@ void AStaticObjectToNothing::OnMeshComponentEndCollision(UPrimitiveComponent* Ov
 	auto Player=Cast<APlayerCharacter>(OtherActor);
 	if(Player)
 	{
-		Player->SetChangeWorldPossibility(true,nullptr);
+		AStaticObjectToNothing* ptr = nullptr;
+		Player->SetChangeWorldPossibility(true, ptr);
 		HideChangeWorldObjectByAbility();
 	}
 }
@@ -303,18 +301,25 @@ void AStaticObjectToNothing::OnCoverPointComponentExit(UPrimitiveComponent* Over
 {
 	if(Cast<APawn>(OtherActor))
 	{
+		UE_LOG(LogPRAISoldier, Log, TEXT("Point EndOverlap()"))
 		FreeCoverPoint(Cast<UBoxComponent>(OverlappedComponent));
 	}
 }
 
+void AStaticObjectToNothing::SetLastCoverPointStatus(bool bIsFree)
+{
+	CoverStruct.PointIsNotTaken[Cast<UBoxComponent>(CoverStruct.LastCoverPosition)] = bIsFree;
+}
 
 void AStaticObjectToNothing::BlockCoverPoint(const UBoxComponent* CoverPoint)
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: BlockCoverPoint() CoverPoint is %s"), *CoverPoint->GetName())
 	CoverStruct.PointIsNotTaken[CoverPoint]=false;
 }
 
 void AStaticObjectToNothing::FreeCoverPoint(const UBoxComponent* CoverPoint)
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: FreeCoverPoint() CoverPoint is %s"), *CoverPoint->GetName())
 	CoverStruct.PointIsNotTaken[CoverPoint]=true;
 }
 
@@ -323,7 +328,6 @@ void AStaticObjectToNothing::TimeLineFinished()
 	if(!isApearing)
 	{
 		ClearComponentTags(SuperMesh);
-
 	}
 }
 
@@ -344,14 +348,16 @@ void AStaticObjectToNothing::TimeLineFloatReturn(float Value)
 			Material->SetScalarParameterValue("Amount",val);
 		}
 	}
-	
 }
 
 
+void AStaticObjectToNothing::ClearComponentTags(UStaticMeshComponent* supermesh)
+{
+	Tags.Empty();
+}
 
 void AStaticObjectToNothing::LoadComponentTags(UStaticMeshComponent* supermesh)
 {
-	Super::LoadComponentTags(supermesh);
 	for(int i=0;i<MeshTags.Num();i++)
 	{
 		this->Tags.AddUnique(MeshTags[i]);
@@ -365,22 +371,25 @@ bool AStaticObjectToNothing::CheckIsChangeAbleObjIsCover()
 
 bool AStaticObjectToNothing::TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos)
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: Input PlayerPos is %s"), *PlayerPos.ToString())
+	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: Input CoverPos  is %s"), *CoverPos.ToString())
 	if(CoverStruct.CoverPositions.Num()==0) return false;
-	for(auto covpos:CoverStruct.CoverPositions)
+	for(USceneComponent* covpos:CoverStruct.CoverPositions)
 	{
 		FVector TraceStart=covpos->GetComponentLocation();
 		FVector TraceEnd=PlayerPos;
 		FHitResult HitResult;
 		FCollisionQueryParams CollisionParams;
 		GetWorld()->LineTraceSingleByChannel(HitResult,TraceStart,TraceEnd,ECollisionChannel::ECC_Visibility,CollisionParams);
-		auto box =Cast<UBoxComponent>(covpos);
+		UBoxComponent* box = Cast<UBoxComponent>(covpos);
 		if(HitResult.bBlockingHit)
 		{
 			DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
-			if(HitResult.Actor==this&& CoverStruct.PointIsNotTaken.Contains(box)&&CoverStruct.PointIsNotTaken[box])
+			if(HitResult.Actor==this && CoverStruct.PointIsNotTaken.Contains(box) && CoverStruct.PointIsNotTaken[box])
 			{
-				CoverStruct.PointIsNotTaken[box]=false;
-				CoverPos=TraceStart;
+				UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: covpos set to %s"), *covpos->GetComponentLocation().ToString())
+				CoverPos = TraceStart;
+				CoverStruct.LastCoverPosition = covpos;
 				return true;
 			}
 		}

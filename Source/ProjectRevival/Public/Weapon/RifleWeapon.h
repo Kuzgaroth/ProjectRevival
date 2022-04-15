@@ -3,13 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Weapon/BaseWeapon.h"
 #include "RifleWeapon.generated.h"
 
 class UWeaponFXComponent;
 class UNiagaraComponent;
 class UNiagaraSystem;
+class UParticleSystemComponent;
+class UParticleSystem;
 class UAudioComponent;
 class USoundCue;
 
@@ -68,16 +69,17 @@ protected:
 	void SpawnTraceFX(const FVector& TraceStart, const FVector& TraceEnd);
 	bool IsHitInHead(const UPhysicalMaterial* PhysMaterial);
 	void ProcessEnemyHit(const FHitResult& HitResult);
-private:
-	FTimerHandle ShotTimerHandle;
 	
 	UPROPERTY()
 	UNiagaraComponent* MuzzleFXComponentNiagara;
 	UPROPERTY()
 	UParticleSystemComponent* MuzzleFXComponentCascade;
-
+	
 	UPROPERTY()
 	UAudioComponent* FireAudioComponent;
+	
+private:
+	FTimerHandle ShotTimerHandle;
 	
 	AController* GetController() const;
 };

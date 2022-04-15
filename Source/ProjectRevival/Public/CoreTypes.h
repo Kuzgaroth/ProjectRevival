@@ -15,6 +15,15 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnClipEmptySignature, ABaseWeapon*);
 
 // Log Categories
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAISystem, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIPerception, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAITasks, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIServices, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAISoldier, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAISoldierRifle, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRStaticObject, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRPatrolPath, Log, All);
 
 USTRUCT(BlueprintType)
 struct FAmmoData
@@ -41,6 +50,13 @@ struct FWeaponData
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Weapon")
 	UAnimMontage* ReloadAnimMontage;
+};
+
+UENUM()
+enum class EBotState : uint8
+{
+	Idle = 0,
+	Battle = 1
 };
 
 //Health
@@ -362,9 +378,38 @@ struct FCoverPointsAndPossibility
 	UPROPERTY(EditInstanceOnly,BlueprintReadWrite,Category="CoverPointsData")
 	bool CanBeTakenAsCover=true;
 
+	UPROPERTY()
+	USceneComponent* LastCoverPosition;
+	
 	TMap<UBoxComponent*,bool> PointIsNotTaken;
 	TArray<FVector> PositionsOfCoverPoints;
 	
+};
+
+USTRUCT(BlueprintType)
+struct FPatrolPath
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	int PatrolPointsAmount;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	int MaxNumOfPatrollingBots;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	int CurrentNumOfPatrollingBots;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	bool bIsLooped;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	bool bCanBeTaken;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	bool bIsReversed;
+
+	TArray<TTuple<UBoxComponent*, FVector>> PatrolPointsPos;
 };
 
 UCLASS()
@@ -615,9 +660,6 @@ inline void UCameraCoverFunctions::TimelineCoverYShift(float Value, USpringArmCo
 	if (abs(NewView) >= abs(CameraCover.EndPos)) CameraCover.IsShifting = false;
 }
 
-
-DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
-
 struct FBTPlayerCheckDecoratorMemory
 {
 	bool bLastRawResult;
@@ -635,11 +677,12 @@ USTRUCT(BlueprintType)
 struct FPlayerPositionData
 {
 	GENERATED_BODY()
-
+private:
 	UPROPERTY()
 	AActor* PlayerActor;
 	UPROPERTY()
 	AActor* PlayerCover;
+public:
 	FPlayerPositionData(AActor* PActor, AActor* PCover)
 	{
 		PlayerActor = PActor;
@@ -650,9 +693,55 @@ struct FPlayerPositionData
 		PlayerActor=nullptr;
 		PlayerCover=nullptr;
 	}
+	void SetActor(AActor* PActor)
+	{
+		PlayerActor = PActor;
+	}
+	AActor* GetActor() const
+	{
+		return PlayerActor;
+	}
+	void SetCover(AActor* PCover)
+	{
+		PlayerCover = PCover;
+	}
+	AActor* GetCover() const
+	{
+		return PlayerCover;
+	}
+	FVector GetActorPosition() const
+	{
+		return (PlayerActor) ? PlayerActor->GetActorLocation() : FVector(0.0, 0.0, 0.0);
+	}
 	FORCEINLINE void operator=(const FPlayerPositionData& PlayerPos)
 	{
 		PlayerActor = PlayerPos.PlayerActor;
 		PlayerCover = PlayerPos.PlayerCover;
 	}
+};
+
+UENUM(BlueprintType, Category = "GameRules")
+enum EChangeWorld
+{
+	OrdinaryWorld=0 UMETA(DisplayName = "Ordinary World"),
+	OtherWorld=1 UMETA(DisplayName = "Other World")
+};
+
+UENUM(BlueprintType, Category = "GameRules")
+enum EChangeEditorVisibility
+{
+	DefaultWorld=0 UMETA(DisplayName = "Ordinary World"),
+	AltirnativeWorld=1 UMETA(DisplayName = "Other World"),
+	BothWorlds=2 UMETA(DisplayName = "Both Worlds")
+
+};
+
+UENUM(BlueprintType, Category = "GameRules")
+enum EChangeAllMapEditorVisibility
+{
+	DefaultVisibleWorld=0 UMETA(DisplayName = "Ordinary World"),
+	OtherVisibleWorld=1 UMETA(DisplayName = "Other World"),
+	BothVisibleWorlds=2 UMETA(DisplayName = "Both Worlds"),
+	OwnValuesWorld=3 UMETA(DisplayName = "None World")
+
 };
