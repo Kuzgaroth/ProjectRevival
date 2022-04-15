@@ -21,14 +21,12 @@ AAICoordinator::AAICoordinator()
 	TriggerComponent = CreateDefaultSubobject<UBoxComponent>("FightTrigger");
 	TriggerComponent->SetupAttachment(RootComponent);
 	TriggerComponent->OnComponentBeginOverlap.AddDynamic(this, &AAICoordinator::OnTriggerOverlap);
-	
 }
 
 
 void AAICoordinator::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
 }
 
 void AAICoordinator::BeginPlay()
@@ -42,7 +40,6 @@ void AAICoordinator::ProcessBotDeath(ASoldierAIController* BotController)
 	if (BotMap.Num()==0) Destroy();
 	BotMap.FindAndRemoveChecked(BotController);
 	BotController->Destroy();
-	
 }
 
 bool AAICoordinator::InitSpawn()
@@ -113,7 +110,6 @@ bool AAICoordinator::InitSpawn()
 			SpawnBot(PlayerStart->GetChildActor(), EWing::Center);
 			CenterTmp--;
 		}
-		
 	}
 	return true;
 }
@@ -180,7 +176,7 @@ void AAICoordinator::ConnectController(ASoldierAIController* BotController, EWin
 
 void AAICoordinator::UpdatePlayerInfoFromBot(FPlayerPositionData PlayerPos)
 {
-	if (PlayerPos.PlayerActor!=nullptr) this->PlayerPosition = PlayerPos;
+	if (PlayerPos.GetActor()!=nullptr) this->PlayerPosition = PlayerPos;
 }
 
 bool AAICoordinator::MakeDecisionForWingBot() const
@@ -197,7 +193,10 @@ void AAICoordinator::UpdateBotPlayerInfo()
 {
 	for (TTuple<ASoldierAIController*, EWing> BotPair : BotMap)
 	{
-		BotPair.Key->SetPlayerPos(PlayerPosition);
+		if (!(BotPair.Key->GetPlayerPos().GetActorPosition() - PlayerPosition.GetActorPosition()).IsNearlyZero())
+		{
+			BotPair.Key->SetPlayerPos(PlayerPosition, true);
+		}
 	}
 }
 

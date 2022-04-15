@@ -1,20 +1,17 @@
 // Project Revival. All Rights Reserved
 
-
-// ReSharper disable CppTooWideScope
-#include "AbilitySystem/Abilities/VisorAbility.h"
+#include "AbilitySystem/Abilities/VisorPlacerAbility.h"
 #include "BaseCharacter.h"
 
-UVisorAbility::UVisorAbility()
+UVisorPlacerAbility::UVisorPlacerAbility()
 {
 	AbilityAction = EGASInputActions::Visor;
 }
 
-void UVisorAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+void UVisorPlacerAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 								  const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
-	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("%s has started"), *GetName());
 	if (UseVisorAnim)
 	{
 		this->SetCurrentMontage(UseVisorAnim);
@@ -23,7 +20,7 @@ void UVisorAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const
 		{
 			if (this->GetAbilitySystemComponentFromActorInfo()->PlayMontage(this, this->GetCurrentActivationInfo(), UseVisorAnim, 1.0f))
 			{
-				VisorTask = UVisorTask_SpawnVisor::SpawnVisor(this, VisorRadius, VisorDuration, ObjectTypesToVisor, ParticleEffect);
+				VisorTask = UVisorPlacerTask_SpawnVisor::SpawnVisor(this, VisorRadius, VisorDuration, ObjectTypesToVisor, ParticleEffect);
 				VisorTask->Activate();
 				VisorTask->EndTask();
 				K2_EndAbility();
@@ -32,7 +29,7 @@ void UVisorAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const
 	}
 	else
 	{
-		VisorTask = UVisorTask_SpawnVisor::SpawnVisor(this, VisorRadius, VisorDuration, ObjectTypesToVisor, ParticleEffect);
+		VisorTask = UVisorPlacerTask_SpawnVisor::SpawnVisor(this, VisorRadius, VisorDuration, ObjectTypesToVisor, ParticleEffect);
 		VisorTask->Activate();
 		VisorTask->EndTask();
 		K2_EndAbility();
@@ -40,7 +37,7 @@ void UVisorAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const
 	
 }
 
-void UVisorAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+void UVisorPlacerAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 							   const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
