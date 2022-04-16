@@ -51,9 +51,10 @@ TArray<UMaterialInstanceDynamic*> UWeaponComponent::GetCurrentWeaponMaterials()
 
 void UWeaponComponent::NextWeapon()
 {
-	return;
+	//return;
 	if (!CanEquip()) return;
 	CurrentWeaponIndex = (CurrentWeaponIndex+1) % Weapons.Num();
+
 	EquipWeapon(CurrentWeaponIndex);
 }
 
@@ -85,6 +86,26 @@ void UWeaponComponent::SetWeponData(FAmmoData NewAmmoData)
 	{
 		Weapon->SetAmmoData(NewAmmoData);
 	}
+}
+
+void UWeaponComponent::AddWeapon(TSubclassOf<ABaseWeapon> NewWeaponData)
+{
+
+	ACharacter* Character = Cast<ACharacter>(GetOwner());
+	const auto Weapon = GetWorld()->SpawnActor<ABaseWeapon>(NewWeaponData);
+	if (!Weapon) return;
+	Weapon->SetOwner(Character);
+	Weapons.Add(Weapon);
+	Weapon->OnWeaponShotDelegate.AddUObject(this, &UWeaponComponent::OnShotMade);
+
+}
+
+void UWeaponComponent::DeleteWeapon()
+{
+	EquipWeapon(0);
+	GetWorld()->DestroyActor(Weapons[Weapons.Num()-1]);
+	//GetWorld()->RemoveActor(Weapons[Weapons.Num()-1],true);
+	Weapons.RemoveAt(Weapons.Num()-1);
 }
 
 bool UWeaponComponent::GetCurrentWeaponUIData(FWeaponUIData& UIData) const
@@ -182,7 +203,6 @@ void UWeaponComponent::SpawnWeapons()
 {
 	ACharacter* Character = Cast<ACharacter>(GetOwner());
 	if (!Character || !GetWorld()) return;
-	
 	for (auto WeaponData : WeaponDatas)
 	{
 		auto Weapon = GetWorld()->SpawnActor<ABaseWeapon>(WeaponData.WeaponClass);

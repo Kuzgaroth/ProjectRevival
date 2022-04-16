@@ -1,12 +1,14 @@
 // Project Revival. All Rights Reserved
 
 
-#include "Weapon/LauncherWeapon.h"
-#include "Weapon/Projectile/BaseProjectile.h"
+#include "Weapon/DimensionRevolver.h"
+
+#include "BaseProjectile.h"
+#include "DimensionRevolverBullet.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 
-void ALauncherWeapon::MakeShot()
+void ADimensionRevolver::MakeShot()
 {
 	if (!GetWorld()) return;
 
@@ -26,10 +28,11 @@ void ALauncherWeapon::MakeShot()
 	const FVector Direction = (EndPoint-GetMuzzleWorldLocation()).GetSafeNormal();
 	
 	const FTransform SpawnTransform(FRotator::ZeroRotator, WeaponMesh->GetSocketTransform(MuzzelSocketName).GetLocation());
-	auto Projectile = GetWorld()->SpawnActorDeferred<ABaseProjectile>(ProjectileClass, SpawnTransform);
+	auto Projectile = GetWorld()->SpawnActorDeferred<ADimensionRevolverBullet>(ProjectileClass, SpawnTransform);
 	
 	if (Projectile)
 	{
+		Projectile->SetHealPercentage(HealPercent);
 		Projectile->SetShotDirection(Direction);
 		Projectile->SetOwner(GetOwner());
 		Projectile->FinishSpawning(SpawnTransform);
@@ -46,24 +49,9 @@ void ALauncherWeapon::MakeShot()
 	
 
 	UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzelSocketName);
-
 }
 
-void ALauncherWeapon::StartFire()
+void ADimensionRevolver::SetHealPercentToBullet(float Percent)
 {
-
-	MakeShot();
-	OnWeaponShotDelegate.Broadcast();
+	HealPercent=Percent;
 }
-
-void ALauncherWeapon::StopFire()
-{
-	
-}
-
-TSubclassOf<ABaseProjectile*> ALauncherWeapon::GetProjectile() const
-{
-	return *ProjectileClass;
-}
-
-

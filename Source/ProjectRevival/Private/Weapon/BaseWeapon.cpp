@@ -16,12 +16,41 @@ DEFINE_LOG_CATEGORY(LogPRSaveSystem)
 // Sets default values
 ABaseWeapon::ABaseWeapon()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("WeaponMesh");
 	RootComponent = WeaponMesh;
+	InterpFunction.BindUFunction(this,FName("TimeLineFloatReturn"));
+}
+
+
+void ABaseWeapon::TimeLineFinished()
+{
 	
 }
 
+void ABaseWeapon::TimeLineFloatReturn(float Value)
+{
+	if(DynamicMaterials.Num()==0) return;
+	
+	for (const auto Material : DynamicMaterials)
+	{
+		if(IsAppearing)
+		{
+			if (Material!=nullptr)
+				Material->SetScalarParameterValue("Amount",Value);
+		}
+		else
+		{
+			float MinCurveValue;
+			float MaxCurveValue;
+			VisualCurve->GetValueRange(MinCurveValue,MaxCurveValue);
+			float val=MinCurveValue-Value;
+			val=MaxCurveValue+val;
+			if (Material!=nullptr)
+				Material->SetScalarParameterValue("Amount",val);
+		}
+	}
+}
 
 void ABaseWeapon::BeginPlay()
 {
@@ -44,15 +73,28 @@ void ABaseWeapon::BeginPlay()
 		}
 		else CurrentAmmo = DefaultAmmo;
 	}
-	
 	SetupDynMaterialsFromMesh(this, DynamicMaterials);
+	
+
+	if(VisualCurve)
+	{
+		TimeLine.AddInterpFloat(VisualCurve,InterpFunction);
+		TimeLine.SetLooping(false);
+	}
+}
+
+void ABaseWeapon::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if(TimeLine.IsPlaying())
+	{
+		TimeLine.TickTimeline(DeltaSeconds);
+	}
 }
 
 void ABaseWeapon::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
-	
 }
 
 void ABaseWeapon::MakeShot(){}
@@ -187,6 +229,11 @@ bool ABaseWeapon::IsAmmoEmpty() const
 void ABaseWeapon::SetAmmoData(FAmmoData NewAmmoData)
 {
 	CurrentAmmo = NewAmmoData;
+}
+
+void ABaseWeapon::Changing()
+{
+	TimeLine.PlayFromStart();
 }
 
 bool ABaseWeapon::IsClipEmpty() const
