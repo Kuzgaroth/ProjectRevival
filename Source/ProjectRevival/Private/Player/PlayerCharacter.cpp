@@ -19,6 +19,7 @@
 #include "GameFeature/StaticObjectToNothing.h"
 #include "Kismet/GameplayStatics.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
+#include "AbilitySystem/Abilities/DimensionShotAbility.h"
 #include "Sound/SoundCue.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -229,6 +230,14 @@ void APlayerCharacter::CheckCameraOverlap()
 
 void APlayerCharacter::Falling()
 {
+	if(DimensionShotAbStruct.IsInRevolverAim)
+	{
+		if(DimensionShotAbStruct.Ability)
+		{
+			DimensionShotAbStruct.Ability->InterruptAbility();
+		}
+		DimensionShotAbStruct.IsInRevolverAim=false;
+	}
 	CameraZoomOut();
 	PlayerMovementComponent->JumpPressEnded();
 	Super::Falling();
@@ -459,7 +468,7 @@ void APlayerCharacter::CameraZoomIn()
 
 void APlayerCharacter::CameraZoomOut()
 {
-	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true)
+	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true && !DimensionShotAbStruct.IsInRevolverAim)
 	{
 		if (CoverData.IsInTransition()) return;
 		if (CoverData.IsInCover() && CoverData.IsFiring)

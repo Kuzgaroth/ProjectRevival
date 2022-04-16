@@ -59,6 +59,8 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FVisorReleased VisorReleasedDelegate;
+
+	UBaseCharacterMovementComponent* GetMovementComponent()const {return PlayerMovementComponent;}
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoomBlueprint PlayerAimZoom;
@@ -77,6 +79,8 @@ public:
 
 	UPROPERTY()
 	UCameraCoverFunctions* CameraCoverFunctions;
+
+	FDimensionShotStruct DimensionShotAbStruct;
 	
 	USpringArmComponent* GetPlayerSpringArmComponent(){ return SpringArmComponent; }
 	void CameraZoomIn();

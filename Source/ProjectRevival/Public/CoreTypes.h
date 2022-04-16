@@ -7,6 +7,9 @@
 #include "Interfaces/ICoverable.h"
 #include "CoreTypes.generated.h"
 
+class UDimensionShotAbility;
+
+
 class UBoxComponent;
 //Weapon
 class ABaseWeapon;
@@ -271,6 +274,16 @@ struct FLeftSideViewBlueprint
 	
 	UPROPERTY()
     float RightPosSave = 0.0;
+};
+
+USTRUCT(BlueprintType)
+struct FDimensionShotStruct
+{
+	GENERATED_BODY()
+	bool IsInRevolverTransition=false;
+	bool IsInRevolverAim=false;
+
+	UDimensionShotAbility* Ability;
 };
 
 UCLASS()
