@@ -69,7 +69,7 @@ void UBaseCharacterMovementComponent::Jump()
 		PlayerMovementLogic.JumpPressed ? "1" : "0",PlayerMovementLogic.JumpStarted ? "1" : "0");
 	if (PlayerMovementLogic.IsPivotTargeted) return;
 	if (PlayerMovementLogic.IsInJump() || IsFalling() || Cast<ABaseCharacter>(GetPawnOwner())->IsRunning()) return;
-	if (CharacterOwner->GetVelocity().Size()>=300.0f)
+	/*if (CharacterOwner->GetVelocity().Size()>=300.0f)
 	{
 		UE_LOG(LogPlayerMovement, Warning, TEXT("Jump in movement"));
 		auto JumpInMoveNotify = AnimUtils::FindNotifiesByClass<UJumpAnimNotify>(JumpInMove);
@@ -83,7 +83,7 @@ void UBaseCharacterMovementComponent::Jump()
 		}
 		PlayerMovementLogic.JumpStarted=true;
 		return;
-	}
+	}*/
 	PlayerMovementLogic.JumpPressed = true;
 	UE_LOG(LogPlayerMovement, Warning, TEXT("Jump in place"));
 	auto JumpStartedNotify = AnimUtils::FindNotifyByClass<UJumpAnimNotify>(JumpAnim);

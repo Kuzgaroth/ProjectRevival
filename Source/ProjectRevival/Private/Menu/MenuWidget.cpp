@@ -8,6 +8,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/HorizontalBox.h"
 #include "Menu/CreditsWidget.h"
+#include "Menu/DifficultySelectionWidget.h"
 #include "Menu/MenuGameModeBase.h"
 #include "Menu/OptionsWidget.h"
 #include "ProjectRevival/Public/Menu/LevelItemWidget.h"
@@ -29,16 +30,6 @@ void UMenuWidget::NativeOnInitialized()
 		ContinueGameButton->OnClicked.AddDynamic(this, &UMenuWidget::OnContinueGame);
 	}
 
-	if (NewGameButton)
-	{
-		NewGameButton->OnClicked.AddDynamic(this, &UMenuWidget::OnNewGame);
-	}
-
-	if (LoadGameButton)
-	{
-		LoadGameButton->OnClicked.AddDynamic(this, &UMenuWidget::OnLoadGame);
-	}
-
 	if (OptionsButton)
 	{
 		OptionsButton->OnClicked.AddDynamic(this, &UMenuWidget::OnOptions);
@@ -54,18 +45,28 @@ void UMenuWidget::NativeOnInitialized()
 		CreditsButton->OnClicked.AddDynamic(this, &UMenuWidget::OnCredits);
 	}
 
-	InitLevelItems();
+	// InitLevelItems();
 }
 
 void UMenuWidget::OnStartGame()
 {
-	const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
-	
-	const auto MenuGameMode = GetWorld()->GetAuthGameMode<AMenuGameModeBase>();
-	if (MenuGameMode) MenuGameMode->ClearSaveData();
-	UGameplayStatics::PlaySound2D(GetWorld(), StartGameSound);
-	UGameplayStatics::OpenLevel(this,GameInstance->GetStartupLevel().LevelName);
-	
+	// const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
+	// UGameplayStatics::PlaySound2D(GetWorld(), StartGameSound);
+	// UGameplayStatics::OpenLevel(this,GameInstance->GetStartupLevel().LevelName);
+	//
+	if (DifficultySelectorWidgetClass)
+	{
+		RemoveFromParent();
+		UDifficultySelectionWidget* DifficultySelectionWidget = CreateWidget<UDifficultySelectionWidget>(GetWorld(), DifficultySelectorWidgetClass);
+		DifficultySelectionWidget->AddToViewport();
+	}
+	// const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
+	//
+	// const auto MenuGameMode = GetWorld()->GetAuthGameMode<AMenuGameModeBase>();
+	// if (MenuGameMode) MenuGameMode->ClearSaveData();
+	// UGameplayStatics::PlaySound2D(GetWorld(), StartGameSound);
+	// UGameplayStatics::OpenLevel(this,/*GameInstance->GetStartupLevel().LevelName*/"LVL_Conference");
+	//
 }
 
 void UMenuWidget::OnContinueGame()
@@ -73,11 +74,7 @@ void UMenuWidget::OnContinueGame()
 	const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
 	
 	UGameplayStatics::PlaySound2D(GetWorld(), StartGameSound);
-	UGameplayStatics::OpenLevel(this,GameInstance->GetStartupLevel().LevelName);
-}
-
-void UMenuWidget::OnNewGame()
-{
+	UGameplayStatics::OpenLevel(this,/*GameInstance->GetStartupLevel().LevelName*/"LVL_Conference");
 }
 
 void UMenuWidget::OnOptions()
@@ -87,10 +84,6 @@ void UMenuWidget::OnOptions()
 		LeaveEvent();
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UMenuWidget::OpenOptions, 1.0f, false, 0.125f);
 	}
-}
-
-void UMenuWidget::OnLoadGame()
-{
 }
 
 void UMenuWidget::OnQuitGame()

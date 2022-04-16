@@ -8,6 +8,11 @@
 #include "PRGameModeBase.h"
 #include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 
+UChangeWorldAbility::UChangeWorldAbility()
+{
+	AbilityAction = EGASInputActions::ChangeWorld;
+}
+
 void UChangeWorldAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
@@ -31,6 +36,10 @@ void UChangeWorldAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	if(SpawnedSphereActor)
 	{
 		SpawnedSphereActor->AbilityEnded.AddUObject(this,&UChangeWorldAbility::FinishAbility);
+	}
+	else
+	{
+		FinishAbility();
 	}
 	
 }

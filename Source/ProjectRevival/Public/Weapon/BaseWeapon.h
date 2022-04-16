@@ -29,6 +29,7 @@ public:
 	FWeaponUIData GetUIData() const {return UIData;}
 	FAmmoData GetAmmoData() const {return CurrentAmmo;}
 	FAmmoData GetDefaultAmmoData() const {return DefaultAmmo;}
+	UFUNCTION(BlueprintCallable)
 	bool IsAmmoEmpty() const;
 	void SetAmmoData(FAmmoData NewAmmoData);
 	FOnWeaponShotSignature OnWeaponShotDelegate;

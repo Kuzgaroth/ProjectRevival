@@ -17,8 +17,12 @@ UWeaponComponent::UWeaponComponent()
 
 void UWeaponComponent::StartFire()
 {
-	if (!CanFire()) return;
-	UE_LOG(LogPRAISoldier, Log, TEXT("CurrentWeapon is %s"), *CurrentWeapon->GetName());
+	if (!CanFire())
+	{
+		ShootingInProgress = false;
+		return;
+	}
+	//UE_LOG(LogPRAISoldier, Log, TEXT("CurrentWeapon is %s"), *CurrentWeapon->GetName());
 	CurrentWeapon->StartFire();
 	ShootingInProgress = true;
 }
@@ -33,6 +37,10 @@ void UWeaponComponent::StopFire()
 bool UWeaponComponent::IsShooting()
 {
 	return ShootingInProgress;
+}
+bool UWeaponComponent::IsReloading()
+{
+	return ReloadAnimInProgress;
 }
 
 TArray<UMaterialInstanceDynamic*> UWeaponComponent::GetCurrentWeaponMaterials()

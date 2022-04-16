@@ -7,6 +7,7 @@
 #include "Player/PlayerCharacter.h"
 #include "AICharacter.h"
 #include "DrawDebugHelpers.h"
+#include "PRGameInstance.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/InputComponent.h"
@@ -144,7 +145,7 @@ void APlayerCharacter::LookAround(float Amount)
 
 void APlayerCharacter::CoverCrouch()
 {
-	CoverData.TrySwitchCoverType(this);
+	if (!CoverData.TrySwitchCoverType(this)) return;
 	if (CameraCover.bIsShift == true)
 	{
 		CameraCover.StartPos = SpringArmComponent->SocketOffset.Y;
@@ -287,11 +288,25 @@ void APlayerCharacter::OnCooldownExpired(const FActiveGameplayEffect& ExpiredEff
 
 void APlayerCharacter::OnDeath()
 {
-	Super::OnDeath();
-	/*if (Controller)
+	GetCharacterMovement()->DisableMovement();
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	WeaponComponent->StopFire();
+	AbilitySystemComponent->CancelAbilities();
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation());
+	if (DeathVFX)
 	{
-		Controller->ChangeState(NAME_Spectating);
-	}*/
+		UGameplayStatics::SpawnEmitterAttached(DeathVFX,RootComponent);
+	}
+	if (DeathAnimMontage)
+	{
+		
+		const float Duration = PlayAnimMontage(DeathAnimMontage);
+		if (Duration>0)
+		{
+			GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &APlayerCharacter::EnterDeathWorld, Duration);
+		}
+	}
+	else EnterDeathWorld();
 }
 
 void APlayerCharacter::BeginPlay()
@@ -438,7 +453,6 @@ void APlayerCharacter::CameraZoomIn()
 			PlayerMovementComponent->AimStart();
 		}
 		bUseControllerRotationYaw=true;
-		
 		PlayerAimZoomFunctions->CameraZoomIn(SpringArmComponent, LeftSideView, PlayerAimZoom, CameraComponent, PlayerAimZoomFunctions->CurveTimeline, CoverData, CameraCover, CameraCoverFunctions);
 	}
 }
@@ -498,8 +512,11 @@ bool APlayerCharacter::StartCover_Internal(FHitResult& CoverHit)
 	CameraCoverFunctions->End = SpringArmComponent->SocketOffset + CameraCover.CameraCover;
 	CameraCoverFunctions->CoverType = CoverTrace(CoverHit);
 	if (CameraCoverFunctions->CoverType == ECoverType::Low) CameraCoverFunctions->End.Z -= CameraCover.Low;
+	if (LeftSideView.CamPos == true) CameraCoverFunctions->End.Y += 104.0;
 	PlayerAimZoom.StartStartPos = FVector(0.0);
 	CameraCover.CurrentFieldOfView = CameraCover.FieldOfView;
+	CameraCover.IsFirstLow = 0;
+	CameraCover.IsFirstHigh = 0;
 	CameraCoverFunctions->CameraCoverTimeline.PlayFromStart();
 	
 	bWantsToRun = false;
@@ -516,16 +533,6 @@ bool APlayerCharacter::StopCover_Internal()
 	const bool Sup = Super::StopCover_Internal();
 	if (!Sup)return false;
 
-	if (CameraCover.bIsShift == true)
-	{
-		CameraCover.StartPos = SpringArmComponent->SocketOffset.Y;
-		if (LeftSideView.CamPos == false) CameraCover.EndPos = SpringArmComponent->SocketOffset.Y - CameraCover.CoverYShift;
-		else CameraCover.EndPos = SpringArmComponent->SocketOffset.Y + CameraCover.CoverYShift;
-		CameraCover.bIsShift = false;
-		CameraCover.IsShifting = true;
-		CameraCoverFunctions->CameraCoverYShiftTimeline.PlayFromStart();
-	}
-
 	LeftSideView.SavePosLeft = FVector(0.0);
 	LeftSideView.SavePosRight = FVector(0.0);
 
@@ -533,13 +540,27 @@ bool APlayerCharacter::StopCover_Internal()
 	CameraCoverFunctions->End = SpringArmComponent->SocketOffset - CameraCover.CameraCover;
 	if (CameraCover.bIsLow == true) { CameraCoverFunctions->End.Z += CameraCover.Low; CameraCover.bIsLow = false; }
 	if (CameraCoverFunctions->CoverType == ECoverType::Low) CameraCoverFunctions->End.Z += CameraCover.Low;
+	if (LeftSideView.CamPos == true) CameraCoverFunctions->End.Y -= 104.0;
 	CameraCoverFunctions->CoverType = None;
 	PlayerAimZoom.StartStartPos = FVector(0.0);
 	CameraCover.CurrentFieldOfView = 90.0;
+
+	if (CameraCover.bIsShift == true)
+	{
+		if (LeftSideView.CamPos == false) CameraCoverFunctions->End.Y -= CameraCover.CoverYShift;
+		else CameraCoverFunctions->End.Y += CameraCover.CoverYShift;
+		CameraCover.bIsShift = false;
+	}
 	CameraCoverFunctions->CameraCoverTimeline.PlayFromStart();
 	
 	CoverData.StopCover();
 	PlayerMovementComponent->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
 	return true;
+}
+
+void APlayerCharacter::EnterDeathWorld()
+{
+	GetWorldTimerManager().ClearTimer(DeathTimerHandle);
+	UGameplayStatics::OpenLevel(this,/*GameInstance->GetStartupLevel().LevelName*/GetGameInstance<UPRGameInstance>()->GetDeathWorldLevelName(),true);
 }

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "PlayerCharacter.h"
 #include "GameFramework/Actor.h"
-#include "AbilitySystem/Abilities/VisorAbility.h"
+#include "AbilitySystem/Abilities/VisorPlacerAbility.h"
 #include "TimerManager.h"
 #include "VisorItem.generated.h"
 

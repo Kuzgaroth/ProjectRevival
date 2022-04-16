@@ -16,6 +16,6 @@ void UHealthBarWidget::SetHealthPercent(float Percent)
 
 	const auto HealthBarColor = Percent > PercentColorThreshold ? GoodColor : BadColor;
 
-	HealthProgressBar->SetFillColorAndOpacity(HealthBarColor);
+	// HealthProgressBar->SetFillColorAndOpacity(HealthBarColor);
 	HealthProgressBar->SetPercent(Percent);
 }

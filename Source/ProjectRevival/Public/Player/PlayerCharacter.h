@@ -11,6 +11,9 @@
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "PlayerCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FVisorPressed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FVisorReleased);
+
 class UCameraComponent;
 class USpringArmComponent;
 class USphereComponent;
@@ -50,6 +53,12 @@ public:
 
 	UFUNCTION()
 	bool CheckIfWorldCanBeChanged() const;
+
+	UPROPERTY(BlueprintAssignable)
+	FVisorPressed VisorPressedDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FVisorReleased VisorReleasedDelegate;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoomBlueprint PlayerAimZoom;
@@ -89,6 +98,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="Phrases")
 	USoundCue* WorldCantBeChangedPhrase;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Death")
+	UParticleSystem* DeathVFX;
 	
 	bool WorldCanBeChanged=true;
 	AStaticObjectToNothing* OverlappedChangeWActor;
@@ -107,6 +118,7 @@ protected:
 	void OnWorldChanged();
 	virtual bool StartCover_Internal(FHitResult& CoverHit) override;
 	virtual bool StopCover_Internal() override;
+	virtual void EnterDeathWorld();
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -115,6 +127,10 @@ public:
 	//The range in which enemies and objects are highlighted 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
 	float HighlightRadius = 2000.f;
+
+	//Time for effect to remain after turn off 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
+	float DestroyDelay = 1.0f;
 
 	//Trace Channel we use to detect all the stuff
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
@@ -131,6 +147,7 @@ public:
 	virtual void OnTurn() override;
 	virtual void Falling() override;
 	virtual void Landed(const FHitResult& Hit) override;
+	
 	TArray<FAmmoData> GetPlayerWeapons() const;
 	UFUNCTION(BlueprintCallable)
 	FCoverData& GetCoverData();
@@ -144,6 +161,7 @@ private:
 	UBaseCharacterMovementComponent* PlayerMovementComponent;
 	UPROPERTY()
 	FCoverData CoverData;
+	FTimerHandle DeathTimerHandle;
 	
 	bool bWantsToRun = false;
 	bool bIsMovingForward = false;
@@ -163,7 +181,6 @@ private:
 	UPROPERTY()
 	class USphereComponent* SphereDetectingHighlightables;
 	
-	bool IsInCover=false;
 	FTimerHandle THandle;
 	const float FlipTime = 0.5f;
 	const float FlipStrength = 2000.f;

@@ -50,21 +50,25 @@ void FCoverData::TurnEnd(ECoverSide NewSide)
 	CoverSide = NewSide;
 }
 
-void FCoverData::TrySwitchCoverType(IICoverable* ICoverablePawn)
+bool FCoverData::TrySwitchCoverType(IICoverable* ICoverablePawn)
 {
 	ECoverType NewPossibleCover = ICoverablePawn->CheckCover();
 	switch (CoverType)
 	{
 	case High:
 		IsSwitchingCoverType = true;
-		return;
+		return true;
 	case Low:
-		if (NewPossibleCover==High) IsSwitchingCoverType = true;
-		return;
+		if (NewPossibleCover==High)
+		{
+			IsSwitchingCoverType = true;
+			return true;
+		}
+		return false;
 	default:
 		break;
 	}
-	return;
+	return false;
 }
 
 void FCoverData::OnCoverStatusUpdated(ECoverType CType, ECoverSide CSide, ECoverPart CPart)
@@ -104,6 +108,7 @@ bool FCoverData::TryMoveInCover(float Amount, const AActor* Player)
 	const float ForwardOffset = 100.f;
 	const float RightOffset = CoverType == Low ? 60.f : 45.f;
 	FHitResult HitResut;
+	if (!Player) return false;
 	const auto WingStart = Player->GetActorRightVector()*Amount*RightOffset+Player->GetActorLocation();
 	const auto WingEnd = WingStart+Player->GetActorForwardVector()*ForwardOffset;
 	const bool NotEndOfCover = UKismetSystemLibrary::LineTraceSingle(Player->GetWorld(), WingStart, WingEnd,
