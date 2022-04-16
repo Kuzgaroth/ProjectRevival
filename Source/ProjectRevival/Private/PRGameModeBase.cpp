@@ -107,6 +107,15 @@ void APRGameModeBase::InitGame(const FString& MapName, const FString& Options, F
 		UE_LOG(LogPRSaveSystem, Display, TEXT("Destroying %s"), *(*Checkpoint)->GetName())
 		(*Checkpoint)->Destroy(true);
 	}
+	InitCrates();
+}
+void APRGameModeBase::InitCrates()
+{
+	for (TActorIterator<AAmmoCrate> It(GetWorld()); It; ++It)
+	{
+		AAmmoCrate* Crate = Cast<AAmmoCrate>(*It);
+		Crate->SetCurrentClipsAmount(SaveGame->AmmoCrates.Find(*Crate->GetName())->CurrentClips);
+	}
 }
 
 void APRGameModeBase::RestartPlayer(AController* NewPlayer)
@@ -123,6 +132,7 @@ void APRGameModeBase::RestartPlayer(AController* NewPlayer)
 		UE_LOG(LogPRSaveSystem, Display, TEXT("----Spawning player at particular checkpoint----"))
 		CheckpointName = SaveGame->PlayerSaveData.LastCheckpointReached.CheckpointName;
 		UGameplayStatics::GetAllActorsWithTag(GetWorld(),CheckpointName ,Checkpoints);
+		InitCrates();
 	}
 	else
 	{
@@ -135,10 +145,20 @@ void APRGameModeBase::RestartPlayer(AController* NewPlayer)
 		});
 	}
 	
-	if (Checkpoints.Num()<1) return;
+	if (Checkpoints.Num()<1)
+	{
+		UE_LOG(LogPRSaveSystem, Display, TEXT("----No checkpoints----"))
+		return;
+	}
 	const auto CheckpointInterface = Cast<IICheckpointable>(Checkpoints[0]);
-	if (!CheckpointInterface) return;
+	if (!CheckpointInterface)
+	{
+		UE_LOG(LogPRSaveSystem, Display, TEXT("----No interface in checkpoint----"))
+		return;
+	}
+	
 	AActor* PlayerStart = CheckpointInterface->GetPlayerStartForCheckpoint();
+	UE_LOG(LogPRSaveSystem, Display, TEXT("---Checkpoint to spawn: %s----"), *PlayerStart->GetHumanReadableName());
 	
 	RestartPlayerAtPlayerStart(NewPlayer, PlayerStart);
 	Checkpoints[0]->Destroy(true);
@@ -166,6 +186,22 @@ void APRGameModeBase::RestartPlayer(AController* NewPlayer)
 	UE_LOG(LogPRSaveSystem, Display, TEXT("----Load process ended----"))*/
 }
 
+APawn* APRGameModeBase::SpawnDefaultPawnAtTransform_Implementation(AController* NewPlayer,
+	const FTransform& SpawnTransform)
+{
+	FActorSpawnParameters SpawnInfo;
+	SpawnInfo.Instigator = GetInstigator();
+	SpawnInfo.ObjectFlags |= RF_Transient;
+	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	UClass* PawnClass = GetDefaultPawnClassForController(NewPlayer);
+	APawn* ResultPawn = GetWorld()->SpawnActor<APawn>(PawnClass, SpawnTransform, SpawnInfo);
+	if (!ResultPawn)
+	{
+		UE_LOG(LogGameMode, Warning, TEXT("SpawnDefaultPawnAtTransform: Couldn't spawn Pawn of type %s at %s"), *GetNameSafe(PawnClass), *SpawnTransform.ToHumanReadableString());
+	}
+	return ResultPawn;
+}
+
 void APRGameModeBase::ResetOnePlayer(AController* Controller)
 {
 }
@@ -188,7 +224,6 @@ void APRGameModeBase::GameOver()
 			Pawn->DisableInput(nullptr);
 		}
 	}
-	SetMatchState(EMatchState::GameOver);
 }
 
 void APRGameModeBase::SetCurrentWorld(EChangeWorld NewWorld)
@@ -210,6 +245,11 @@ void APRGameModeBase::WriteSaveGame(FName CheckpointName)
 	PlayerSaveData.LastCheckpointReached = FCheckPointSaveData(CheckpointName);
 	SaveGame->PlayerSaveData = PlayerSaveData;
 	SaveGame->ReachedCheckpoints.Add(FCheckPointSaveData(CheckpointName));
+	for (TActorIterator<AAmmoCrate> It(GetWorld()); It; ++It)
+	{
+		SaveGame->AmmoCrates.Add(*It->GetName(),FAmmoCrateSaveData(It->GetCurrentClipsAmount()));
+		//UE_LOG(LogPRSaveSystem, Display, TEXT("SaveGame->AmmoCrates.Add(%s)"), *It->GetName());
+	}
 	UGameplayStatics::AsyncSaveGameToSlot(SaveGame, "SaveSlot", 0, AsyncDelegate);
 }
 

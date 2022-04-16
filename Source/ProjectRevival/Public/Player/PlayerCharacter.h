@@ -59,6 +59,8 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FVisorReleased VisorReleasedDelegate;
+
+	UBaseCharacterMovementComponent* GetMovementComponent()const {return PlayerMovementComponent;}
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoomBlueprint PlayerAimZoom;
@@ -77,6 +79,8 @@ public:
 
 	UPROPERTY()
 	UCameraCoverFunctions* CameraCoverFunctions;
+
+	FDimensionShotStruct DimensionShotAbStruct;
 	
 	USpringArmComponent* GetPlayerSpringArmComponent(){ return SpringArmComponent; }
 	void CameraZoomIn();
@@ -98,6 +102,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="Phrases")
 	USoundCue* WorldCantBeChangedPhrase;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Death")
+	UParticleSystem* DeathVFX;
 	
 	bool WorldCanBeChanged=true;
 	AStaticObjectToNothing* OverlappedChangeWActor;
@@ -116,6 +122,7 @@ protected:
 	void OnWorldChanged();
 	virtual bool StartCover_Internal(FHitResult& CoverHit) override;
 	virtual bool StopCover_Internal() override;
+	virtual void EnterDeathWorld();
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -144,6 +151,7 @@ public:
 	virtual void OnTurn() override;
 	virtual void Falling() override;
 	virtual void Landed(const FHitResult& Hit) override;
+	
 	TArray<FAmmoData> GetPlayerWeapons() const;
 	UFUNCTION(BlueprintCallable)
 	FCoverData& GetCoverData();
@@ -157,6 +165,7 @@ private:
 	UBaseCharacterMovementComponent* PlayerMovementComponent;
 	UPROPERTY()
 	FCoverData CoverData;
+	FTimerHandle DeathTimerHandle;
 	
 	bool bWantsToRun = false;
 	bool bIsMovingForward = false;

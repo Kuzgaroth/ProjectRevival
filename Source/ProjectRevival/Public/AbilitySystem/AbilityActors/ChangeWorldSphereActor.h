@@ -29,7 +29,7 @@ protected:
 	UPROPERTY(EditAnywhere,Category="Sphere params")
 	UNiagaraSystem* ChangeWorldFX;
 	UPROPERTY(EditAnywhere,Category="Sphere params")
-	UNiagaraComponent* ChangeWorldFXComponent;
+	UNiagaraComponent* ChangeWorldFXComponent=nullptr;
 	UPROPERTY(EditAnywhere,Category="Sphere params")
 	float StartRadius=10.0f;
 	UPROPERTY(EditAnywhere,Category="Sphere params")
@@ -50,12 +50,14 @@ protected:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	virtual void PostInitializeComponents() override;
 		
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	FOnEndAbitity AbilityEnded;
+	UFUNCTION(BlueprintImplementableEvent,meta=	(DisplayName="OnHit"))
+	void SetNiagaraParameters();
 	
 
 };

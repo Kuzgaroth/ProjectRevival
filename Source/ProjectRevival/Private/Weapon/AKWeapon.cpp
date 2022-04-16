@@ -29,6 +29,12 @@ void AKWeapon::BeginPlay()
 	check(MagazineMeshComponent);
 
 	
+	
+}
+
+void AKWeapon::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 	if(!UGameplayStatics::GetPlayerCharacter(GetWorld(), 0) || !GetWorld())
 	{
 		UE_LOG(LogActor,Error,TEXT("Unable to spawn magazine"));
@@ -51,7 +57,6 @@ void AKWeapon::MakeShot()
 		return;
 	}
 	SpawnShell(ShutterSocketName);
-	Magazines.Last()->GetMeshComponent()->SetRelativeScale3D(MagazineScale);
 }
 
 void AKWeapon::SpawnShell(FName SocketName) const
@@ -96,6 +101,7 @@ void AKWeapon::SpawnMagazine(FName SocketName)
 	{
 		Magazines.Add(SpawnedMagazine);
 		SpawnedMagazine->AttachToComponent(Parent, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
+		//UE_LOG(LogActor,Warning,TEXT("Spawned magazine: %s"), *Magazines.Last()->GetName());
 	}
 	else
 	{

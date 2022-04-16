@@ -6,6 +6,7 @@
 #include "Components/SphereComponent.h"
 #include "NiagaraComponent.h"
 #include "DrawDebugHelpers.h"
+
 #include "GameFeature/ChangeWorld.h"
 #include "GameFeature/StaticObjectToNothing.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
@@ -27,12 +28,26 @@ AChangeWorldSphereActor::AChangeWorldSphereActor()
 void AChangeWorldSphereActor::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	
 	ChangeWorldFXComponent=SpawnChangeWorldEffect();
-	ChangeWorldFXComponent->SetPaused(false);
-	ChangeWorldFXComponent->SetVisibility(true,true);
+	if(ChangeWorldFXComponent)
+	{
+		auto expSpeed=ExpantionSpeed;
+		if(expSpeed<=0.0f)
+		{
+			expSpeed=1000.0f;
+		}
+		ChangeWorldFXComponent->SetVariableFloat("User.Life Time",1000.0f/expSpeed);
+		ChangeWorldFXComponent->SetVariableVec2("User.Effect Size",FVector2D(2.5f*EndRadius));
+		ChangeWorldFXComponent->Activate();
+	}
 	
-	
+}
+
+void AChangeWorldSphereActor::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 }
 
 // Called every frame
@@ -55,9 +70,9 @@ void AChangeWorldSphereActor::Tick(float DeltaTime)
 }
 UNiagaraComponent* AChangeWorldSphereActor::SpawnChangeWorldEffect()
 {
-	
-	return UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),ChangeWorldFX,GetActorLocation(),GetActorRotation());
-	
+	if(ChangeWorldFX)
+		return UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),ChangeWorldFX,GetActorLocation(),GetActorRotation(),FVector(1),true,false);
+	return nullptr;
 }
 //Обработка колизий
 void AChangeWorldSphereActor::OnSphereComponentCollision(UPrimitiveComponent* OverlappedComponent, 

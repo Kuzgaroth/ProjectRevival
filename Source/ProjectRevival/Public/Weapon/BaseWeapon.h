@@ -29,14 +29,20 @@ public:
 	FWeaponUIData GetUIData() const {return UIData;}
 	FAmmoData GetAmmoData() const {return CurrentAmmo;}
 	FAmmoData GetDefaultAmmoData() const {return DefaultAmmo;}
+	UFUNCTION(BlueprintCallable)
 	bool IsAmmoEmpty() const;
 	void SetAmmoData(FAmmoData NewAmmoData);
 	FOnWeaponShotSignature OnWeaponShotDelegate;
+	void Changing();
+	bool IsAppearing=false;
 	USkeletalMeshComponent* GetWeaponMeshComponent() const { return WeaponMesh; }
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Components")
 	USkeletalMeshComponent* WeaponMesh;
 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	UCurveFloat* VisualCurve;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	FName MuzzelSocketName="MuzzleFlashSocket";
 	
@@ -72,8 +78,18 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category=Effects)
 	UForceFeedbackEffect *FireForceFeedback;
+
+	FTimeline TimeLine;
+	FOnTimelineFloat InterpFunction;
+
+	UFUNCTION()
+    virtual void TimeLineFinished();
+
+	UFUNCTION()
+	virtual void TimeLineFloatReturn(float Value);
 	
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 	virtual void PostInitializeComponents() override;
 	virtual void MakeShot();
 	virtual void PlayForceEffects();

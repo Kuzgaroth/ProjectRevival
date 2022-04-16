@@ -19,7 +19,7 @@ public:
 	
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-
+	virtual void PostInitializeComponents() override;
 	virtual void MakeShot() override;
 	
 	UFUNCTION()
@@ -71,6 +71,8 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animations")
 	float AnimationRate;
+	
+	
 private:
 	FVector MagazineScale;
 };

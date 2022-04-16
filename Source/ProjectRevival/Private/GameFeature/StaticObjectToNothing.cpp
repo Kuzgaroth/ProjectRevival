@@ -11,6 +11,7 @@
 
 DEFINE_LOG_CATEGORY(LogPRStaticObject);
 
+
 // Sets default values
 AStaticObjectToNothing::AStaticObjectToNothing()
 {
@@ -58,7 +59,11 @@ void AStaticObjectToNothing::BeginPlay()
 		{
 			for (const auto Material : MeshesMaterials)
 			{
-				Material->SetScalarParameterValue("Amount",MinCurveValue);
+				if (Material!=nullptr)
+				{
+					Material->SetScalarParameterValue("Amount",MinCurveValue);
+					Material->SetVectorParameterValue("Color",FLinearColor::Blue);
+				}
 			}
 		}
 		else
@@ -74,7 +79,11 @@ void AStaticObjectToNothing::BeginPlay()
 		{
 			for (const auto Material : MeshesMaterials)
 			{
-				Material->SetScalarParameterValue("Amount",MaxCurveValue);
+				if (Material!=nullptr)
+				{
+					Material->SetScalarParameterValue("Amount",MaxCurveValue);
+					Material->SetVectorParameterValue("Color",FLinearColor::Red);
+				}
 			}
 		}
 		else
@@ -171,9 +180,7 @@ void AStaticObjectToNothing::Changing()
 		if(VisualCurve)
 		{
 			isApearing=false;
-			SuperMesh->SetCollisionProfileName("OverlapAll");
 			TimeLine.PlayFromStart();
-
 		}
 		else
 		{
@@ -235,7 +242,7 @@ void AStaticObjectToNothing::ShowChangeWorldObjectByAbility()
 			{
 				auto reqwar=(MaxCurveValue-MinCurveValue)/TransparencyLevel;
 				reqwar=MaxCurveValue-reqwar;
-				Material->SetScalarParameterValue("Amount",reqwar);
+				if (Material!=nullptr) Material->SetScalarParameterValue("Amount",reqwar);
 			}
 	}
 }
@@ -248,7 +255,7 @@ void AStaticObjectToNothing::HideChangeWorldObjectByAbility()
 		if(MeshesMaterials.Num()!=0)
 			for (const auto Material : MeshesMaterials)
 			{
-				Material->SetScalarParameterValue("Amount",MaxCurveValue);
+				if (Material!=nullptr) Material->SetScalarParameterValue("Amount",MaxCurveValue);
 			}
 	}
 }
@@ -287,7 +294,7 @@ void AStaticObjectToNothing::OnCoverPointComponentCollision(UPrimitiveComponent*
 {
 	if(Cast<APawn>(OtherActor))
 	{
-		UE_LOG(LogPRAISoldier, Log, TEXT("Point BeginOverlap()"))
+		UE_LOG(LogPRStaticObject, Log, TEXT("Point BeginOverlap()"))
 		BlockCoverPoint(Cast<UBoxComponent>(OverlappedComponent));
 	}
 }
@@ -297,7 +304,7 @@ void AStaticObjectToNothing::OnCoverPointComponentExit(UPrimitiveComponent* Over
 {
 	if(Cast<APawn>(OtherActor))
 	{
-		UE_LOG(LogPRAISoldier, Log, TEXT("Point EndOverlap()"))
+		UE_LOG(LogPRStaticObject, Log, TEXT("Point EndOverlap()"))
 		FreeCoverPoint(Cast<UBoxComponent>(OverlappedComponent));
 	}
 }
@@ -309,13 +316,13 @@ void AStaticObjectToNothing::SetLastCoverPointStatus(bool bIsFree)
 
 void AStaticObjectToNothing::BlockCoverPoint(const UBoxComponent* CoverPoint)
 {
-	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: BlockCoverPoint() CoverPoint is %s"), *CoverPoint->GetName())
+	UE_LOG(LogPRStaticObject, Log, TEXT("StaticToNothing: BlockCoverPoint() CoverPoint is %s"), *CoverPoint->GetName())
 	CoverStruct.PointIsNotTaken[CoverPoint]=false;
 }
 
 void AStaticObjectToNothing::FreeCoverPoint(const UBoxComponent* CoverPoint)
 {
-	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: FreeCoverPoint() CoverPoint is %s"), *CoverPoint->GetName())
+	UE_LOG(LogPRStaticObject, Log, TEXT("StaticToNothing: FreeCoverPoint() CoverPoint is %s"), *CoverPoint->GetName())
 	CoverStruct.PointIsNotTaken[CoverPoint]=true;
 }
 
@@ -323,6 +330,7 @@ void AStaticObjectToNothing::TimeLineFinished()
 {
 	if(!isApearing)
 	{
+		SuperMesh->SetCollisionProfileName("OverlapAll");
 		ClearComponentTags(SuperMesh);
 	}
 }
@@ -333,13 +341,13 @@ void AStaticObjectToNothing::TimeLineFloatReturn(float Value)
 	{
 		if(isApearing)
 		{
-			Material->SetScalarParameterValue("Amount",Value);
+			if (Material!=nullptr) Material->SetScalarParameterValue("Amount",Value);
 		}
 		else
 		{
 			float val=MinCurveValue-Value;
 			val=MaxCurveValue+val;
-			Material->SetScalarParameterValue("Amount",val);
+			if (Material!=nullptr) Material->SetScalarParameterValue("Amount",val);
 		}
 	}
 }
@@ -365,8 +373,8 @@ bool AStaticObjectToNothing::CheckIsChangeAbleObjIsCover()
 
 bool AStaticObjectToNothing::TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos)
 {
-	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: Input PlayerPos is %s"), *PlayerPos.ToString())
-	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: Input CoverPos  is %s"), *CoverPos.ToString())
+	UE_LOG(LogPRStaticObject, Log, TEXT("StaticToNothing: Input PlayerPos is %s"), *PlayerPos.ToString())
+	UE_LOG(LogPRStaticObject, Log, TEXT("StaticToNothing: Input CoverPos  is %s"), *CoverPos.ToString())
 	if(CoverStruct.CoverPositions.Num()==0) return false;
 	for(USceneComponent* covpos:CoverStruct.CoverPositions)
 	{

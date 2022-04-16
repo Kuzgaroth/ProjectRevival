@@ -41,7 +41,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	UHealthComponent* HealthComponent;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Animation")
+	UPROPERTY(EditDefaultsOnly, Category="Death")
 	UAnimMontage* DeathAnimMontage;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Movement")
@@ -56,7 +56,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Team")
 	FName MaterialColorName = "Paint Color";
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Sound")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Death")
 	USoundCue* DeathSound;
 	
 	/* РљРѕРјРїРѕРЅРµРЅС‚ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРїРѕСЃРѕР±РЅРѕСЃС‚СЏРјРё */
@@ -72,7 +72,7 @@ protected:
 
 	//РЎРјРµС‰РµРЅРёРµ Р°РЅРёРјР°С†РёРё РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РєР°РїСЃСѓР»С‹
 	UPROPERTY(EditDefaultsOnly, Category="Cover")
-	float RootDelta = 100.f;
+	float RootDelta = 50.f;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void AddStartupGameplayAbilities();
