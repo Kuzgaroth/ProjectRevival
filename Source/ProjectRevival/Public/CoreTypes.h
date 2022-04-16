@@ -728,26 +728,6 @@ public:
 	{
 		return InfoUpdateTime;
 	}
-	void SetActor(AActor* PActor)
-	{
-		PlayerActor = PActor;
-	}
-	AActor* GetActor() const
-	{
-		return PlayerActor;
-	}
-	void SetCover(AActor* PCover)
-	{
-		PlayerCover = PCover;
-	}
-	AActor* GetCover() const
-	{
-		return PlayerCover;
-	}
-	FVector GetActorPosition() const
-	{
-		return (PlayerActor) ? PlayerActor->GetActorLocation() : FVector(0.0, 0.0, 0.0);
-	}
 	FORCEINLINE void operator=(const FPlayerPositionData& PlayerPos)
 	{
 		PlayerActor = PlayerPos.PlayerActor;
