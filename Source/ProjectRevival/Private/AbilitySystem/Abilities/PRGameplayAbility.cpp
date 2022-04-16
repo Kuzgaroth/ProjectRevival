@@ -18,7 +18,41 @@ void UPRGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, 
 	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("%s has started"), *GetName());
 	
 	//Вызов старта кулдауна способности
+	if (ActorInfo)
+	{
+		if (ActorInfo->PlayerController.IsValid())
+		{
+			auto Controller = ActorInfo->PlayerController.Get();
+			if (Controller)
+			{
+				auto PlayerController = Cast<ABasePlayerController>(Controller);
+				if (PlayerController)
+				{
+					auto PlayerHUD = PlayerController->GetHUD<AGameHUD>();
+					if (PlayerHUD)
+					{
+						auto HUDWidget = PlayerHUD->GetPlayerHUDWidget();
+						if (HUDWidget)
+						{
+							auto PlayerHUDWidget = Cast<UPlayerHUDWidget>(HUDWidget);
+							if (PlayerHUDWidget)
+							{
+								AbilityWidget = PlayerHUDWidget->GetWidgetByAction(AbilityAction);
 	
+								if (!AbilityWidget) UE_LOG(LogPRAbilitySystemBase, Error,
+                                    TEXT("Widget have not found. Check Blueprint version on AbilityAction parameter or widget method directly"));
+								if (AbilityWidget)
+								{
+									AbilityWidget->StartAbility();	
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+			
+	}
 	
 	//K2_EndAbility();
 }

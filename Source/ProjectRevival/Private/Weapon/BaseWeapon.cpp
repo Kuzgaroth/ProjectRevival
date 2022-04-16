@@ -249,7 +249,7 @@ bool ABaseWeapon::IsAmmoFull() const
 UNiagaraComponent* ABaseWeapon::SpawnMuzzleFXNiagara()
 {
 	return UNiagaraFunctionLibrary::SpawnSystemAttached(MuzzleFXNiagara, WeaponMesh, MuzzelSocketName, FVector::ZeroVector,
-		FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true);
+		FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
 }
 
 UParticleSystemComponent* ABaseWeapon::SpawnMuzzleFXCascade()

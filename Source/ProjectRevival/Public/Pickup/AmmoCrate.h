@@ -32,6 +32,10 @@ public:
 
 	UFUNCTION()
 	float GetAmmoCratePercent() const;
+	UFUNCTION()
+	int32 GetCurrentClipsAmount() const { return CurrentClipsAmount; }
+	UFUNCTION()
+	void SetCurrentClipsAmount(int32 Amount) { CurrentClipsAmount = Amount; }
 	
 protected:
 	virtual void BeginPlay() override;
@@ -57,10 +61,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
 	int32 MaxBulletsAmount = 120.f;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Pickup")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Pickup")
 	int32 CurrentClipsAmount;
     
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Pickup")
     int32 CurrentBulletsAmount;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Pickup")

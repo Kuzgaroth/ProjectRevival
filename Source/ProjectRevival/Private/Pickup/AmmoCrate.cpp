@@ -74,22 +74,32 @@ bool AAmmoCrate::GivePickUpTo(APawn* PlayerPawn)
 	if (!HealthComponent || HealthComponent->IsDead()) return false;
 	
 	const auto WeaponComponent = PRUtils::GetCharacterComponent<UWeaponComponent>(PlayerPawn);
-	
-	if (WeaponComponent && CurrentClipsAmount > 0)
+	if(WeaponComponent)
 	{
-		//количество недостающих обойм
-		int32 TempClipsNeeded = WeaponComponent->GetMaxWeaponClips() - WeaponComponent->GetCurrentWeaponClips() + 1;
-		if(TempClipsNeeded > CurrentClipsAmount)
+		const bool bIsPickupNecessary = !((WeaponComponent->GetCurrentWeaponBullets() == WeaponComponent->GetMaxWeaponBullets())
+					&& (WeaponComponent->GetCurrentWeaponClips() == WeaponComponent->GetMaxWeaponClips()));
+	
+		if (CurrentClipsAmount > 0 && bIsPickupNecessary)
 		{
-			TempClipsNeeded = CurrentClipsAmount;
-			CurrentClipsAmount = 0;
+			//количество недостающих обойм
+			int32 TempClipsNeeded = WeaponComponent->GetMaxWeaponClips() - WeaponComponent->GetCurrentWeaponClips() + 1;
+			if(TempClipsNeeded > CurrentClipsAmount)
+			{
+				TempClipsNeeded = CurrentClipsAmount;
+				CurrentClipsAmount = 0;
+			}
+			else
+			{
+				CurrentClipsAmount = CurrentClipsAmount - TempClipsNeeded;
+			}
+			UpdateWidgetPercent();
+			return (WeaponComponent->TryToAddAmmo(WeaponType, TempClipsNeeded));
 		}
 		else
 		{
-			CurrentClipsAmount = CurrentClipsAmount - TempClipsNeeded;
+			UE_LOG(LogPlayerCharacter, Warning, TEXT("PbIsPickupNecessary"));
+			return false;
 		}
-		UpdateWidgetPercent();
-		return (WeaponComponent->TryToAddAmmo(WeaponType, TempClipsNeeded));
 	}
 	else
 	{
