@@ -69,8 +69,16 @@ void ASoldierAIController::SetPlayerPos(const FPlayerPositionData& NewPlayerPos,
 		{
 			UE_LOG(LogPRAIController, Log, TEXT("From Coordinator"))
 			SetBIsPlayerInSight(true);
+			if (GetBIsLoosePlayerTimerSet())
+			{
+				GetWorld()->GetTimerManager().ClearTimer(LoosePlayerTimer);
+				SetBIsLoosePlayerTimerSet(false);
+			}
 		}
+		UE_LOG(LogPRAIController, Log, TEXT("Player Pos: X %0.2f, Y %0.2f, Ticks %lld"), PlayerPos.GetActorPosition().X,
+			PlayerPos.GetActorPosition().Y, PlayerPos.GetInfoUpdateTime().GetTicks())
 		PlayerPos.SetActor(NewPlayerPos.GetActor());
+		PlayerPos.SetInfoUpdateTime(NewPlayerPos.GetInfoUpdateTime().GetTicks());
 	}
 	if (NewPlayerPos.GetCover())
 	{
@@ -131,24 +139,19 @@ void ASoldierAIController::Tick(float DeltaSeconds)
 
 	if (bIsPlayerInSight && bIsAppearing)
 	{
-		if (GetBIsPatrolling())
-		{
-			SetBIsPatrolling(false);
-			Cast<APatrolPathActor>(PatrolPathRef)->DeletePatrollingBot();
-			SetBotState(EBotState::Battle);
-			UE_LOG(LogPRAIController, Log, TEXT("State set to Battle"))
-		}
+		SetToBattleState();
 	}
 	else
 	{
 		if (!GetBIsLoosePlayerTimerSet())
 		{
-			// SetBIsLoosePlayerTimerSet(true);
-			// GetWorld()->GetTimerManager().SetTimer(LoosePlayerTimer, this, &ASoldierAIController::OnLoosePlayerTimerFired,
-			// 								   PlayerLooseTime, false, -1);
+			SetBIsLoosePlayerTimerSet(true);
+			//TODO Добавить сброс таймера, если приходит не мусорные данные из координатора или персепшона
+			GetWorld()->GetTimerManager().SetTimer(LoosePlayerTimer, this, &ASoldierAIController::OnLoosePlayerTimerFired,
+											   PlayerLooseTime, false, -1);
 		}
 	}
-	if (!bIsAppearing) SetBotState(EBotState::Idle);
+	if (!bIsAppearing) SetToIdleState();
 	
 	//const auto AimActor = GetFocusOnActor();
 	//SetFocus(AimActor);
@@ -324,13 +327,7 @@ void ASoldierAIController::OnFireTimerFired()
 void ASoldierAIController::OnLoosePlayerTimerFired()
 {
 	UE_LOG(LogPRAIController, Log, TEXT("OnLoosePlayerTimerFired"))
-	SetBIsPlayerInSight(false);
-	SetBotState(EBotState::Idle);
-	UE_LOG(LogPRAIController, Log, TEXT("State set to Idle"))
-	if (GetBIsInCover())
-	{
-		StartExitingCover();
-	}
+	SetToIdleState();
 	SetBIsLoosePlayerTimerSet(false);
 	GetWorld()->GetTimerManager().ClearTimer(LoosePlayerTimer);
 }
@@ -339,4 +336,27 @@ AActor* ASoldierAIController::GetFocusOnActor()
 {
 	if (!GetBlackboardComponent()) return nullptr;
 	return Cast<AActor>(GetBlackboardComponent()->GetValueAsObject(FocusOnKeyName));
+}
+
+void ASoldierAIController::SetToIdleState()
+{
+	SetBotState(EBotState::Idle);
+	UE_LOG(LogPRAIController, Log, TEXT("State set to Idle"))
+	if (GetBIsInCover())
+	{
+		StartExitingCover();
+	}
+	GetWorld()->GetTimerManager().ClearTimer(BTCoverTimerHandle);
+	SetBIsCoverChangeAllowed(true);
+}
+
+void ASoldierAIController::SetToBattleState()
+{
+	if (GetBIsPatrolling())
+	{
+		SetBIsPatrolling(false);
+		Cast<APatrolPathActor>(PatrolPathRef)->DeletePatrollingBot();
+		SetBotState(EBotState::Battle);
+		UE_LOG(LogPRAIController, Log, TEXT("State set to Battle"))
+	}
 }

@@ -176,7 +176,11 @@ void AAICoordinator::ConnectController(ASoldierAIController* BotController, EWin
 
 void AAICoordinator::UpdatePlayerInfoFromBot(FPlayerPositionData PlayerPos)
 {
-	if (PlayerPos.GetActor()!=nullptr) this->PlayerPosition = PlayerPos;
+	if (PlayerPos.GetActor()!=nullptr)
+	{
+		if (CheckIfPlayerPosHasChanged(PlayerPos, false))
+		this->PlayerPosition = PlayerPos;
+	}
 }
 
 bool AAICoordinator::MakeDecisionForWingBot() const
@@ -191,13 +195,48 @@ bool AAICoordinator::MakeDecisionForWingBot() const
 
 void AAICoordinator::UpdateBotPlayerInfo()
 {
+	//TODO Исправить обновление позиции игрока
 	for (TTuple<ASoldierAIController*, EWing> BotPair : BotMap)
 	{
-		if (!(BotPair.Key->GetPlayerPos().GetActorPosition() - PlayerPosition.GetActorPosition()).IsNearlyZero())
+		UE_LOG(LogPRCoordinator, Log, TEXT("BotName %s"), *FString(BotPair.Key->GetName()))
+		if (CheckIfPlayerPosHasChanged(BotPair.Key->GetPlayerPos(), true))
 		{
 			BotPair.Key->SetPlayerPos(PlayerPosition, true);
 		}
 	}
+}
+
+bool AAICoordinator::CheckIfPlayerPosHasChanged(FPlayerPositionData NewPlayerPos, bool bState)
+/*
+ *	bState
+ *		True - PlayerPosition is newer than NewPlayerPos
+ *		False - PlayerPosition is older than NewPlayerPos
+ */
+{
+	//const float Threshold = 0.01f;
+	bool bCond = false;
+	if (NewPlayerPos.GetActor())
+	{
+		/*UE_LOG(LogPRCoordinator, Log, TEXT("Player Position: X %0.2f, Y %0.2f"), PlayerPosition.GetActorPosition().X, PlayerPosition.GetActorPosition().Y)
+		UE_LOG(LogPRCoordinator, Log, TEXT("New Player Pos: X %0.2f, Y %0.2f"), NewPlayerPos.GetActorPosition().X, NewPlayerPos.GetActorPosition().Y)
+		const auto X = abs(PlayerPosition.GetActorPosition().X - NewPlayerPos.GetActorPosition().X);
+		const auto Y = abs(PlayerPosition.GetActorPosition().Y - NewPlayerPos.GetActorPosition().Y);
+		const auto Z = abs(PlayerPosition.GetActorPosition().Z - NewPlayerPos.GetActorPosition().Z);
+		UE_LOG(LogPRCoordinator, Log, TEXT("Diffs: X %0.5f, Y %0.5f, Z %0.5f"), X, Y, Z)
+		const auto XDelta = X * 100 / PlayerPosition.GetActorPosition().X;
+		const auto YDelta = Y * 100 / PlayerPosition.GetActorPosition().Y;
+		const auto ZDelta = Z * 100 / PlayerPosition.GetActorPosition().Z;
+		UE_LOG(LogPRCoordinator, Log, TEXT("Deltas: X %0.5f, Y %0.5f, Z %0.5f"), XDelta, YDelta, ZDelta)*/
+		UE_LOG(LogPRCoordinator, Log, TEXT("%lld %lld %s"), PlayerPosition.GetInfoUpdateTime().GetTicks(), NewPlayerPos.GetInfoUpdateTime().GetTicks(),
+			bState?TEXT(">"):TEXT("<"))
+		bCond = PlayerPosition.GetInfoUpdateTime().GetTicks() > NewPlayerPos.GetInfoUpdateTime().GetTicks();
+		if (!bState)
+		{
+			UE_LOG(LogPRCoordinator, Log, TEXT("Info has changed"))
+			bCond = !bCond;
+		}
+	}
+	return bCond;
 }
 
 AAICharacter* AAICoordinator::SpawnCharacterForBot(AActor* PlayerStartActor, const FTransform& Transform)

@@ -24,6 +24,8 @@ void UFindEnemyInSight::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		UE_LOG(LogPRAITasks, Log, TEXT("From Task"))
 		if (PlayerPos.GetActor() != nullptr)
 		{
+			UE_LOG(LogPRAIServices, Log, TEXT("BotName %s"), *FString(Controller->GetName()))
+			UE_LOG(LogPRAIServices, Log, TEXT("Player Pos from service"))
 			Controller->SetPlayerPos(PlayerPos, false);
 			Controller->SetBIsPlayerInSight(true);
 		}

@@ -53,6 +53,8 @@ public:
 	void SetBIsFiringAllowed(bool const bCond) { bIsFiringAllowed = bCond; }
 	bool GetBIsPlayerInSight() const { return bIsPlayerInSight; }
 	void SetBIsPlayerInSight(bool const bCond);
+	bool GetBIsPlayerInSightOfAnyBot() const { return bIsPlayerInSightOfAnyBot; }
+	void SetBIsPlayerInSightOfAnyBot(bool const bCond) { bIsPlayerInSightOfAnyBot = bCond; }
 	bool GetBIsAppearing() const { return bIsAppearing; }
 	UFUNCTION(BlueprintCallable)
 	void SetBIsAppearing(bool bCond);
@@ -177,7 +179,8 @@ protected:
 	bool bIsCoverChangeAllowed;
 	bool bIsDecisionMakingAllowed;
 	bool bIsFiringAllowed;
-	bool bIsPlayerInSight;
+	bool bIsPlayerInSight; // Виден ли игрок в поле зрения этого бота
+	bool bIsPlayerInSightOfAnyBot; // Виден ли игрок в поле зрения хоть какого-то бота
 	bool bIsAppearing;
 	bool bIsPatrolling;
 	bool bIsLoosePlayerTimerSet;
@@ -189,4 +192,6 @@ protected:
 	
 private:
 	AActor* GetFocusOnActor();
+	void SetToIdleState();
+	void SetToBattleState();
 };

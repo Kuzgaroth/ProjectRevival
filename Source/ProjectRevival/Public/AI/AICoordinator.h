@@ -45,6 +45,7 @@ protected:
 private:
 	UPROPERTY()
 	TMap<ASoldierAIController*, EWing> BotMap;
+	TMap<ASoldierAIController*, bool> BotInfoMap;
 	UPROPERTY()
 	FPlayerPositionData PlayerPosition;
 	FTimerHandle PlayerInfoTimerHandle;
@@ -61,6 +62,7 @@ private:
 	bool MakeDecisionForWingBot() const;
 	UFUNCTION()
 	void UpdateBotPlayerInfo();
+	bool CheckIfPlayerPosHasChanged(FPlayerPositionData NewPlayerPos, bool bState);
 };
 
 
