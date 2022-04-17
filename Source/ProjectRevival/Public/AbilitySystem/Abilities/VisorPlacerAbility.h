@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/PRGameplayAbility.h"
-#include "AbilitySystem/AbilityTasks/VisorTask_SpawnVisor.h"
-#include "VisorAbility.generated.h"
+#include "AbilitySystem/AbilityTasks/VisorPlacerTask_SpawnVisor.h"
+#include "VisorPlacerAbility.generated.h"
 
 
 UCLASS()
-class PROJECTREVIVAL_API UVisorAbility : public UPRGameplayAbility
+class PROJECTREVIVAL_API UVisorPlacerAbility : public UPRGameplayAbility
 {
 	GENERATED_BODY()
 public:
-	UVisorAbility();
+	UVisorPlacerAbility();
 	
-	//The range in which enemies and objects are visored 
+	//The range in which enemies and objects are visored
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ability Visor")
 	float VisorRadius = 1000.0f;
 	
@@ -41,5 +41,5 @@ protected:
 
 private:
 	UPROPERTY()
-	UVisorTask_SpawnVisor* VisorTask;
+	UVisorPlacerTask_SpawnVisor* VisorTask;
 };

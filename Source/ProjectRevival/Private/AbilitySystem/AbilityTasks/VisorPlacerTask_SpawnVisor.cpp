@@ -1,11 +1,10 @@
 // Project Revival. All Rights Reserved
 
-
-#include "AbilitySystem/AbilityTasks/VisorTask_SpawnVisor.h"
+#include "AbilitySystem/AbilityTasks/VisorPlacerTask_SpawnVisor.h"
 #include "AbilitySystem/Abilities/Miscellaneuos/VisorItem.h"
 #include "Kismet/GameplayStatics.h"
 
-void UVisorTask_SpawnVisor::Activate()
+void UVisorPlacerTask_SpawnVisor::Activate()
 {
 	Super::Activate();
 	FTransform TempTransform;
@@ -25,10 +24,10 @@ void UVisorTask_SpawnVisor::Activate()
 	}
 }
 
-UVisorTask_SpawnVisor* UVisorTask_SpawnVisor::SpawnVisor(UGameplayAbility* OwningAbility, float VisorRadius, float VisorDuration,
+UVisorPlacerTask_SpawnVisor* UVisorPlacerTask_SpawnVisor::SpawnVisor(UGameplayAbility* OwningAbility, float VisorRadius, float VisorDuration,
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesToVisor, UParticleSystem* ParticleEffect)
 {
-	const auto AbilityTask = NewAbilityTask<UVisorTask_SpawnVisor>(OwningAbility, FName("VisorTask"));
+	const auto AbilityTask = NewAbilityTask<UVisorPlacerTask_SpawnVisor>(OwningAbility, FName("VisorTask"));
 	AbilityTask->AbilityHead = OwningAbility;
 	AbilityTask->Radius = VisorRadius;
 	AbilityTask->Duration = VisorDuration;
@@ -37,7 +36,7 @@ UVisorTask_SpawnVisor* UVisorTask_SpawnVisor::SpawnVisor(UGameplayAbility* Ownin
 	return AbilityTask;
 }
 
-void UVisorTask_SpawnVisor::OnDestroy(bool bAbilityEnded)
+void UVisorPlacerTask_SpawnVisor::OnDestroy(bool bAbilityEnded)
 {
 	Super::OnDestroy(bAbilityEnded);
 }

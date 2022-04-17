@@ -27,19 +27,26 @@ public:
 	int32 GetCurrentWeaponBullets() const;
 	int32 GetMaxWeaponClips() const;
 	int32 GetMaxWeaponBullets() const;
+	int32 GetWeaponNum()const{return WeaponDatas.Num();}
 	bool TryToAddAmmo(TSubclassOf<ABaseWeapon> WeaponType, int32 ClipsAmount);
 	bool CanFire();
 	bool CanEquip();
 	bool CanReload();
 	UFUNCTION(BlueprintCallable)
 	bool IsShooting();
+	UFUNCTION(BlueprintCallable)
+	bool IsReloading();
 	bool IsWeaponBlocked() const { return bIsWeaponBlocked; }
 	void SetWeaponBlocked(const bool bIsBlocked) { bIsWeaponBlocked = bIsBlocked; }
+	bool IsWeaponReloading() const {return ReloadAnimInProgress;}
 	TArray<UMaterialInstanceDynamic*> GetCurrentWeaponMaterials();
 	UFUNCTION(BlueprintCallable)
 	ABaseWeapon* GetCurrentWeapon();
 	TArray<FAmmoData> GetAllWeapons();
 	void SetWeponData(FAmmoData NewAmmoData);
+	void AddWeapon(TSubclassOf<ABaseWeapon> NewWeaponData);
+	void DeleteWeapon();
+	void EquipWeapon(int32 WeaponIndex);
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TArray<FWeaponData> WeaponDatas;
@@ -63,7 +70,7 @@ protected:
 	TArray<ABaseWeapon*> Weapons;
 
 	
-	void EquipWeapon(int32 WeaponIndex);
+
 	int32 CurrentWeaponIndex = 0;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

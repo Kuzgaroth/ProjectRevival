@@ -32,5 +32,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="InternalState")
 	float LifeSeconds = 10.f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="InternalState")
+	float InitialFallingSpeed = 500.f;
+
 	virtual void BeginPlay() override;
 };

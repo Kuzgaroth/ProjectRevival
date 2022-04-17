@@ -7,8 +7,6 @@
 #include "Components/PRSoldierAIPerceptionComponent.h"
 #include "Soldier/SoldierAIController.h"
 
-//DEFINE_LOG_CATEGORY(LogPRAIDecorators);
-
 UBTD_IfPlayerInSight::UBTD_IfPlayerInSight()
 {
 	NodeName = "Check If Player in Sight";
@@ -25,12 +23,8 @@ bool UBTD_IfPlayerInSight::CalcCondition(UBehaviorTreeComponent& OwnerComp, uint
 
 	const auto Actor = PerceptionComp->GetClosestEnemy();
 	
-	if (!Actor) return false;
-	UE_LOG(LogPRAIDecorators, Log, TEXT("Actor"))
-
-	// Удалить когда будет написан координатор
-	Controller->SetPlayerPos(FPlayerPositionData(Actor, nullptr));
-	return true;
+	UE_LOG(LogPRAIDecorators, Log, TEXT("GetBIsFiring(): %s"), Controller->GetBIsFiring()?TEXT("true"):TEXT("false"))
+	return Actor.GetActor() && !Controller->GetBIsFiring();
 }
 
 bool UBTD_IfPlayerInSight::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const

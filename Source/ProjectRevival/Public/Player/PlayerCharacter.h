@@ -4,11 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "BaseCharacterMovementComponent.h"
+#include "SoldierEnemy.h"
 #include "Player/BaseCharacter.h"
 #include "Components/TimelineComponent.h"
 #include "GameFeature/StaticObjectToNothing.h"
 #include "ProjectRevival/Public/CoreTypes.h"
 #include "PlayerCharacter.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FVisorPressed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FVisorReleased);
 
 class UCameraComponent;
 class USpringArmComponent;
@@ -43,12 +47,20 @@ public:
 
 	UFUNCTION()
 	void TimelineCoverLow(float Value);
-
-	UFUNCTION()
-	void SetChangeWorldPossibility(bool newValue,AStaticObjectToNothing* overlappedAct);
+	
+	void SetChangeWorldPossibility(bool newValue, AStaticObjectToNothing* overlappedAct);
+	void SetChangeWorldPossibility(bool newValue, ASoldierEnemy* overlappedAct);
 
 	UFUNCTION()
 	bool CheckIfWorldCanBeChanged() const;
+
+	UPROPERTY(BlueprintAssignable)
+	FVisorPressed VisorPressedDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FVisorReleased VisorReleasedDelegate;
+
+	UBaseCharacterMovementComponent* GetMovementComponent()const {return PlayerMovementComponent;}
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoomBlueprint PlayerAimZoom;
@@ -67,6 +79,8 @@ public:
 
 	UPROPERTY()
 	UCameraCoverFunctions* CameraCoverFunctions;
+
+	FDimensionShotStruct DimensionShotAbStruct;
 	
 	USpringArmComponent* GetPlayerSpringArmComponent(){ return SpringArmComponent; }
 	void CameraZoomIn();
@@ -88,9 +102,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="Phrases")
 	USoundCue* WorldCantBeChangedPhrase;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Death")
+	UParticleSystem* DeathVFX;
 	
 	bool WorldCanBeChanged=true;
 	AStaticObjectToNothing* OverlappedChangeWActor;
+	ASoldierEnemy* OverlappedChangeWEnemy;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnEnergyAttributeChanged(const FOnAttributeChangeData& Data) override;
@@ -105,6 +122,7 @@ protected:
 	void OnWorldChanged();
 	virtual bool StartCover_Internal(FHitResult& CoverHit) override;
 	virtual bool StopCover_Internal() override;
+	virtual void EnterDeathWorld();
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -113,6 +131,10 @@ public:
 	//The range in which enemies and objects are highlighted 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
 	float HighlightRadius = 2000.f;
+
+	//Time for effect to remain after turn off 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
+	float DestroyDelay = 1.0f;
 
 	//Trace Channel we use to detect all the stuff
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
@@ -129,6 +151,7 @@ public:
 	virtual void OnTurn() override;
 	virtual void Falling() override;
 	virtual void Landed(const FHitResult& Hit) override;
+	
 	TArray<FAmmoData> GetPlayerWeapons() const;
 	UFUNCTION(BlueprintCallable)
 	FCoverData& GetCoverData();
@@ -142,6 +165,7 @@ private:
 	UBaseCharacterMovementComponent* PlayerMovementComponent;
 	UPROPERTY()
 	FCoverData CoverData;
+	FTimerHandle DeathTimerHandle;
 	
 	bool bWantsToRun = false;
 	bool bIsMovingForward = false;
@@ -161,7 +185,6 @@ private:
 	UPROPERTY()
 	class USphereComponent* SphereDetectingHighlightables;
 	
-	bool IsInCover=false;
 	FTimerHandle THandle;
 	const float FlipTime = 0.5f;
 	const float FlipStrength = 2000.f;
