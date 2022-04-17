@@ -1,9 +1,14 @@
 #pragma once
+#include <string>
+
 #include "Camera/CameraComponent.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Interfaces/ICoverable.h"
 #include "CoreTypes.generated.h"
+
+class UDimensionShotAbility;
+
 
 class UBoxComponent;
 //Weapon
@@ -13,6 +18,15 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnClipEmptySignature, ABaseWeapon*);
 
 // Log Categories
 DECLARE_LOG_CATEGORY_EXTERN(LogPRAISystem, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIController, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIPerception, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAITasks, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAIServices, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAISoldier, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRAISoldierRifle, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRStaticObject, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogPRPatrolPath, Log, All);
 
 USTRUCT(BlueprintType)
 struct FAmmoData
@@ -39,6 +53,13 @@ struct FWeaponData
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Weapon")
 	UAnimMontage* ReloadAnimMontage;
+};
+
+UENUM()
+enum class EBotState : uint8
+{
+	Idle = 0,
+	Battle = 1
 };
 
 //Health
@@ -150,19 +171,19 @@ struct FPlayerAimZoomBlueprint
 	UCurveVector* CurveVector;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timeline")
-	FVector Offset = FVector(120.0, 60.0, 0.0);
+	FVector Offset = FVector(20.0, 60.0, 0.0);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	FVector CoverHighOffset = FVector(170.0, 120.0, 0.0);
+	FVector CoverHighOffset = FVector(-70.0, -100.0, 5.0);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	FVector CoverHighCrouchOffset = FVector(170.0, 120.0, 120.0);
+	FVector CoverHighCrouchOffset = FVector(-70.0, 120.0, 120.0);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	FVector CoverLowOffset = FVector(130.0, 20.0, 70.0);
+	FVector CoverLowOffset = FVector(-70.0, 70.0, 55.0);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	FVector CoverLowMiddleOffset = FVector(70.0, -83.0, 120.0);
+	FVector CoverLowMiddleOffset = FVector(-70.0, 70.0, 100.0);
 	
 	UPROPERTY()
 	FVector StartLoc;
@@ -247,6 +268,22 @@ struct FLeftSideViewBlueprint
 
 	UPROPERTY()
 	bool bIsFirstTimeChange = false;
+
+	UPROPERTY()
+	float LeftPosSave = 0.0;
+	
+	UPROPERTY()
+    float RightPosSave = 0.0;
+};
+
+USTRUCT(BlueprintType)
+struct FDimensionShotStruct
+{
+	GENERATED_BODY()
+	bool IsInRevolverTransition=false;
+	bool IsInRevolverAim=false;
+
+	UDimensionShotAbility* Ability;
 };
 
 UCLASS()
@@ -277,10 +314,10 @@ struct FCameraCover
 	UCurveVector* CoverVector;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	FVector CameraCover = FVector(80.0, 0.0, -10.0);
+	FVector CameraCover = FVector(30.0, -90.0, -10.0);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	float Low = 120.0;
+	float Low = 95.0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
 	UCurveFloat* CoverFloat;
@@ -289,7 +326,7 @@ struct FCameraCover
 	float FieldOfView = 60.0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cover")
-	float CoverZoomFieldOfView = 60.0;
+	float CoverZoomFieldOfView = 45.0;
 	
 	UPROPERTY()
 	float CurrentFieldOfView;
@@ -332,6 +369,12 @@ struct FCameraCover
 
 	UPROPERTY()
 	bool bIsHighLong = true;
+
+	UPROPERTY()
+	int IsFirstLow = 0;
+
+	UPROPERTY()
+	int IsFirstHigh = 0;
 };
 
 USTRUCT(BlueprintType)
@@ -348,9 +391,38 @@ struct FCoverPointsAndPossibility
 	UPROPERTY(EditInstanceOnly,BlueprintReadWrite,Category="CoverPointsData")
 	bool CanBeTakenAsCover=true;
 
+	UPROPERTY()
+	USceneComponent* LastCoverPosition;
+	
 	TMap<UBoxComponent*,bool> PointIsNotTaken;
 	TArray<FVector> PositionsOfCoverPoints;
 	
+};
+
+USTRUCT(BlueprintType)
+struct FPatrolPath
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	int PatrolPointsAmount;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	int MaxNumOfPatrollingBots;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	int CurrentNumOfPatrollingBots;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	bool bIsLooped;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	bool bCanBeTaken;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Patrol Path")
+	bool bIsReversed;
+
+	TArray<TTuple<UBoxComponent*, FVector>> PatrolPointsPos;
 };
 
 UCLASS()
@@ -428,16 +500,52 @@ inline void UPlayerAimZoomFunctions::CameraZoomIn(USpringArmComponent*& SpringAr
 	if (LeftSideViewBlueprint.CamPos == false)
 	{
 		if (!(CoverData.IsInCover())) LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.Offset.Y / 1.2;
-		else if (CameraCoverFunctions->CoverType == ECoverType::High) LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.CoverHighOffset.Y / 18.0;
-		else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == true) LocalPlayerAimZoomBlueprint.EndLoc.Y += LocalPlayerAimZoomBlueprint.CoverLowOffset.Y / 1.2;
-		else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == false) LocalPlayerAimZoomBlueprint.EndLoc.Y += LocalPlayerAimZoomBlueprint.CoverLowMiddleOffset.Y / 1.2;
+		else if (CameraCoverFunctions->CoverType == ECoverType::High)
+		{
+			LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.CoverHighOffset.Y;
+			if (LocalPlayerAimZoomBlueprint.EndLoc.Y < 55.0) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+			else if (LocalPlayerAimZoomBlueprint.EndLoc.Y > 65.0) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+			if (LocalPlayerAimZoomBlueprint.EndLoc.Y > 65.0) LocalPlayerAimZoomBlueprint.EndLoc.Y = 160.0;
+		}
+		else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == true)
+		{
+			LocalPlayerAimZoomBlueprint.EndLoc.Y += LocalPlayerAimZoomBlueprint.CoverLowOffset.Y;
+			if (LocalPlayerAimZoomBlueprint.EndLoc.Y < 86.0) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+			//else if (LocalPlayerAimZoomBlueprint.EndLoc.Y > 94.0) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+			if (CameraCover.IsFirstLow == 0) CameraCover.IsFirstLow = 1;
+			else if (CameraCover.IsFirstLow == 2) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+		}
+		else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == false)
+		{
+			LocalPlayerAimZoomBlueprint.EndLoc.Y += LocalPlayerAimZoomBlueprint.CoverLowMiddleOffset.Y;
+			if (LocalPlayerAimZoomBlueprint.EndLoc.Y > 64.0) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+			//else if (LocalPlayerAimZoomBlueprint.EndLoc.Y < 56.0) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+			if (CameraCover.IsFirstLow == 0) CameraCover.IsFirstLow = 2;
+			else if (CameraCover.IsFirstLow == 1) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+		}
 	}
-	else if (!(CoverData.IsInCover())) LocalPlayerAimZoomBlueprint.EndLoc.Y += LocalPlayerAimZoomBlueprint.Offset.Y / 2.0;
-	else if (CameraCoverFunctions->CoverType == ECoverType::High) LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.CoverHighOffset.Y / 2.8;
-		else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == true) LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.CoverLowOffset.Y * 2.5;
-			else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == false) LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.CoverLowMiddleOffset.Y / 2.0;
-	if (CameraCover.bIsShift == true && LeftSideViewBlueprint.CamPos == false) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
-	else if (CameraCover.bIsShift == true && LeftSideViewBlueprint.CamPos == true) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+	else if (!(CoverData.IsInCover())) LocalPlayerAimZoomBlueprint.EndLoc.Y += LocalPlayerAimZoomBlueprint.Offset.Y / 2.0 - 15.0;
+	else if (CameraCoverFunctions->CoverType == ECoverType::High)
+	{
+		LocalPlayerAimZoomBlueprint.EndLoc.Y += LocalPlayerAimZoomBlueprint.CoverHighOffset.Y + 20.0;
+		if (LocalPlayerAimZoomBlueprint.EndLoc.Y < -35.0) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+		else if (LocalPlayerAimZoomBlueprint.EndLoc.Y > -25.0) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+		if (CameraCover.IsFirstHigh == 0) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+	}
+		else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == true)
+		{
+			LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.CoverLowOffset.Y - 10.0;
+			//if (LocalPlayerAimZoomBlueprint.EndLoc.Y < -64.0) LocalPlayerAimZoomBlueprint.EndLoc.Y = -60.0;
+			/*else*/ if (LocalPlayerAimZoomBlueprint.EndLoc.Y > -56.0) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+		}
+			else if (CameraCoverFunctions->CoverType == ECoverType::Low && CameraCover.bIsShift == false)
+			{
+				LocalPlayerAimZoomBlueprint.EndLoc.Y -= LocalPlayerAimZoomBlueprint.CoverLowMiddleOffset.Y - 70.0;
+				if (LocalPlayerAimZoomBlueprint.EndLoc.Y < -64.0) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
+				//else if (LocalPlayerAimZoomBlueprint.EndLoc.Y > -56.0) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+			}
+	//if (CameraCover.bIsShift == true && LeftSideViewBlueprint.CamPos == false) LocalPlayerAimZoomBlueprint.EndLoc.Y -= CameraCover.CoverYShift;
+	//else if (CameraCover.bIsShift == true && LeftSideViewBlueprint.CamPos == true) LocalPlayerAimZoomBlueprint.EndLoc.Y += CameraCover.CoverYShift;
 	if (!(CoverData.IsInCover())) LocalPlayerAimZoomBlueprint.CurrentFieldOfView = LocalPlayerAimZoomBlueprint.FieldOfView;
 	else LocalPlayerAimZoomBlueprint.CurrentFieldOfView = CameraCover.CoverZoomFieldOfView;
 
@@ -517,19 +625,26 @@ inline void ULeftSideViewFunctions::OnCameraMove(USpringArmComponent*& SpringArm
 
 	if (CoverData.IsInCover())
 	{
-		if (CameraCover.bIsShift == true && LocalLeftSideViewBlueprint.CamPos == false)
+		if (LocalLeftSideViewBlueprint.CamPos == false)
 		{
-			LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift;
+			LocalLeftSideViewBlueprint.EndPos.Y -= 2.5 * CameraCover.CoverYShift;
+			//if (CameraCover.bIsShift == true) LocalLeftSideViewBlueprint.EndPos.Y -= CameraCover.CoverYShift;
+			if (LocalLeftSideViewBlueprint.EndPos.Y < -36.0) LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift;
+			else if (LocalLeftSideViewBlueprint.EndPos.Y > -24.0) LocalLeftSideViewBlueprint.EndPos.Y -= CameraCover.CoverYShift;
 			CameraCover.bIsShift = false;
 		}
-		else if (CameraCover.bIsShift == true && LocalLeftSideViewBlueprint.CamPos == true)
+		else if (LocalLeftSideViewBlueprint.CamPos == true)
 		{
-			LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift;
+			LocalLeftSideViewBlueprint.EndPos.Y -= 2.5 * CameraCover.CoverYShift;
+			//if (CameraCover.bIsShift == true) LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift;
+			if (LocalLeftSideViewBlueprint.EndPos.Y > 66.0) LocalLeftSideViewBlueprint.EndPos.Y -= CameraCover.CoverYShift;
+			else if (LocalLeftSideViewBlueprint.EndPos.Y < 54.0) LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift;
 			CameraCover.bIsShift = false;
 		}
 
 		//if (LocalLeftSideViewBlueprint.bIsFirstTimeChange == false) {LocalLeftSideViewBlueprint.EndPos.Y += CameraCover.CoverYShift; LocalLeftSideViewBlueprint.bIsFirstTimeChange = true;}
 	}
+	CameraCover.IsFirstHigh = 1;
 	LocalLeftSideViewBlueprint.Block = true;
 	LocalLeftSideViewBlueprint.IsMoving = true;
 	LocalLeftSideViewBlueprint.Repeat = false;
@@ -558,9 +673,6 @@ inline void UCameraCoverFunctions::TimelineCoverYShift(float Value, USpringArmCo
 	if (abs(NewView) >= abs(CameraCover.EndPos)) CameraCover.IsShifting = false;
 }
 
-
-DECLARE_LOG_CATEGORY_EXTERN(LogPRAIDecorators, Log, All);
-
 struct FBTPlayerCheckDecoratorMemory
 {
 	bool bLastRawResult;
@@ -578,11 +690,12 @@ USTRUCT(BlueprintType)
 struct FPlayerPositionData
 {
 	GENERATED_BODY()
-
+private:
 	UPROPERTY()
 	AActor* PlayerActor;
 	UPROPERTY()
 	AActor* PlayerCover;
+public:
 	FPlayerPositionData(AActor* PActor, AActor* PCover)
 	{
 		PlayerActor = PActor;
@@ -593,9 +706,55 @@ struct FPlayerPositionData
 		PlayerActor=nullptr;
 		PlayerCover=nullptr;
 	}
+	void SetActor(AActor* PActor)
+	{
+		PlayerActor = PActor;
+	}
+	AActor* GetActor() const
+	{
+		return PlayerActor;
+	}
+	void SetCover(AActor* PCover)
+	{
+		PlayerCover = PCover;
+	}
+	AActor* GetCover() const
+	{
+		return PlayerCover;
+	}
+	FVector GetActorPosition() const
+	{
+		return (PlayerActor) ? PlayerActor->GetActorLocation() : FVector(0.0, 0.0, 0.0);
+	}
 	FORCEINLINE void operator=(const FPlayerPositionData& PlayerPos)
 	{
 		PlayerActor = PlayerPos.PlayerActor;
 		PlayerCover = PlayerPos.PlayerCover;
 	}
+};
+
+UENUM(BlueprintType, Category = "GameRules")
+enum EChangeWorld
+{
+	OrdinaryWorld=0 UMETA(DisplayName = "Ordinary World"),
+	OtherWorld=1 UMETA(DisplayName = "Other World")
+};
+
+UENUM(BlueprintType, Category = "GameRules")
+enum EChangeEditorVisibility
+{
+	DefaultWorld=0 UMETA(DisplayName = "Ordinary World"),
+	AltirnativeWorld=1 UMETA(DisplayName = "Other World"),
+	BothWorlds=2 UMETA(DisplayName = "Both Worlds")
+
+};
+
+UENUM(BlueprintType, Category = "GameRules")
+enum EChangeAllMapEditorVisibility
+{
+	DefaultVisibleWorld=0 UMETA(DisplayName = "Ordinary World"),
+	OtherVisibleWorld=1 UMETA(DisplayName = "Other World"),
+	BothVisibleWorlds=2 UMETA(DisplayName = "Both Worlds"),
+	OwnValuesWorld=3 UMETA(DisplayName = "None World")
+
 };

@@ -18,21 +18,6 @@ void UPRGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, 
 	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("%s has started"), *GetName());
 	
 	//Вызов старта кулдауна способности
-	
-	
-	//K2_EndAbility();
-}
-
-void UPRGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
-{
-	float CooldownMagnitude=0.f;
-	UGameplayEffect* CooldownEffect = GetCooldownGameplayEffect(); 
-	if (CooldownEffect)
-	{
-		CooldownEffect->DurationMagnitude.GetStaticMagnitudeIfPossible(1.f, CooldownMagnitude);
-		UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Cooldown is %f seconds"), CooldownMagnitude);
-	}
-	ApplyCooldown(Handle, ActorInfo, ActivationInfo);
 	if (ActorInfo)
 	{
 		if (ActorInfo->PlayerController.IsValid())
@@ -55,10 +40,10 @@ void UPRGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 								AbilityWidget = PlayerHUDWidget->GetWidgetByAction(AbilityAction);
 	
 								if (!AbilityWidget) UE_LOG(LogPRAbilitySystemBase, Error,
-									TEXT("Widget have not found. Check Blueprint version on AbilityAction parameter or widget method directly"));
+                                    TEXT("Widget have not found. Check Blueprint version on AbilityAction parameter or widget method directly"));
 								if (AbilityWidget)
 								{
-									AbilityWidget->StartCooldown(CooldownMagnitude);	
+									AbilityWidget->StartAbility();	
 								}
 							}
 						}
@@ -67,6 +52,58 @@ void UPRGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 			}
 		}
 			
+	}
+	
+	//K2_EndAbility();
+}
+
+void UPRGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	float CooldownMagnitude=0.f;
+	UGameplayEffect* CooldownEffect = GetCooldownGameplayEffect(); 
+	if (CooldownEffect)
+	{
+		CooldownEffect->DurationMagnitude.GetStaticMagnitudeIfPossible(1.f, CooldownMagnitude);
+		UE_LOG(LogPRAbilitySystemBase, Display, TEXT("Cooldown is %f seconds"), CooldownMagnitude);
+	}
+	if(!bWasCancelled)
+	{
+		ApplyCooldown(Handle, ActorInfo, ActivationInfo);
+		if (ActorInfo)
+		{
+			if (ActorInfo->PlayerController.IsValid())
+			{
+				auto Controller = ActorInfo->PlayerController.Get();
+				if (Controller)
+				{
+					auto PlayerController = Cast<ABasePlayerController>(Controller);
+					if (PlayerController)
+					{
+						auto PlayerHUD = PlayerController->GetHUD<AGameHUD>();
+						if (PlayerHUD)
+						{
+							auto HUDWidget = PlayerHUD->GetPlayerHUDWidget();
+							if (HUDWidget)
+							{
+								auto PlayerHUDWidget = Cast<UPlayerHUDWidget>(HUDWidget);
+								if (PlayerHUDWidget)
+								{
+									AbilityWidget = PlayerHUDWidget->GetWidgetByAction(AbilityAction);
+	
+									if (!AbilityWidget) UE_LOG(LogPRAbilitySystemBase, Error,
+										TEXT("Widget have not found. Check Blueprint version on AbilityAction parameter or widget method directly"));
+									if (AbilityWidget)
+									{
+										AbilityWidget->StartCooldown(CooldownMagnitude);	
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			
+		}
 	}
 	
 	UE_LOG(LogPRAbilitySystemBase, Display, TEXT("%s has ended"), *GetName());

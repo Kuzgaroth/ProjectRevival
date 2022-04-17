@@ -4,7 +4,7 @@
 #include "AI/Soldier/Decorators/BTD_IfBotInCover.h"
 #include "Soldier/SoldierAIController.h"
 
-DEFINE_LOG_CATEGORY(LogPRAIDecorators);
+
 
 UBTD_IfBotInCover::UBTD_IfBotInCover()
 {
@@ -39,12 +39,5 @@ bool UBTD_IfBotInCover::CalcCondition(UBehaviorTreeComponent& OwnerComp, uint8* 
 	const auto Controller = Cast<ASoldierAIController>(OwnerComp.GetAIOwner());
 	if (!Controller) return false;
 
-	if (Controller->GetBIsInCover())
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return Controller->GetBIsInCover();
 }

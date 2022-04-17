@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 
 #include "CirclePBWidget.h"
+#include "CrosshairWidget.h"
 #include "HealthPBWidget.h"
 #include "AbilitySystem/PRAbilityTypes.h"
 #include "Blueprint/UserWidget.h"
@@ -34,17 +35,19 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category="UI")
 	void OnTakeDamage(float Health);
 
-	UFUNCTION(BlueprintCallable, Category="UI")
-	void OnEnergyValueChanged(float Energy);
+	// UFUNCTION(BlueprintCallable, Category="UI")
+	// void OnEnergyValueChanged(float Energy);
 
 	UCirclePBWidget* GetWidgetByAction(EGASInputActions AbilityAction) const;
+
+	UCrosshairWidget* GetCrosshairWidget() const;
 	
 protected:
 	UPROPERTY(meta=(BindWidget))
 	UHealthPBWidget* HealthPB;
 
-	UPROPERTY(meta=(BindWidget))
-	UHealthPBWidget* EnergyPB;
+	// UPROPERTY(meta=(BindWidget))
+	// UHealthPBWidget* EnergyPB;
 
 	UPROPERTY(meta=(BindWidget))
 	UCirclePBWidget* GhostPB;
@@ -54,6 +57,12 @@ protected:
 
 	UPROPERTY(meta=(BindWidget))
 	UCirclePBWidget* FlipPB;
+
+	UPROPERTY(meta=(BindWidget))
+	UCirclePBWidget* ChangeWorldPB;
+
+	UPROPERTY(meta=(BindWidget))
+	UCrosshairWidget* Crosshair;
 	
 	virtual void NativeOnInitialized() override;
 private:

@@ -53,7 +53,7 @@ void AVisorItem::Tick(float DeltaTime)
 void AVisorItem::SelfDestruction()
 {
 	VisorAbility();
-	if (PlayedEffect)
+	if (VisualEffect)
 	{
 		VisualEffect->Deactivate();
 		VisualEffect->DestroyComponent();

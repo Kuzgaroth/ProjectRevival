@@ -23,6 +23,14 @@ bool UHealthComponent::TryToAddHealth(float HealthAmount)
 	return true;
 }
 
+bool UHealthComponent::TryToAddHealthPercentage(float HealedPercent)
+{
+	if (IsDead() || IsHealthFull()) return false;
+	const auto HealthAmount=MaxHealth/100.0f*HealedPercent;
+	SetHealth(Health+HealthAmount);
+	return true;
+}
+
 bool UHealthComponent::IsHealthFull() const
 {
 	return FMath::IsNearlyEqual(Health, MaxHealth);
@@ -90,6 +98,13 @@ void UHealthComponent::SetHealth(float NewHealth)
 		OnHealthChanged.Broadcast(Health, HealthDelta);
 }
 
+void UHealthComponent::PlayerFinallyDied()
+{
+	const auto GameMode = GetWorld()->GetAuthGameMode<APRGameModeBase>();
+	if (!GameMode) return;
+	GameMode->GameOver();
+}
+
 void UHealthComponent::PlayCameraShake()
 {
 	if (IsDead()) return;
@@ -112,7 +127,5 @@ void UHealthComponent::Killed(AController* KillerController)
 
 	const auto Player = Cast<APawn>(GetOwner());
 	const auto VictimController = Player ? Player->Controller : nullptr;
-
-	if (Player->IsA<APlayerCharacter>()) GameMode->GameOver();
 }
 

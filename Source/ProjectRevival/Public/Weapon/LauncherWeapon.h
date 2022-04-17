@@ -16,6 +16,7 @@ class PROJECTREVIVAL_API ALauncherWeapon : public ABaseWeapon
 public:
 	virtual void StartFire() override;
 	virtual void StopFire() override;
+	TSubclassOf<ABaseProjectile*> GetProjectile()const;
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Projectile")
 	TSubclassOf<ABaseProjectile> ProjectileClass;

@@ -14,3 +14,50 @@ bool IIChangingWorldActor::TryToFindCoverPoint(FVector PlayerPos, FVector& Cover
 	return false;
 }
 
+void IIChangingWorldActor::SetLastCoverPointStatus(bool bIsFree)
+{
+}
+
+void IIChangingWorldActor::ClearComponentTags(UStaticMeshComponent* supermesh)
+{
+}
+
+void IIChangingWorldActor::LoadComponentTags(UStaticMeshComponent* supermesh)
+{
+}
+
+void IIChangingWorldActor::ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld)
+{
+}
+
+void IIChangingWorldActor::Changing()
+{
+}
+
+void IIChangingWorldActor::TimeLineFinished()
+{
+}
+
+void IIChangingWorldActor::TimeLineFloatReturn(float Value)
+{
+}
+
+void IIChangingWorldActor::ShowChangeWorldObjectByAbility()
+{
+}
+
+void IIChangingWorldActor::HideChangeWorldObjectByAbility()
+{
+}
+
+void IIChangingWorldActor::OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+}
+
+void IIChangingWorldActor::OnMeshComponentEndCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+}
+
+
