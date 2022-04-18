@@ -11,7 +11,6 @@
 
 DEFINE_LOG_CATEGORY(LogPRStaticObject);
 
-
 // Sets default values
 AStaticObjectToNothing::AStaticObjectToNothing()
 {
