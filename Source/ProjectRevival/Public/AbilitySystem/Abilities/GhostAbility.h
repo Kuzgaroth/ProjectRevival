@@ -6,6 +6,7 @@
 #include "Abilities/Tasks/AbilityTask_WaitDelay.h"
 #include "AbilitySystem/Abilities/PRGameplayAbility.h"
 #include "AbilitySystem/AbilityTasks/GhostTask_InvisibilityToggle.h"
+#include "Sound/SoundCue.h"
 #include "GhostAbility.generated.h"
 
 
@@ -20,8 +21,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Duration")
 	float Duration = 5.f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Ghost Visual")
+	UPROPERTY(EditDefaultsOnly, Category="VFX")
 	UCurveFloat* VisualCurve;
+
+	UPROPERTY(EditDefaultsOnly, Category="Sound")
+	USoundCue* GhostCue;
 	
 	virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
@@ -29,6 +33,8 @@ protected:
 	void OnAppearEnded();
 	UFUNCTION()
 	void OnDisappearEnded();
+	UFUNCTION()
+	void PlayGhostSoundEffect();
 private:
 	UPROPERTY()
 	UGhostTask_InvisibilityToggle* GhostTask;
