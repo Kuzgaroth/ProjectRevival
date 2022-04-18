@@ -35,16 +35,16 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite ,Category="InternalState")
 	float LifeSeconds;
-	
+	UFUNCTION()
+	virtual void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit );
+
 	virtual void BeginPlay() override;
+
+	FVector ShotDirection;
+	AController* GetController() const;
 
 public:	
 	ABaseProjectile();
 	FORCEINLINE void SetShotDirection(const FVector& Direction){ShotDirection = Direction;};
-private:
-	FVector ShotDirection;
-	
-	UFUNCTION()
-	void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit );
-	AController* GetController() const;
+
 };

@@ -11,6 +11,7 @@
 
 DEFINE_LOG_CATEGORY(LogPRStaticObject);
 
+
 // Sets default values
 AStaticObjectToNothing::AStaticObjectToNothing()
 {
@@ -59,7 +60,10 @@ void AStaticObjectToNothing::BeginPlay()
 			for (const auto Material : MeshesMaterials)
 			{
 				if (Material!=nullptr)
+				{
 					Material->SetScalarParameterValue("Amount",MinCurveValue);
+					Material->SetVectorParameterValue("Color",FLinearColor::Blue);
+				}
 			}
 		}
 		else
@@ -76,7 +80,10 @@ void AStaticObjectToNothing::BeginPlay()
 			for (const auto Material : MeshesMaterials)
 			{
 				if (Material!=nullptr)
+				{
 					Material->SetScalarParameterValue("Amount",MaxCurveValue);
+					Material->SetVectorParameterValue("Color",FLinearColor::Red);
+				}
 			}
 		}
 		else
@@ -173,9 +180,7 @@ void AStaticObjectToNothing::Changing()
 		if(VisualCurve)
 		{
 			isApearing=false;
-			SuperMesh->SetCollisionProfileName("OverlapAll");
 			TimeLine.PlayFromStart();
-
 		}
 		else
 		{
@@ -327,6 +332,7 @@ void AStaticObjectToNothing::TimeLineFinished()
 {
 	if(!isApearing)
 	{
+		SuperMesh->SetCollisionProfileName("OverlapAll");
 		ClearComponentTags(SuperMesh);
 	}
 }
