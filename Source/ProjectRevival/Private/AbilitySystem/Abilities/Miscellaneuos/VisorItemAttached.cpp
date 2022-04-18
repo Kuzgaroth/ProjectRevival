@@ -51,7 +51,6 @@ void AVisorItemAttached::Tick(float DeltaTime)
 		if (VisualEffect->bWasCompleted)
 		{
 			VisualEffect->Activate();
-			UE_LOG(LogTemp, Log, TEXT("ItemAttached: VisualEffect->Activate() was called"))
 		}
 	}
 	Super::Tick(DeltaTime);
@@ -84,7 +83,7 @@ void AVisorItemAttached::VisorAbility()
 	FVector EndTrace = StartTrace + FVector(0.f, 0.f, 0.1f);
 	
 	bool IsHitKismetByObj = UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), StartTrace, EndTrace, VisorRadius,
-		ObjectTypesToVisor, true, ToBeIgnoredByVisor, EDrawDebugTrace::ForDuration, OutHits, true, FLinearColor::Yellow, FLinearColor::Blue, 1.0f);
+		ObjectTypesToVisor, true, ToBeIgnoredByVisor, EDrawDebugTrace::None, OutHits, true, FLinearColor::Yellow, FLinearColor::Blue, 1.0f);
 	
 	if (IsVisoring == false)
 	{
@@ -94,8 +93,11 @@ void AVisorItemAttached::VisorAbility()
 			{
 				if (Cast<AAICharacter>(Hit.GetActor()))
 				{
-					Cast<AAICharacter>(Hit.GetActor())->GetMesh()->SetRenderCustomDepth(true);
-					Cast<AAICharacter>(Hit.GetActor())->GetMesh()->SetCustomDepthStencilValue(1);
+					if (!Cast<AAICharacter>(Hit.GetActor())->GetMesh()->bRenderCustomDepth)
+					{
+						Cast<AAICharacter>(Hit.GetActor())->GetMesh()->SetRenderCustomDepth(true);
+						Cast<AAICharacter>(Hit.GetActor())->GetMesh()->SetCustomDepthStencilValue(1);
+					}
 					// AAICharacter* AIChar = Cast<AAICharacter>(Hit.GetActor());
 					// TArray<UMaterialInterface*> TempMaterialArr;
 					// int32 TotalNumMaterials = AIChar->GetMesh()->GetNumMaterials();
@@ -110,22 +112,22 @@ void AVisorItemAttached::VisorAbility()
 					// }
 					// OriginalMaterials.Add(AIChar->GetName(), TempMaterialArr);
 				}
-				//else if (Cast<AStaticObjectToNothing>(Hit.GetActor()) && Cast<UStaticMeshComponent>(Hit.GetActor()->GetRootComponent()))
-				//{
-				//	Cast<UStaticMeshComponent>(Hit.GetActor()->GetRootComponent())->SetRenderCustomDepth(true);
-				//	Cast<UStaticMeshComponent>(Hit.GetActor()->GetRootComponent())->SetCustomDepthStencilValue(2);
-				//}
-				else if(Hit.GetComponent())
-				{
-					Hit.GetComponent()->SetRenderCustomDepth(true);
-					Hit.GetComponent()->SetCustomDepthStencilValue(0);
-				}
+				// else if (Cast<AStaticObjectToNothing>(Hit.GetActor()) && Cast<UStaticMeshComponent>(Hit.GetActor()->GetRootComponent()))
+				// {
+				// 	Cast<UStaticMeshComponent>(Hit.GetActor()->GetRootComponent())->SetRenderCustomDepth(true);
+				// 	Cast<UStaticMeshComponent>(Hit.GetActor()->GetRootComponent())->SetCustomDepthStencilValue(2);
+				// }
+				// else if(Hit.GetComponent())
+				// {
+				// 	Hit.GetComponent()->SetRenderCustomDepth(true);
+				// 	Hit.GetComponent()->SetCustomDepthStencilValue(0);
+				// }
 			}
 		}
 		IsVisoring = true;
 	} 
-	//else if (IsVisoring == true)
-	//{
+	else if (IsVisoring == true)
+	{
 	//	if(IsHitKismetByObj)
 	//	{
 	//		for (FHitResult& Hit : OutHits)
@@ -159,8 +161,8 @@ void AVisorItemAttached::VisorAbility()
 	//			}
 	//		}
 	//	}
-	//	IsVisoring = false;
-	//}
+		IsVisoring = false;
+	}
 }
 
 void AVisorItemAttached::OnOverlapBeginForVisor(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
@@ -193,11 +195,11 @@ void AVisorItemAttached::OnOverlapBeginForVisor(class UPrimitiveComponent* Overl
 			// 	Cast<UStaticMeshComponent>(OtherActor->GetRootComponent())->SetRenderCustomDepth(true);
 			// 	Cast<UStaticMeshComponent>(OtherActor->GetRootComponent())->SetCustomDepthStencilValue(2);
 			// }
-			else if(OtherComp)
-			{
-				OtherComp->SetRenderCustomDepth(true);
-				OtherComp->SetCustomDepthStencilValue(0);
-			}
+			// else if(OtherComp)
+			// {
+			// 	OtherComp->SetRenderCustomDepth(true);
+			// 	OtherComp->SetCustomDepthStencilValue(0);
+			// }
 		}
 	}
 }
@@ -228,14 +230,14 @@ void AVisorItemAttached::OnOverlapEndForVisor(class UPrimitiveComponent* Overlap
 				// }
 				// OriginalMaterials.Remove(OtherActor->GetName());
 			}
-			//else if (Cast<AStaticObjectToNothing>(OtherActor) && Cast<UStaticMeshComponent>(OtherActor->GetRootComponent()))
-			//{
-			//	Cast<UStaticMeshComponent>(OtherActor->GetRootComponent())->SetRenderCustomDepth(false);
-			//}
-			//else if(OtherComp)
-			//{
-			//	OtherComp->SetRenderCustomDepth(false);
-			//}
+			// else if (Cast<AStaticObjectToNothing>(OtherActor) && Cast<UStaticMeshComponent>(OtherActor->GetRootComponent()))
+			// {
+			// 	Cast<UStaticMeshComponent>(OtherActor->GetRootComponent())->SetRenderCustomDepth(false);
+			// }
+			// else if(OtherComp)
+			// {
+			// 	OtherComp->SetRenderCustomDepth(false);
+			// }
 		}
 	}
 }
