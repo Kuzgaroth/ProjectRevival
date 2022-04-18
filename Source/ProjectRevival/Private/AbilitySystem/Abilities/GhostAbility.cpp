@@ -3,6 +3,7 @@
 
 #include "AbilitySystem/Abilities/GhostAbility.h"
 #include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
+#include "Kismet/GameplayStatics.h"
 
 UGhostAbility::UGhostAbility()
 {
@@ -26,7 +27,8 @@ void UGhostAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const
 	GhostTask->OnAppearFinished.BindUFunction(this, "OnAppearEnded");
 	DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, Duration);
 	DelayTask->OnFinish.AddDynamic(this, &UGhostAbility::BeginAppear);
-	
+
+	PlayGhostSoundEffect();
 	GhostTask->Activate();
 	//--------------------------------------------------------------------
 	
@@ -44,6 +46,7 @@ void UGhostAbility::OnAppearEnded()
 {
 	GhostTask->OnAppearFinished.Unbind();
 	GhostTask->EndTask();
+	PlayGhostSoundEffect();
 	K2_EndAbility();
 }
 
@@ -51,6 +54,13 @@ void UGhostAbility::OnDisappearEnded()
 {
 	GhostTask->OnDisappearFinished.Unbind();
 	DelayTask->Activate();	
+}
+
+void UGhostAbility::PlayGhostSoundEffect()
+{
+	if (!GhostCue) return;
+
+	UGameplayStatics::SpawnSoundAttached(GhostCue,GetOwningActorFromActorInfo()->GetRootComponent());
 }
 
 void UGhostAbility::BeginAppear()
