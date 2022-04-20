@@ -5,6 +5,7 @@
 #include <string>
 #include "PlayerCharacter.h"
 #include "DrawDebugHelpers.h"
+#include "PRGameModeBase.h"
 #include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/BoxComponent.h"
@@ -85,10 +86,8 @@ void AStaticObjectToNothing::BeginPlay()
 				}
 			}
 		}
-		else
-		{
-			SuperMesh->SetVisibility(false);
-		}
+		SuperMesh->SetVisibility(false);
+		
 		SuperMesh->SetCollisionProfileName("OverlapAll");
 		ClearComponentTags(SuperMesh);
 	}
@@ -108,6 +107,7 @@ void AStaticObjectToNothing::BeginPlay()
 		}
 	}
 	SuperMesh->OnComponentEndOverlap.AddDynamic(this,&AStaticObjectToNothing::OnMeshComponentEndCollision);
+	
 }
 
 // Called every frame
@@ -149,19 +149,22 @@ void AStaticObjectToNothing::PostEditChangeProperty(FPropertyChangedEvent& Prope
 
 void AStaticObjectToNothing::Changing()
 {
-	if(CurrentWorld==OrdinaryWorld)
+	if(TimeLine.IsPlaying()) return;
+	auto GameMode=Cast<APRGameModeBase>(GetWorld()->GetAuthGameMode());
+	if(GameMode)
 	{
-		CurrentWorld=OtherWorld;
-	}
-	else
-	{
-		CurrentWorld=OrdinaryWorld;
+		if(GameMode->GetCurrentWorld()==CurrentWorld)
+		{
+			return;
+		}
+		CurrentWorld=GameMode->GetCurrentWorld();
 	}
 	if (World == CurrentWorld)
 	{
 		if(VisualCurve)
 		{
 			isApearing=true;
+			SuperMesh->SetVisibility(true);
 			SuperMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
 			LoadComponentTags(SuperMesh);
 			TimeLine.PlayFromStart();
@@ -233,24 +236,24 @@ void AStaticObjectToNothing::ChangeVisibleWorld(EChangeAllMapEditorVisibility Vi
 
 void AStaticObjectToNothing::ShowChangeWorldObjectByAbility()
 {
-	SuperMesh->SetRenderCustomDepth(true);
-	if(SuperMesh->GetCollisionProfileName()=="OverlapAll")
-	{
-		if(MeshesMaterials.Num()!=0)
-			for (const auto Material : MeshesMaterials)
-			{
-				auto reqwar=(MaxCurveValue-MinCurveValue)/TransparencyLevel;
-				reqwar=MaxCurveValue-reqwar;
-				if (Material!=nullptr) Material->SetScalarParameterValue("Amount",reqwar);
-			}
-	}
+
+	SuperMesh->SetVisibility(true);
+	GLog->Log("ShowingObject");
+	if(MeshesMaterials.Num()!=0)
+		for (const auto Material : MeshesMaterials)
+		{
+			auto reqwar=(MaxCurveValue-MinCurveValue)/TransparencyLevel;
+			reqwar=MaxCurveValue-reqwar;
+			if (Material!=nullptr) Material->SetScalarParameterValue("Amount",reqwar);
+		}
+	
 }
 
 void AStaticObjectToNothing::HideChangeWorldObjectByAbility()
 {
-	SuperMesh->SetRenderCustomDepth(false);
 	if(SuperMesh->GetCollisionProfileName()=="OverlapAll")
 	{
+		SuperMesh->SetVisibility(false);
 		if(MeshesMaterials.Num()!=0)
 			for (const auto Material : MeshesMaterials)
 			{
@@ -262,17 +265,19 @@ void AStaticObjectToNothing::HideChangeWorldObjectByAbility()
 void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogPRStaticObject, Warning, TEXT("StaticObject OnMeshComponentCollision"))
-	UE_LOG(LogPRStaticObject, Warning, TEXT("%s"), *FString(OtherActor->GetName()))
+	//UE_LOG(LogPRStaticObject, Warning, TEXT("StaticObject OnMeshComponentCollision"))
+	//UE_LOG(LogPRStaticObject, Warning, TEXT("%s"), *FString(OtherActor->GetName()))
 	if(Cast<AChangeWorldSphereActor>(OtherActor))
 	{
 		UE_LOG(LogPRStaticObject, Warning, TEXT("StaticObject Changing"))
 		Changing();
 	}
 	auto Player=Cast<APlayerCharacter>(OtherActor);
-	if(Player&& SuperMesh->GetCollisionProfileName()=="OverlapAll")
+	auto GameMode=Cast<APRGameModeBase>(GetWorld()->GetAuthGameMode());
+	if(Player&& CurrentWorld==GameMode->GetCurrentWorld())
 	{
-		Player->SetChangeWorldPossibility(false,this);
+		UE_LOG(LogPRStaticObject, Warning, TEXT("%s"), *FString(OtherActor->GetName()))
+		Player->SetChangeWorldPossibility(this);
 	}
 }
 
@@ -282,8 +287,7 @@ void AStaticObjectToNothing::OnMeshComponentEndCollision(UPrimitiveComponent* Ov
 	auto Player=Cast<APlayerCharacter>(OtherActor);
 	if(Player)
 	{
-		AStaticObjectToNothing* ptr = nullptr;
-		Player->SetChangeWorldPossibility(true, ptr);
+		Player->RemoveOverlappedChangeWActor(this);
 		HideChangeWorldObjectByAbility();
 	}
 }
@@ -331,6 +335,7 @@ void AStaticObjectToNothing::TimeLineFinished()
 	{
 		SuperMesh->SetCollisionProfileName("OverlapAll");
 		ClearComponentTags(SuperMesh);
+		SuperMesh->SetVisibility(false);
 	}
 }
 

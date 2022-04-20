@@ -402,10 +402,17 @@ void APlayerCharacter::TimelineCoverLow(float Value)
 	CameraCoverFunctions->TimelineCoverLow(Value, CameraCoverFunctions, SpringArmComponent);
 }
 
-void APlayerCharacter::SetChangeWorldPossibility(bool newValue, AStaticObjectToNothing* overlappedAct)
+void APlayerCharacter::SetChangeWorldPossibility(AActor* overlappedAct)
 {
-	OverlappedChangeWActor=overlappedAct;
-	WorldCanBeChanged=newValue;
+	OverlappedChangeWActors.Add(overlappedAct);
+}
+
+void APlayerCharacter::RemoveOverlappedChangeWActor(AActor* endOverlappedActor)
+{
+	if(OverlappedChangeWActors.Num()!=0)
+	{
+		OverlappedChangeWActors.Remove(endOverlappedActor);
+	}
 }
 
 void APlayerCharacter::SetChangeWorldPossibility(bool newValue, ASoldierEnemy* overlappedAct)
@@ -416,20 +423,24 @@ void APlayerCharacter::SetChangeWorldPossibility(bool newValue, ASoldierEnemy* o
 
 bool APlayerCharacter::CheckIfWorldCanBeChanged() const
 {
-	if(!WorldCanBeChanged)
+	bool CanBeChanged=true;
+
+	if(OverlappedChangeWActors.Num()!=0)
 	{
 		if(WorldCantBeChangedPhrase)
 			UGameplayStatics::SpawnSound2D(GetWorld(),WorldCantBeChangedPhrase);
-		if(OverlappedChangeWActor)
-		{
-			OverlappedChangeWActor->ShowChangeWorldObjectByAbility();
-		}
-		if(OverlappedChangeWEnemy)
-		{
-			OverlappedChangeWEnemy->ShowChangeWorldObjectByAbility();
-		}
+		const auto LastActor=Cast<AStaticObjectToNothing>(OverlappedChangeWActors[OverlappedChangeWActors.Num()-1]);
+		LastActor->ShowChangeWorldObjectByAbility();
+		CanBeChanged=false;
 	}
-	return WorldCanBeChanged;
+	if(OverlappedChangeWEnemy)
+	{
+		if(WorldCantBeChangedPhrase)
+			UGameplayStatics::SpawnSound2D(GetWorld(),WorldCantBeChangedPhrase);
+		OverlappedChangeWEnemy->ShowChangeWorldObjectByAbility();
+		CanBeChanged=false;
+	}
+	return CanBeChanged;
 }
 
 
