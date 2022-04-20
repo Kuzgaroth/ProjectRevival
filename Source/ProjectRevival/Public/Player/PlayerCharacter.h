@@ -48,7 +48,8 @@ public:
 	UFUNCTION()
 	void TimelineCoverLow(float Value);
 	
-	void SetChangeWorldPossibility(bool newValue, AStaticObjectToNothing* overlappedAct);
+	void SetChangeWorldPossibility(AActor* overlappedAct);
+	void RemoveOverlappedChangeWActor(AActor* endOverlappedActor);
 	void SetChangeWorldPossibility(bool newValue, ASoldierEnemy* overlappedAct);
 
 	UFUNCTION()
@@ -106,7 +107,7 @@ protected:
 	UParticleSystem* DeathVFX;
 	
 	bool WorldCanBeChanged=true;
-	AStaticObjectToNothing* OverlappedChangeWActor;
+	TArray<AActor*>  OverlappedChangeWActors;
 	ASoldierEnemy* OverlappedChangeWEnemy;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
