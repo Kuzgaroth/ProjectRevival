@@ -43,4 +43,6 @@ private:
 
 	UFUNCTION()
 	void BeginAppear();
+
+	void ChangeBlendMode(bool IsDisappearing);
 };
