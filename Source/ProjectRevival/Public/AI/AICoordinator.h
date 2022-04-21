@@ -35,6 +35,9 @@ protected:
 	TSubclassOf<AAICharacter> EnemyCharacterClass;
 	UPROPERTY(EditAnywhere)
 	float PlayerPositionUpdateTime=0.5f;
+
+	UPROPERTY(EditInstanceOnly)
+	TEnumAsByte<EChangeWorld> CoordinatorWorld;
 	
 	virtual void PostInitializeComponents() override;
 	
