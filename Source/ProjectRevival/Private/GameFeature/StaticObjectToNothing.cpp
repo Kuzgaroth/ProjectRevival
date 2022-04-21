@@ -274,7 +274,7 @@ void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* Overl
 	}
 	auto Player=Cast<APlayerCharacter>(OtherActor);
 	auto GameMode=Cast<APRGameModeBase>(GetWorld()->GetAuthGameMode());
-	if(Player&& CurrentWorld==GameMode->GetCurrentWorld())
+	if(Player&& GameMode && CurrentWorld==GameMode->GetCurrentWorld())
 	{
 		UE_LOG(LogPRStaticObject, Warning, TEXT("%s"), *FString(OtherActor->GetName()))
 		Player->SetChangeWorldPossibility(this);
