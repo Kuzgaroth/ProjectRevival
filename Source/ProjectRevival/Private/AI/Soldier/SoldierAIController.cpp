@@ -112,7 +112,9 @@ void ASoldierAIController::OnPossess(APawn* InPawn)
 	const auto AIChar = Cast<AAICharacter>(InPawn);
 	if (AIChar)
 	{
-		/*
+		RunBehaviorTree(AIChar->BehaviorTreeAsset);
+		BlackboardComponent = GetBlackboardComponent();
+		//SetBotState(EBotState::Idle);
 		auto Actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
 		Actor = Cast<APlayerCharacter>(Actor);
 		if (Actor)
@@ -120,10 +122,7 @@ void ASoldierAIController::OnPossess(APawn* InPawn)
 			const FPlayerPositionData ActorPos(Actor, nullptr);
 			SetPlayerPos(ActorPos);
 		}
-		*/
-		RunBehaviorTree(AIChar->BehaviorTreeAsset);
-		BlackboardComponent = GetBlackboardComponent();
-		SetBotState(EBotState::Idle);
+		SetBotState(EBotState::Battle);
 		Cast<ASoldierEnemy>(GetPawn())->StopEnteringCoverDelegate.AddDynamic(this, &ASoldierAIController::StopEnteringCover);
 		Cast<ASoldierEnemy>(GetPawn())->StopExitingCoverDelegate.AddDynamic(this, &ASoldierAIController::StopExitingCover);
 		Cast<ASoldierEnemy>(GetPawn())->StopCoverSideMovingDelegate.AddDynamic(this, &ASoldierAIController::StopCoverSideMoving);
@@ -137,7 +136,7 @@ void ASoldierAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (bIsPlayerInSight && bIsAppearing)
+	/*if (bIsPlayerInSight && bIsAppearing)
 	{
 		SetToBattleState();
 	}
@@ -151,7 +150,7 @@ void ASoldierAIController::Tick(float DeltaSeconds)
 											   PlayerLooseTime, false, -1);
 		}
 	}
-	if (!bIsAppearing) SetToIdleState();
+	if (!bIsAppearing) SetToIdleState();*/
 	
 	//const auto AimActor = GetFocusOnActor();
 	//SetFocus(AimActor);
