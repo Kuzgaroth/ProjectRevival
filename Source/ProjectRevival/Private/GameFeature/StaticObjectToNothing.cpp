@@ -52,7 +52,34 @@ void AStaticObjectToNothing::BeginPlay()
 		TimeLine.SetTimelineFinishedFunc(OnTimeLineFinished);
 		TimeLine.SetLooping(false);
 	}
+	auto GameMode=Cast<APRGameModeBase>(GetWorld()->GetAuthGameMode());
 	if (World==OrdinaryWorld)
+	{
+		if(VisualCurve&&MeshesMaterials.Num()>0)
+		{
+			for (const auto Material : MeshesMaterials)
+			{
+				if (Material!=nullptr)
+				{
+					Material->SetVectorParameterValue("Color",FLinearColor::Red);
+				}
+			}
+		}
+	}
+	else
+	{
+		if(VisualCurve&&MeshesMaterials.Num()>0)
+		{
+			for (const auto Material : MeshesMaterials)
+			{
+				if (Material!=nullptr)
+				{
+					Material->SetVectorParameterValue("Color",FLinearColor::Blue);
+				}
+			}
+		}
+	}
+	if (GameMode->GetCurrentWorld()==World)
 	{
 		isApearing=true;
 		if(VisualCurve&&MeshesMaterials.Num()>0)
@@ -62,7 +89,6 @@ void AStaticObjectToNothing::BeginPlay()
 				if (Material!=nullptr)
 				{
 					Material->SetScalarParameterValue("Amount",MinCurveValue);
-					Material->SetVectorParameterValue("Color",FLinearColor::Blue);
 				}
 			}
 		}
@@ -82,7 +108,6 @@ void AStaticObjectToNothing::BeginPlay()
 				if (Material!=nullptr)
 				{
 					Material->SetScalarParameterValue("Amount",MaxCurveValue);
-					Material->SetVectorParameterValue("Color",FLinearColor::Red);
 				}
 			}
 		}
@@ -274,7 +299,7 @@ void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* Overl
 	}
 	auto Player=Cast<APlayerCharacter>(OtherActor);
 	auto GameMode=Cast<APRGameModeBase>(GetWorld()->GetAuthGameMode());
-	if(Player&& CurrentWorld==GameMode->GetCurrentWorld())
+	if(Player&& GameMode && CurrentWorld==GameMode->GetCurrentWorld())
 	{
 		UE_LOG(LogPRStaticObject, Warning, TEXT("%s"), *FString(OtherActor->GetName()))
 		Player->SetChangeWorldPossibility(this);

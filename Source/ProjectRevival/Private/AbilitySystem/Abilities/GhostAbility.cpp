@@ -45,6 +45,7 @@ void UGhostAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FG
 void UGhostAbility::OnAppearEnded()
 {
 	GhostTask->OnAppearFinished.Unbind();
+	ChangeBlendMode(false);
 	GhostTask->EndTask();
 	PlayGhostSoundEffect();
 	K2_EndAbility();
@@ -53,6 +54,7 @@ void UGhostAbility::OnAppearEnded()
 void UGhostAbility::OnDisappearEnded()
 {
 	GhostTask->OnDisappearFinished.Unbind();
+	ChangeBlendMode(true);
 	DelayTask->Activate();	
 }
 
@@ -67,4 +69,13 @@ void UGhostAbility::BeginAppear()
 {
 	DelayTask->OnFinish.RemoveDynamic(this, &UGhostAbility::BeginAppear);
 	GhostTask->AppearMeshes();
+}
+
+void UGhostAbility::ChangeBlendMode(bool IsDisappearing)
+{
+	auto Materials = Cast<IIDynMaterialsFromMesh>((GetCurrentActorInfo()->OwnerActor.Get()))->GetDynMaterials();
+	for (const auto Material : Materials)
+	{
+		Material->BlendMode = IsDisappearing ? TEnumAsByte<EBlendMode>(EBlendMode::BLEND_Translucent) : TEnumAsByte<EBlendMode>(EBlendMode::BLEND_Opaque);
+	}
 }
