@@ -57,6 +57,7 @@ void ACheckpointActor::OnTriggerSave(UPrimitiveComponent* OverlappedComponent, A
 {
 	const auto GameMode = GetWorld()->GetAuthGameMode<APRGameModeBase>();
 	if (!GameMode) return;
+	if (!GameMode->GetCurrentWorld()==CheckpointWorld.GetValue()) return;
 	GameMode->WriteSaveGame(CheckpointName);
 	
 	TriggerComponent->OnComponentBeginOverlap.Clear();
