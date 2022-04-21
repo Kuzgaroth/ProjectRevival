@@ -17,14 +17,15 @@ bool UBTD_IfPlayerInSight::CalcCondition(UBehaviorTreeComponent& OwnerComp, uint
 	const auto Controller = Cast<ASoldierAIController>(OwnerComp.GetAIOwner());
 	if (!Controller) return false;
 	UE_LOG(LogPRAIDecorators, Log, TEXT("Controller"))
-	const auto PerceptionComp = Cast<UPRSoldierAIPerceptionComponent>(Controller->GetPerceptionComponent());
+	/*const auto PerceptionComp = Cast<UPRSoldierAIPerceptionComponent>(Controller->GetPerceptionComponent());
 	if(!PerceptionComp) return false;
 	UE_LOG(LogPRAIDecorators, Log, TEXT("PerceptionComp"))
 
-	const auto Actor = PerceptionComp->GetClosestEnemy();
+	const auto Actor = PerceptionComp->GetClosestEnemy();*/
 	
-	UE_LOG(LogPRAIDecorators, Log, TEXT("GetBIsFiring(): %s"), Controller->GetBIsFiring()?TEXT("true"):TEXT("false"))
-	return Actor.GetActor() && !Controller->GetBIsFiring();
+	UE_LOG(LogPRAIDecorators, Log, TEXT("GetBIsFiring(): %s"), Controller->GetBIsPlayerInSight() && !Controller->GetBIsFiring()?TEXT("true"):TEXT("false"))
+	//return Actor.GetActor() && !Controller->GetBIsFiring();
+	return Controller->GetBIsPlayerInSight() && !Controller->GetBIsFiring();
 }
 
 bool UBTD_IfPlayerInSight::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
