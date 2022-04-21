@@ -92,6 +92,7 @@ void APlayerCharacter::MoveRight(float Amount)
 	if (CoverData.IsInTransition() || CoverData.IsFiring) return;
 	if (CoverData.IsInCover())
 	{
+		//GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::White, FString::Printf(TEXT("Prev %f   Curr %f"), CameraCover.PrevAmount, Amount));
 		if (!(CoverData.TryMoveInCover(Amount, this)))
 		{
 			if (CameraCover.bIsShift == false)
@@ -105,6 +106,16 @@ void APlayerCharacter::MoveRight(float Amount)
 			}
 			return;
 		}
+		if (CoverData.TryMoveInCover(Amount, this) && CameraCover.bIsShift == true)
+		{
+			LeftSideViewFunctions->OnCameraMove(SpringArmComponent, CameraComponent, LeftSideView, LeftSideViewFunctions->LeftSideViewCurveTimeline, CameraCover, CoverData, CameraCoverFunctions);
+		}
+		if (CameraCover.PrevAmount != Amount)
+		{
+			if (!(LeftSideView.CamPos == false && CameraCover.PrevAmount == 0.0 && Amount == 1.0) && !(LeftSideView.CamPos == true && CameraCover.PrevAmount == 0.0 && Amount == -1.0))
+				LeftSideViewFunctions->OnCameraMove(SpringArmComponent, CameraComponent, LeftSideView, LeftSideViewFunctions->LeftSideViewCurveTimeline, CameraCover, CoverData, CameraCoverFunctions);
+		}
+		CameraCover.PrevAmount = Amount;
 	}
 	bIsMovingRight = Amount>0;
 	PlayerMovementComponent->MoveRight(Amount);
@@ -491,7 +502,7 @@ void APlayerCharacter::OnCameraMove()
 	if (CoverData.IsInTransition()) return;
 	if (LeftSideView.Block == false && PlayerAimZoom.IsZooming == false && LeftSideView.IsMoving == false && !(CameraCoverFunctions->CameraCoverYShiftTimeline.IsPlaying()))
 	{
-		if (CoverData.IsInCover() && CameraCover.bIsTurning == false) return;
+		if (CoverData.IsInCover() == true /*|| CameraCover.bIsTurning == false*/) return;
 		LeftSideViewFunctions->OnCameraMove(SpringArmComponent, CameraComponent, LeftSideView, LeftSideViewFunctions->LeftSideViewCurveTimeline, CameraCover, CoverData, CameraCoverFunctions);
 	}
 }
@@ -522,6 +533,7 @@ bool APlayerCharacter::StartCover_Internal(FHitResult& CoverHit)
 	CameraCoverFunctions->CoverType = CoverTrace(CoverHit);
 	if (CameraCoverFunctions->CoverType == ECoverType::Low) CameraCoverFunctions->End.Z -= CameraCover.Low;
 	if (LeftSideView.CamPos == true) CameraCoverFunctions->End.Y += 104.0;
+	else /*if (CameraCoverFunctions->CoverType == ECoverType::High)*/ CameraCoverFunctions->End.Y += CameraCover.ConstantCover;
 	PlayerAimZoom.StartStartPos = FVector(0.0);
 	CameraCover.CurrentFieldOfView = CameraCover.FieldOfView;
 	CameraCover.IsFirstLow = 0;
@@ -550,6 +562,7 @@ bool APlayerCharacter::StopCover_Internal()
 	if (CameraCover.bIsLow == true) { CameraCoverFunctions->End.Z += CameraCover.Low; CameraCover.bIsLow = false; }
 	if (CameraCoverFunctions->CoverType == ECoverType::Low) CameraCoverFunctions->End.Z += CameraCover.Low;
 	if (LeftSideView.CamPos == true) CameraCoverFunctions->End.Y -= 104.0;
+	else /*if (CameraCoverFunctions->CoverType == ECoverType::High)*/ CameraCoverFunctions->End.Y -= CameraCover.ConstantCover;
 	CameraCoverFunctions->CoverType = None;
 	PlayerAimZoom.StartStartPos = FVector(0.0);
 	CameraCover.CurrentFieldOfView = 90.0;
