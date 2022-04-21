@@ -163,6 +163,7 @@ void AAICoordinator::SpawnBot(AActor* PlayerStartActor, EWing WingSide)
 		
 	}
 	BotMap.Add(BotController, WingSide);
+	//UE_LOG(LogPRCoordinator, Warning, TEXT("%s"), *FString(BotController->GetName()))
 	PlayerStartActor->Destroy(true);
 }
 
@@ -179,7 +180,9 @@ void AAICoordinator::UpdatePlayerInfoFromBot(FPlayerPositionData PlayerPos)
 	if (PlayerPos.GetActor()!=nullptr)
 	{
 		if (CheckIfPlayerPosHasChanged(PlayerPos, false))
-		this->PlayerPosition = PlayerPos;
+		{
+			this->PlayerPosition = PlayerPos;
+		}
 	}
 }
 
@@ -214,27 +217,24 @@ bool AAICoordinator::CheckIfPlayerPosHasChanged(FPlayerPositionData NewPlayerPos
  */
 {
 	//const float Threshold = 0.01f;
-	bool bCond = false;
+	bool bCond;
 	if (NewPlayerPos.GetActor())
 	{
-		/*UE_LOG(LogPRCoordinator, Log, TEXT("Player Position: X %0.2f, Y %0.2f"), PlayerPosition.GetActorPosition().X, PlayerPosition.GetActorPosition().Y)
-		UE_LOG(LogPRCoordinator, Log, TEXT("New Player Pos: X %0.2f, Y %0.2f"), NewPlayerPos.GetActorPosition().X, NewPlayerPos.GetActorPosition().Y)
-		const auto X = abs(PlayerPosition.GetActorPosition().X - NewPlayerPos.GetActorPosition().X);
-		const auto Y = abs(PlayerPosition.GetActorPosition().Y - NewPlayerPos.GetActorPosition().Y);
-		const auto Z = abs(PlayerPosition.GetActorPosition().Z - NewPlayerPos.GetActorPosition().Z);
-		UE_LOG(LogPRCoordinator, Log, TEXT("Diffs: X %0.5f, Y %0.5f, Z %0.5f"), X, Y, Z)
-		const auto XDelta = X * 100 / PlayerPosition.GetActorPosition().X;
-		const auto YDelta = Y * 100 / PlayerPosition.GetActorPosition().Y;
-		const auto ZDelta = Z * 100 / PlayerPosition.GetActorPosition().Z;
-		UE_LOG(LogPRCoordinator, Log, TEXT("Deltas: X %0.5f, Y %0.5f, Z %0.5f"), XDelta, YDelta, ZDelta)*/
-		UE_LOG(LogPRCoordinator, Log, TEXT("%lld %lld %s"), PlayerPosition.GetInfoUpdateTime().GetTicks(), NewPlayerPos.GetInfoUpdateTime().GetTicks(),
-			bState?TEXT(">"):TEXT("<"))
-		bCond = PlayerPosition.GetInfoUpdateTime().GetTicks() > NewPlayerPos.GetInfoUpdateTime().GetTicks();
-		if (!bState)
+		if (bState)
 		{
-			UE_LOG(LogPRCoordinator, Log, TEXT("Info has changed"))
-			bCond = !bCond;
+			bCond = PlayerPosition.GetInfoUpdateTime().GetTicks() > NewPlayerPos.GetInfoUpdateTime().GetTicks();
 		}
+		else
+		{
+			bCond = PlayerPosition.GetInfoUpdateTime().GetTicks() < NewPlayerPos.GetInfoUpdateTime().GetTicks();
+		}
+		UE_LOG(LogPRCoordinator, Log, TEXT("%lld %s %lld"), PlayerPosition.GetInfoUpdateTime().GetTicks(),
+				bState?TEXT(">"):TEXT("<"), NewPlayerPos.GetInfoUpdateTime().GetTicks())
+		UE_LOG(LogPRCoordinator, Log, TEXT("%s"), bCond?TEXT("true"):TEXT("false"))
+	}
+	else
+	{
+		bCond = bState;
 	}
 	return bCond;
 }

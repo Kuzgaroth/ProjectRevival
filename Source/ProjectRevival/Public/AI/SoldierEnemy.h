@@ -109,6 +109,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void StopFiringImmediately();
 	
+	UFUNCTION(BlueprintCallable)
+	bool GetIsInBattle() { return BotState == EBotState::Battle?true:false; }
+	
 
 	virtual void ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld) override;
 	virtual void Changing() override;
