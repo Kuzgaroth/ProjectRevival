@@ -154,6 +154,7 @@ void ASoldierAIController::Tick(float DeltaSeconds)
 	
 	//const auto AimActor = GetFocusOnActor();
 	//SetFocus(AimActor);
+	//SetBotState(EBotState::Battle);
 }
 
 void ASoldierAIController::BeginPlay()
