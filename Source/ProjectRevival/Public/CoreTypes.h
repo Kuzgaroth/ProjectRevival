@@ -721,16 +721,19 @@ private:
 	AActor* PlayerActor;
 	UPROPERTY()
 	AActor* PlayerCover;
+	FDateTime InfoUpdateTime;
 public:
 	FPlayerPositionData(AActor* PActor, AActor* PCover)
 	{
 		PlayerActor = PActor;
 		PlayerCover = PCover;
+		InfoUpdateTime = FDateTime::Now();
 	}
 	FPlayerPositionData()
 	{
 		PlayerActor=nullptr;
 		PlayerCover=nullptr;
+		InfoUpdateTime = FDateTime::Now();
 	}
 	void SetActor(AActor* PActor)
 	{
@@ -752,10 +755,23 @@ public:
 	{
 		return (PlayerActor) ? PlayerActor->GetActorLocation() : FVector(0.0, 0.0, 0.0);
 	}
+	void SetCurrentTime()
+	{
+		InfoUpdateTime = FDateTime::Now();
+	}
+	void SetInfoUpdateTime(const FDateTime Time)
+	{
+		InfoUpdateTime = Time;
+	}
+	FDateTime GetInfoUpdateTime() const
+	{
+		return InfoUpdateTime;
+	}
 	FORCEINLINE void operator=(const FPlayerPositionData& PlayerPos)
 	{
 		PlayerActor = PlayerPos.PlayerActor;
 		PlayerCover = PlayerPos.PlayerCover;
+		InfoUpdateTime = PlayerPos.InfoUpdateTime;
 	}
 };
 
