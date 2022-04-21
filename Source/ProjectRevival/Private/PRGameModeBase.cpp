@@ -72,7 +72,12 @@ void APRGameModeBase::InitGame(const FString& MapName, const FString& Options, F
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 	LoadSaveGame();
-	if (!SaveGame) return;
+	if (!SaveGame)
+	{
+		CurrentWorld = EChangeWorld::OrdinaryWorld;
+		return;
+	}
+	CurrentWorld = SaveGame->WorldNum.GetValue();
 	TArray<AActor*> PassedCoordinators;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAICoordinator::StaticClass(), PassedCoordinators);
 	UE_LOG(LogPRSaveSystem, Display, TEXT("----Destroying coordinators----"))
@@ -250,6 +255,7 @@ void APRGameModeBase::WriteSaveGame(FName CheckpointName)
 		SaveGame->AmmoCrates.Add(*It->GetName(),FAmmoCrateSaveData(It->GetCurrentClipsAmount()));
 		//UE_LOG(LogPRSaveSystem, Display, TEXT("SaveGame->AmmoCrates.Add(%s)"), *It->GetName());
 	}
+	SaveGame->WorldNum = TEnumAsByte<EChangeWorld>(CurrentWorld);
 	UGameplayStatics::AsyncSaveGameToSlot(SaveGame, "SaveSlot", 0, AsyncDelegate);
 }
 
