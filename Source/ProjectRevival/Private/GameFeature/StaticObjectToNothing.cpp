@@ -79,7 +79,7 @@ void AStaticObjectToNothing::BeginPlay()
 			}
 		}
 	}
-	if (GameMode->GetCurrentWorld()==World)
+	if (GameMode && GameMode->GetCurrentWorld()==World)
 	{
 		isApearing=true;
 		if(VisualCurve&&MeshesMaterials.Num()>0)
