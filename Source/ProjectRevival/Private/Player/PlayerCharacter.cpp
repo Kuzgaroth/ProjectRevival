@@ -19,6 +19,7 @@
 #include "GameFeature/StaticObjectToNothing.h"
 #include "Kismet/GameplayStatics.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
+#include "AbilitySystem/Abilities/DimensionShotAbility.h"
 #include "Sound/SoundCue.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -91,6 +92,7 @@ void APlayerCharacter::MoveRight(float Amount)
 	if (CoverData.IsInTransition() || CoverData.IsFiring) return;
 	if (CoverData.IsInCover())
 	{
+		//GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::White, FString::Printf(TEXT("Prev %f   Curr %f"), CameraCover.PrevAmount, Amount));
 		if (!(CoverData.TryMoveInCover(Amount, this)))
 		{
 			if (CameraCover.bIsShift == false)
@@ -104,6 +106,16 @@ void APlayerCharacter::MoveRight(float Amount)
 			}
 			return;
 		}
+		if (CoverData.TryMoveInCover(Amount, this) && CameraCover.bIsShift == true)
+		{
+			LeftSideViewFunctions->OnCameraMove(SpringArmComponent, CameraComponent, LeftSideView, LeftSideViewFunctions->LeftSideViewCurveTimeline, CameraCover, CoverData, CameraCoverFunctions);
+		}
+		if (CameraCover.PrevAmount != Amount)
+		{
+			if (!(LeftSideView.CamPos == false && CameraCover.PrevAmount == 0.0 && Amount == 1.0) && !(LeftSideView.CamPos == true && CameraCover.PrevAmount == 0.0 && Amount == -1.0))
+				LeftSideViewFunctions->OnCameraMove(SpringArmComponent, CameraComponent, LeftSideView, LeftSideViewFunctions->LeftSideViewCurveTimeline, CameraCover, CoverData, CameraCoverFunctions);
+		}
+		CameraCover.PrevAmount = Amount;
 	}
 	bIsMovingRight = Amount>0;
 	PlayerMovementComponent->MoveRight(Amount);
@@ -229,6 +241,14 @@ void APlayerCharacter::CheckCameraOverlap()
 
 void APlayerCharacter::Falling()
 {
+	if(DimensionShotAbStruct.IsInRevolverAim)
+	{
+		if(DimensionShotAbStruct.Ability)
+		{
+			DimensionShotAbStruct.Ability->InterruptAbility();
+		}
+		DimensionShotAbStruct.IsInRevolverAim=false;
+	}
 	CameraZoomOut();
 	PlayerMovementComponent->JumpPressEnded();
 	Super::Falling();
@@ -393,10 +413,17 @@ void APlayerCharacter::TimelineCoverLow(float Value)
 	CameraCoverFunctions->TimelineCoverLow(Value, CameraCoverFunctions, SpringArmComponent);
 }
 
-void APlayerCharacter::SetChangeWorldPossibility(bool newValue, AStaticObjectToNothing* overlappedAct)
+void APlayerCharacter::SetChangeWorldPossibility(AActor* overlappedAct)
 {
-	OverlappedChangeWActor=overlappedAct;
-	WorldCanBeChanged=newValue;
+	OverlappedChangeWActors.Add(overlappedAct);
+}
+
+void APlayerCharacter::RemoveOverlappedChangeWActor(AActor* endOverlappedActor)
+{
+	if(OverlappedChangeWActors.Num()!=0)
+	{
+		OverlappedChangeWActors.Remove(endOverlappedActor);
+	}
 }
 
 void APlayerCharacter::SetChangeWorldPossibility(bool newValue, ASoldierEnemy* overlappedAct)
@@ -407,20 +434,24 @@ void APlayerCharacter::SetChangeWorldPossibility(bool newValue, ASoldierEnemy* o
 
 bool APlayerCharacter::CheckIfWorldCanBeChanged() const
 {
-	if(!WorldCanBeChanged)
+	bool CanBeChanged=true;
+
+	if(OverlappedChangeWActors.Num()!=0)
 	{
 		if(WorldCantBeChangedPhrase)
 			UGameplayStatics::SpawnSound2D(GetWorld(),WorldCantBeChangedPhrase);
-		if(OverlappedChangeWActor)
-		{
-			OverlappedChangeWActor->ShowChangeWorldObjectByAbility();
-		}
-		if(OverlappedChangeWEnemy)
-		{
-			OverlappedChangeWEnemy->ShowChangeWorldObjectByAbility();
-		}
+		const auto LastActor=Cast<AStaticObjectToNothing>(OverlappedChangeWActors[OverlappedChangeWActors.Num()-1]);
+		LastActor->ShowChangeWorldObjectByAbility();
+		CanBeChanged=false;
 	}
-	return WorldCanBeChanged;
+	if(OverlappedChangeWEnemy)
+	{
+		if(WorldCantBeChangedPhrase)
+			UGameplayStatics::SpawnSound2D(GetWorld(),WorldCantBeChangedPhrase);
+		OverlappedChangeWEnemy->ShowChangeWorldObjectByAbility();
+		CanBeChanged=false;
+	}
+	return CanBeChanged;
 }
 
 
@@ -459,7 +490,7 @@ void APlayerCharacter::CameraZoomIn()
 
 void APlayerCharacter::CameraZoomOut()
 {
-	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true)
+	if (LeftSideView.IsMoving == false && PlayerAimZoom.IsZooming == true && !DimensionShotAbStruct.IsInRevolverAim)
 	{
 		if (CoverData.IsInTransition()) return;
 		if (CoverData.IsInCover() && CoverData.IsFiring)
@@ -482,7 +513,7 @@ void APlayerCharacter::OnCameraMove()
 	if (CoverData.IsInTransition()) return;
 	if (LeftSideView.Block == false && PlayerAimZoom.IsZooming == false && LeftSideView.IsMoving == false && !(CameraCoverFunctions->CameraCoverYShiftTimeline.IsPlaying()))
 	{
-		if (CoverData.IsInCover() && CameraCover.bIsTurning == false) return;
+		if (CoverData.IsInCover() == true /*|| CameraCover.bIsTurning == false*/) return;
 		LeftSideViewFunctions->OnCameraMove(SpringArmComponent, CameraComponent, LeftSideView, LeftSideViewFunctions->LeftSideViewCurveTimeline, CameraCover, CoverData, CameraCoverFunctions);
 	}
 }
@@ -513,6 +544,7 @@ bool APlayerCharacter::StartCover_Internal(FHitResult& CoverHit)
 	CameraCoverFunctions->CoverType = CoverTrace(CoverHit);
 	if (CameraCoverFunctions->CoverType == ECoverType::Low) CameraCoverFunctions->End.Z -= CameraCover.Low;
 	if (LeftSideView.CamPos == true) CameraCoverFunctions->End.Y += 104.0;
+	else /*if (CameraCoverFunctions->CoverType == ECoverType::High)*/ CameraCoverFunctions->End.Y += CameraCover.ConstantCover;
 	PlayerAimZoom.StartStartPos = FVector(0.0);
 	CameraCover.CurrentFieldOfView = CameraCover.FieldOfView;
 	CameraCover.IsFirstLow = 0;
@@ -541,6 +573,7 @@ bool APlayerCharacter::StopCover_Internal()
 	if (CameraCover.bIsLow == true) { CameraCoverFunctions->End.Z += CameraCover.Low; CameraCover.bIsLow = false; }
 	if (CameraCoverFunctions->CoverType == ECoverType::Low) CameraCoverFunctions->End.Z += CameraCover.Low;
 	if (LeftSideView.CamPos == true) CameraCoverFunctions->End.Y -= 104.0;
+	else /*if (CameraCoverFunctions->CoverType == ECoverType::High)*/ CameraCoverFunctions->End.Y -= CameraCover.ConstantCover;
 	CameraCoverFunctions->CoverType = None;
 	PlayerAimZoom.StartStartPos = FVector(0.0);
 	CameraCover.CurrentFieldOfView = 90.0;

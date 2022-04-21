@@ -48,7 +48,8 @@ public:
 	UFUNCTION()
 	void TimelineCoverLow(float Value);
 	
-	void SetChangeWorldPossibility(bool newValue, AStaticObjectToNothing* overlappedAct);
+	void SetChangeWorldPossibility(AActor* overlappedAct);
+	void RemoveOverlappedChangeWActor(AActor* endOverlappedActor);
 	void SetChangeWorldPossibility(bool newValue, ASoldierEnemy* overlappedAct);
 
 	UFUNCTION()
@@ -59,6 +60,8 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FVisorReleased VisorReleasedDelegate;
+
+	UBaseCharacterMovementComponent* GetMovementComponent()const {return PlayerMovementComponent;}
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Timeline")
 	FPlayerAimZoomBlueprint PlayerAimZoom;
@@ -77,6 +80,8 @@ public:
 
 	UPROPERTY()
 	UCameraCoverFunctions* CameraCoverFunctions;
+
+	FDimensionShotStruct DimensionShotAbStruct;
 	
 	USpringArmComponent* GetPlayerSpringArmComponent(){ return SpringArmComponent; }
 	void CameraZoomIn();
@@ -102,7 +107,7 @@ protected:
 	UParticleSystem* DeathVFX;
 	
 	bool WorldCanBeChanged=true;
-	AStaticObjectToNothing* OverlappedChangeWActor;
+	TArray<AActor*>  OverlappedChangeWActors;
 	ASoldierEnemy* OverlappedChangeWEnemy;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

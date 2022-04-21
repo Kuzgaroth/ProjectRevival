@@ -22,7 +22,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility"))
     static UChangeWorldTask_SpawnSphere* ChangeWorldInit(UGameplayAbility* OwningAbility,TSubclassOf<AActor> ChangeWorldSphere,float TraceDistance);
     	
-    AChangeWorldSphereActor* StartTask(AActor& OwnerLocation);
+    AChangeWorldSphereActor* StartTask(AActor& OwnerActor);
 private:
 	UPROPERTY()
 	TSubclassOf<AActor> ChangeWorldSphere;
