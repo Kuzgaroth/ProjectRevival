@@ -769,7 +769,15 @@ void ASoldierEnemy::UpdateAimRotator()
 	if (abs(NewRotator.Yaw) > 90.f) 
 	{
 		bCanFireBP = false;
-		bIsInCoverBP ? StopCoverSoldier() : StopFiringImmediately();
+		if (bIsInCoverBP)
+		{
+			Cast<ASoldierAIController>(GetController())->OnCoverTimerFired();
+			StopCoverSoldier();
+		}
+		else
+		{
+			StopFiringImmediately();
+		}
 		AimRotator = GetActorRotation();
 	} else
 	{

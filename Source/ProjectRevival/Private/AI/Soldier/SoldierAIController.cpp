@@ -24,8 +24,8 @@ ASoldierAIController::ASoldierAIController()
 {
 	PRPerceptionComponent = CreateDefaultSubobject<UPRSoldierAIPerceptionComponent>("PRPerceptionComponent");
 	const auto SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>("Sight Config");
-	SightConfig->SightRadius = 2000.0f;
-	SightConfig->LoseSightRadius = 2500.0f;
+	SightConfig->SightRadius = 4000.0f;
+	SightConfig->LoseSightRadius = 4500.0f;
 	SightConfig->PeripheralVisionAngleDegrees = 90.0f;
 	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
 	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
@@ -34,7 +34,7 @@ ASoldierAIController::ASoldierAIController()
 	PRPerceptionComponent->ConfigureSense(*SightConfig);
 
 	const auto HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>("Hearing Config");
-	HearingConfig->HearingRange = 3000.0f;
+	HearingConfig->HearingRange = 6000.0f;
 	HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
 	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
 	HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
@@ -58,7 +58,9 @@ ASoldierAIController::ASoldierAIController()
 	bIsAppearing = true;
 	bIsPatrolling = false;
 	bIsLoosePlayerTimerSet = false;
-	PlayerLooseTime = 10.0f;
+	GeneralCooldownTime = 0.25f;
+	CoverChangeTime = 5.0f;
+	PlayerLooseTime = 20.0f;
 }
 
 void ASoldierAIController::SetPlayerPos(const FPlayerPositionData& NewPlayerPos, bool bIsFromCoordinator)
@@ -114,20 +116,21 @@ void ASoldierAIController::OnPossess(APawn* InPawn)
 	{
 		RunBehaviorTree(AIChar->BehaviorTreeAsset);
 		BlackboardComponent = GetBlackboardComponent();
-		//SetBotState(EBotState::Idle);
-		auto Actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
+		SetBotState(EBotState::Idle);
+		/*auto Actor = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
 		Actor = Cast<APlayerCharacter>(Actor);
 		if (Actor)
 		{
 			const FPlayerPositionData ActorPos(Actor, nullptr);
 			SetPlayerPos(ActorPos);
 		}
-		SetBotState(EBotState::Battle);
+		SetBotState(EBotState::Battle);*/
 		Cast<ASoldierEnemy>(GetPawn())->StopEnteringCoverDelegate.AddDynamic(this, &ASoldierAIController::StopEnteringCover);
 		Cast<ASoldierEnemy>(GetPawn())->StopExitingCoverDelegate.AddDynamic(this, &ASoldierAIController::StopExitingCover);
 		Cast<ASoldierEnemy>(GetPawn())->StopCoverSideMovingDelegate.AddDynamic(this, &ASoldierAIController::StopCoverSideMoving);
 		Cast<ASoldierEnemy>(GetPawn())->StopFireDelegate.AddDynamic(this, &ASoldierAIController::StopFiring);
 		Cast<ASoldierEnemy>(GetPawn())->SoldierWorldChangeDelegate.AddDynamic(this, &ASoldierAIController::SetBIsAppearing);
+		Cast<ASoldierEnemy>(GetPawn())->ClearCoverTimerDelegate.AddDynamic(this, &ASoldierAIController::OnCoverTimerFired);
 		if (BlackboardComponent) BlackboardComponent->SetValueAsEnum(WingKeyName, uint8(BotWing));
 	}
 }
@@ -135,8 +138,7 @@ void ASoldierAIController::OnPossess(APawn* InPawn)
 void ASoldierAIController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	/*if (bIsPlayerInSight && bIsAppearing)
+	if (bIsPlayerInSight && bIsAppearing)
 	{
 		SetToBattleState();
 	}
@@ -150,7 +152,7 @@ void ASoldierAIController::Tick(float DeltaSeconds)
 											   PlayerLooseTime, false, -1);
 		}
 	}
-	if (!bIsAppearing) SetToIdleState();*/
+	if (!bIsAppearing) SetToIdleState();
 	
 	//const auto AimActor = GetFocusOnActor();
 	//SetFocus(AimActor);
@@ -280,7 +282,7 @@ void ASoldierAIController::FindNextPatrolPoint()
 void ASoldierAIController::StartCoverTimer()
 {
 	SetBIsCoverChangeAllowed(false);
-	GetWorld()->GetTimerManager().SetTimer(BTCoverTimerHandle, this, &ASoldierAIController::OnCoverTimerFired, 10.0f, false, -1);
+	GetWorld()->GetTimerManager().SetTimer(BTCoverTimerHandle, this, &ASoldierAIController::OnCoverTimerFired, CoverChangeTime, false, -1);
 	UE_LOG(LogPRAIController, Log, TEXT("Cover Change Cooldown Started"))
 }
 
@@ -296,7 +298,7 @@ void ASoldierAIController::StartGeneralTimer()
 	if (GetBIsDecisionMakingAllowed())
 	{
 		SetBIsDecisionMakingAllowed(false);
-		GetWorld()->GetTimerManager().SetTimer(BTGeneralTimerHandle, this, &ASoldierAIController::OnGeneralTimerFired, 0.5f, false, -1);
+		GetWorld()->GetTimerManager().SetTimer(BTGeneralTimerHandle, this, &ASoldierAIController::OnGeneralTimerFired, GeneralCooldownTime, false, -1);
 		UE_LOG(LogPRAIController, Log, TEXT("Decision making cooldown started"))
 	}
 }
