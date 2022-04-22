@@ -204,10 +204,18 @@ void ARifleWeapon::SpawnTraceFX(const FVector& TraceStart, const FVector& TraceE
 	}
 	else
 	{
-		const auto TraceFXComponent = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TraceFXCascade, TraceStart);
+		/*const auto TraceFXComponent = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TraceFXCascade, TraceStart);
 		if (TraceFXComponent)
 		{
 			TraceFXComponent->SetBeamEndPoint(0, TraceEnd);
+		}*/
+		if (TraceFXCascade)
+		{
+			UParticleSystemComponent* TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(this, TraceFXCascade, TraceStart);
+			if (TrailPSC)
+			{
+				TrailPSC->SetVectorParameter("ShockBeamEnd", TraceEnd);
+			}
 		}
 	}
 }

@@ -100,4 +100,7 @@ public:
 
 	UPROPERTY()
 	TMap<FName, FAmmoCrateSaveData> AmmoCrates;
+
+	UPROPERTY()
+	TEnumAsByte<EChangeWorld> WorldNum;
 };
