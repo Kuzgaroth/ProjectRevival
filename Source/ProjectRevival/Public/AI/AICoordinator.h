@@ -35,6 +35,9 @@ protected:
 	TSubclassOf<AAICharacter> EnemyCharacterClass;
 	UPROPERTY(EditAnywhere)
 	float PlayerPositionUpdateTime=0.5f;
+
+	UPROPERTY(EditInstanceOnly)
+	TEnumAsByte<EChangeWorld> CoordinatorWorld;
 	
 	virtual void PostInitializeComponents() override;
 	
@@ -45,6 +48,7 @@ protected:
 private:
 	UPROPERTY()
 	TMap<ASoldierAIController*, EWing> BotMap;
+	TMap<ASoldierAIController*, bool> BotInfoMap;
 	UPROPERTY()
 	FPlayerPositionData PlayerPosition;
 	FTimerHandle PlayerInfoTimerHandle;
@@ -61,6 +65,7 @@ private:
 	bool MakeDecisionForWingBot() const;
 	UFUNCTION()
 	void UpdateBotPlayerInfo();
+	bool CheckIfPlayerPosHasChanged(FPlayerPositionData NewPlayerPos, bool bState);
 };
 
 

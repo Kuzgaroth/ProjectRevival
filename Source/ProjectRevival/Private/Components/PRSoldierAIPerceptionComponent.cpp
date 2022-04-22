@@ -58,6 +58,7 @@ FPlayerPositionData UPRSoldierAIPerceptionComponent::GetClosestEnemy() const
 		}
 	}
 	PlayerPos.SetActor(BestPawn);
+	PlayerPos.SetCurrentTime();
 	return PlayerPos;
 }
 
