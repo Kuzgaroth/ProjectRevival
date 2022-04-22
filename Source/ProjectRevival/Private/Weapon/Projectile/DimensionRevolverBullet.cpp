@@ -35,9 +35,14 @@ void ADimensionRevolverBullet::OnProjectileHit(UPrimitiveComponent* HitComponent
 		const auto Bot=Cast<ABaseCharacter>(OtherActor);
 		if(Bot)
 		{
-			const auto Damage= Bot->GetHealthComponent()->GetMaxHeatlh();
-			UGameplayStatics::ApplyRadialDamage(GetWorld(), Damage, GetActorLocation() , DamageRadius,
+			//const auto Damage= Bot->GetHealthComponent()->GetMaxHeatlh();
+			UGameplayStatics::ApplyRadialDamage(GetWorld(), DamageAmount, GetActorLocation() , DamageRadius,
 			UDamageType::StaticClass(), {}, this, GetController(), bDoFullDamage);
+			const auto ChangeWorldInterface=Cast<IIChangingWorldActor>(Bot);
+			if(ChangeWorldInterface)
+			{
+				ChangeWorldInterface->Changing();
+			}
 			const auto Player=Cast<APlayerCharacter>(GetOwner());
 			const auto PlayerHealthComponent=Player->GetHealthComponent();
 			PlayerHealthComponent->TryToAddHealthPercentage(HealHealthPercent);

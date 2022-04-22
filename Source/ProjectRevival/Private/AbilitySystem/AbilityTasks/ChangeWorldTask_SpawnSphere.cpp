@@ -32,6 +32,7 @@ AChangeWorldSphereActor* UChangeWorldTask_SpawnSphere::StartTask(AActor& OwnerAc
 		if(ChangeWorldSphere)
 		{
 			auto act=GetWorld()->SpawnActor<AChangeWorldSphereActor>(ChangeWorldSphere,HitResult.ImpactPoint,FRotator::ZeroRotator,SpawnParams);
+			act->SetOwner(&OwnerActor);
 			return act;
 		}
 		return nullptr;

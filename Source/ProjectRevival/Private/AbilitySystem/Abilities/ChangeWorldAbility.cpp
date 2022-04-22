@@ -35,6 +35,10 @@ void UChangeWorldAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	auto SpawnedSphereActor = ChangeWorldTask->StartTask(*ActorInfo->OwnerActor);
 	if(SpawnedSphereActor)
 	{
+		if(Cast<APlayerCharacter>(ActorInfo->OwnerActor.Get()))
+		{
+			Cast<APlayerCharacter>(ActorInfo->OwnerActor.Get())->ChangeWorldPressedDelegate.Broadcast();
+		}
 		SpawnedSphereActor->AbilityEnded.AddUObject(this,&UChangeWorldAbility::FinishAbility);
 	}
 	else
