@@ -85,6 +85,7 @@ private:
 	UFUNCTION()
 	void ChangeWorld(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
 		class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	FCollisionResponseContainer CollisionContainer;
 };
 
 

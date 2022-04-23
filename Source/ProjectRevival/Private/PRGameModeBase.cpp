@@ -116,11 +116,11 @@ void APRGameModeBase::InitGame(const FString& MapName, const FString& Options, F
 }
 void APRGameModeBase::InitCrates()
 {
-	for (TActorIterator<AAmmoCrate> It(GetWorld()); It; ++It)
+	/*for (TActorIterator<AAmmoCrate> It(GetWorld()); It; ++It)
 	{
 		AAmmoCrate* Crate = Cast<AAmmoCrate>(*It);
 		Crate->SetCurrentClipsAmount(SaveGame->AmmoCrates.Find(*Crate->GetName())->CurrentClips);
-	}
+	}*/
 }
 
 void APRGameModeBase::RestartPlayer(AController* NewPlayer)
@@ -252,7 +252,7 @@ void APRGameModeBase::WriteSaveGame(FName CheckpointName)
 	SaveGame->ReachedCheckpoints.Add(FCheckPointSaveData(CheckpointName));
 	for (TActorIterator<AAmmoCrate> It(GetWorld()); It; ++It)
 	{
-		SaveGame->AmmoCrates.Add(*It->GetName(),FAmmoCrateSaveData(It->GetCurrentClipsAmount()));
+		SaveGame->AmmoCrates.Add(It->GetFName(),FAmmoCrateSaveData(It->GetCurrentClipsAmount()));
 		//UE_LOG(LogPRSaveSystem, Display, TEXT("SaveGame->AmmoCrates.Add(%s)"), *It->GetName());
 	}
 	SaveGame->WorldNum = TEnumAsByte<EChangeWorld>(CurrentWorld);

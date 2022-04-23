@@ -61,10 +61,11 @@ void AAmmoCrate::Tick(float DeltaTime)
 void AAmmoCrate::BeginPlay()
 {
 	Super::BeginPlay();
-	CurrentClipsAmount = MaxClipsAmount;
-	CurrentBulletsAmount = MaxBulletsAmount;
-	check(WidgetComponent);
 
+	CollisionContainer = MeshComponent->GetCollisionResponseToChannels();
+	
+	check(WidgetComponent);
+	int32 Clips=MaxClipsAmount;
 	const auto SaveLoader = Cast<IISaveLoader>(GetWorld()->GetAuthGameMode());
 	if (SaveLoader)
 	{
@@ -72,14 +73,21 @@ void AAmmoCrate::BeginPlay()
 		if (SaveObject)
 		{
 			CurrentWorld = SaveObject->WorldNum;
+			if (SaveObject->AmmoCrates.Contains(GetFName()))
+			{
+				const auto Data = SaveObject->AmmoCrates[GetFName()];
+				Clips = Data.CurrentClips;
+			}
 		}
 		else
 		{
 			CurrentWorld = OrdinaryWorld;
+			
 		}
 	}
+	CurrentClipsAmount = Clips;
 	SetCrateVisibility(CurrentWorld==AmmoWorld);
-	
+	UpdateWidgetPercent();
 }
 
 void AAmmoCrate::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
@@ -168,4 +176,5 @@ void AAmmoCrate::SetCrateVisibility(bool NewVisibility)
 	WidgetComponent->SetVisibility(NewVisibility);
 	UpdateWidgetVisibility();
 	MeshComponent->SetVisibility(NewVisibility);
+	MeshComponent->SetCollisionResponseToChannels(NewVisibility ? CollisionContainer : FCollisionResponseContainer(ECollisionResponse::ECR_Overlap));
 }
