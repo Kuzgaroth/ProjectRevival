@@ -53,6 +53,7 @@ void FCoverData::TurnEnd(ECoverSide NewSide)
 bool FCoverData::TrySwitchCoverType(IICoverable* ICoverablePawn)
 {
 	ECoverType NewPossibleCover = ICoverablePawn->CheckCover();
+	if (IsInTransition()) return false;
 	switch (CoverType)
 	{
 	case High:

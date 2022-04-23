@@ -4,12 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/PRGameplayAbility.h"
+#include "AbilitySystem/AbilityTasks/ChangeWorldTask_ChangeMaterials.h"
 #include "AbilitySystem/AbilityTasks/ChangeWorldTask_SpawnSphere.h"
 #include "ChangeWorldAbility.generated.h"
-
-/**
- * 
- */
 
 UCLASS()
 class PROJECTREVIVAL_API UChangeWorldAbility : public UPRGameplayAbility
@@ -24,12 +21,16 @@ public:
 	private:
 	UPROPERTY()
 	UChangeWorldTask_SpawnSphere* ChangeWorldTask;
+	UPROPERTY()
+	UChangeWorldTask_ChangeMaterials* ChangeMaterialsTask;
 	UPROPERTY(EditAnywhere,Category="Sphere Actor")
 	TSubclassOf<AActor> ChangeWorldShere;
 	UPROPERTY(EditAnywhere,Category="Trace Params")
 	float TraceSpawnDistance=1500.0f;
 	UPROPERTY(EditAnywhere,Category="Trace Params")
 	bool FreezePlayerDurindAbility=false;
+	UPROPERTY(EditDefaultsOnly)
+	UCurveFloat* MaterialsTransitionCurve;
 	void FinishAbility();
 
 	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const override;
