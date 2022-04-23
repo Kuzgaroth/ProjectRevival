@@ -6,6 +6,7 @@
 #include "Abilities/Tasks/AbilityTask.h"
 #include "Components/TimelineComponent.h"
 #include "FuncActors/TickActor.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "GhostTask_InvisibilityToggle.generated.h"
 
 
@@ -18,7 +19,7 @@ public:
 	virtual void Activate() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility"))
-	static UGhostTask_InvisibilityToggle* InvisibilityToggle(UGameplayAbility* OwningAbility, UCurveFloat* FadeCurve, TArray<UMaterialInstanceDynamic*> MeshesMaterials);
+	static UGhostTask_InvisibilityToggle* InvisibilityToggle(UGameplayAbility* OwningAbility, UCurveFloat* FadeCurve, TArray<UMaterialInstanceDynamic*> MeshesMaterials, EChangeWorld CurrentWorld);
 
 	
 	void AppearMeshes();
@@ -28,6 +29,8 @@ public:
 	void TickTimeline(float Delta);
 protected:
 	void DisappearMeshes();
+	UPROPERTY()
+	int32 BlendIndex;
 private:
 	virtual void OnDestroy(bool AbilityEnded) override;
 	UFUNCTION()

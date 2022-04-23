@@ -17,7 +17,7 @@ void UGhostTask_InvisibilityToggle::Activate()
 		TimeLineProgress.BindUFunction(this, FName("TimelineProgress"));
 		Timeline.AddInterpFloat(CurveFloat,TimeLineProgress);
 		Timeline.SetLooping(false);
-
+		
 		TickActor = GetWorld()->SpawnActorDeferred<ATickActor>(ATickActor::StaticClass(),GetOwnerActor()->GetTransform(), GetOwnerActor());
 		TickActor->OnTick.AddUObject(this, &UGhostTask_InvisibilityToggle::TickTimeline);
 		UGameplayStatics::FinishSpawningActor(TickActor,GetOwnerActor()->GetTransform());
@@ -34,12 +34,13 @@ void UGhostTask_InvisibilityToggle::Activate()
 }
 
 UGhostTask_InvisibilityToggle* UGhostTask_InvisibilityToggle::InvisibilityToggle(UGameplayAbility* OwningAbility,
-	UCurveFloat* FadeCurve, TArray<UMaterialInstanceDynamic*> MeshesMaterials)
+	UCurveFloat* FadeCurve, TArray<UMaterialInstanceDynamic*> MeshesMaterials, EChangeWorld CurrentWorld)
 {
 	const auto AbilityTask = NewAbilityTask<UGhostTask_InvisibilityToggle>(OwningAbility, FName("GhostTask"));
 	AbilityTask->CurveFloat = FadeCurve;
 	AbilityTask->MeshesMaterials = MeshesMaterials;
 	AbilityTask->bTickingTask = 1;
+	AbilityTask->BlendIndex = (CurrentWorld==OrdinaryWorld) ? 0 : 2 ;
 	return AbilityTask;
 }
 
@@ -89,9 +90,16 @@ void UGhostTask_InvisibilityToggle::OnDestroy(bool bAbilityEnded)
 
 void UGhostTask_InvisibilityToggle::TimelineProgress(float Value)
 {
+	
 	for (const auto Material : MeshesMaterials)
 	{
-		Material->SetScalarParameterValueByInfo(FMaterialParameterInfo("Amount",
-			EMaterialParameterAssociation::BlendParameter,0), Value);
+		if (Material)
+		{
+			Material->SetScalarParameterValueByInfo(FMaterialParameterInfo("Amount",
+				EMaterialParameterAssociation::BlendParameter,BlendIndex), Value);
+			Material->SetScalarParameterValueByInfo(FMaterialParameterInfo("Amount",
+				EMaterialParameterAssociation::BlendParameter,0), Value);
+		}
+			
 	}
 }

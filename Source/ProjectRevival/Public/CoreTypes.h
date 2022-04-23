@@ -28,6 +28,14 @@ DECLARE_LOG_CATEGORY_EXTERN(LogPRAISoldierRifle, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogPRStaticObject, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogPRPatrolPath, Log, All);
 
+UENUM(BlueprintType)
+enum EGameDifficulty
+{
+	Easy,
+	Normal,
+	Hard,
+};
+
 USTRUCT(BlueprintType)
 struct FAmmoData
 {

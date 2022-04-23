@@ -103,4 +103,10 @@ public:
 
 	UPROPERTY()
 	TEnumAsByte<EChangeWorld> WorldNum;
+
+	UPROPERTY()
+	TEnumAsByte<EGameDifficulty> GameDifficulty;
+
+	UPROPERTY()
+	bool InitialSave=true;
 };
