@@ -10,6 +10,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Menu/ConfirmationWidget.h"
 #include "Menu/OptionsWidget.h"
+#include "SaveSystem/PRSaveGame.h"
 
 void UPauseWidget::NativeOnInitialized()
 {
@@ -101,8 +102,14 @@ void UPauseWidget::LoadCheckPoint()
 void UPauseWidget::PlayAgain()
 {
 	CloseConfirmationWidget();
-	const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
+	/*const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
+	UGameplayStatics::DeleteGameInSlot("SaveSlot",0);*/
+	auto SaveGame = Cast<UPRSaveGame>(UGameplayStatics::CreateSaveGameObject(UPRSaveGame::StaticClass()));
+	const auto OldSaveGame = Cast<UPRSaveGame>(UGameplayStatics::LoadGameFromSlot("SaveSlot",0));
+	SaveGame->GameDifficulty = OldSaveGame->GameDifficulty;
+	SaveGame->InitialSave = true;
 	UGameplayStatics::DeleteGameInSlot("SaveSlot",0);
+	UGameplayStatics::SaveGameToSlot(SaveGame,"SaveSlot",0);
 	UGameplayStatics::OpenLevel(this,/*GameInstance->GetStartupLevel().LevelName*/"LVL_Conference");
 	
 }

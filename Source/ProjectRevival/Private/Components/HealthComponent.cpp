@@ -47,7 +47,7 @@ void UHealthComponent::BeginPlay()
 	if (SaveLoader)
 	{
 		const auto SaveGame = SaveLoader->GetSaveFromLoader();
-		if (SaveGame)
+		if (!SaveGame->InitialSave)
 		{
 			SetHealth(SaveGame->PlayerSaveData.HP);
 		}
