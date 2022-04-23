@@ -12,7 +12,10 @@
 #include "Components/HealthComponent.h"
 #include "ProjectRevival/ProjectRevival.h"
 #include "HealthBarWidget.h"
+#include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
+#include "GameFramework/GameModeBase.h"
 #include "Components/WidgetComponent.h"
+#include "Interfaces/ISaveLoader.h"
 #include "ProjectRevival/Public/Miscellaneous/PRUtils.h"
 
 AAmmoCrate::AAmmoCrate()
@@ -36,6 +39,17 @@ AAmmoCrate::AAmmoCrate()
 	
 
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AAmmoCrate::OnOverlapBegin);
+	MeshComponent->OnComponentBeginOverlap.AddDynamic(this, &AAmmoCrate::ChangeWorld);
+}
+
+void AAmmoCrate::ChangeWorld(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor->IsA<AChangeWorldSphereActor>())
+	{
+		CurrentWorld = (CurrentWorld == OrdinaryWorld) ? OtherWorld : OrdinaryWorld;
+		SetCrateVisibility(CurrentWorld==AmmoWorld);
+	}
 }
 
 void AAmmoCrate::Tick(float DeltaTime)
@@ -49,13 +63,29 @@ void AAmmoCrate::BeginPlay()
 	Super::BeginPlay();
 	CurrentClipsAmount = MaxClipsAmount;
 	CurrentBulletsAmount = MaxBulletsAmount;
-	WidgetComponent->SetVisibility(true);
 	check(WidgetComponent);
+
+	const auto SaveLoader = Cast<IISaveLoader>(GetWorld()->GetAuthGameMode());
+	if (SaveLoader)
+	{
+		const auto SaveObject = SaveLoader->GetSaveFromLoader();
+		if (SaveObject)
+		{
+			CurrentWorld = SaveObject->WorldNum;
+		}
+		else
+		{
+			CurrentWorld = OrdinaryWorld;
+		}
+	}
+	SetCrateVisibility(CurrentWorld==AmmoWorld);
+	
 }
 
 void AAmmoCrate::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (IsInvisible) return;
 	if (OtherActor && (OtherActor != this) && OtherComp)
 	{
 		const auto Pawn = Cast<APawn>(OtherActor);
@@ -120,6 +150,7 @@ void AAmmoCrate::NotifyActorBeginOverlap(AActor* OtherActor)
 
 void AAmmoCrate::UpdateWidgetVisibility()
 {
+	if (IsInvisible) return;
 	const auto PlayerLocation = GetWorld()->GetFirstPlayerController()->GetPawnOrSpectator()->GetActorLocation();
 	DistanceToAmmo = FVector::Distance(PlayerLocation, this->GetActorLocation());
 	WidgetComponent->SetVisibility(DistanceToAmmo < VisibilityDistance, false);
@@ -129,4 +160,12 @@ void AAmmoCrate::UpdateWidgetPercent()
 {
 	const auto AmmoWidget = Cast<UAmmoWidget>(WidgetComponent->GetUserWidgetObject());
 	AmmoWidget->SetAmmoAmount(CurrentClipsAmount);
+}
+
+void AAmmoCrate::SetCrateVisibility(bool NewVisibility)
+{
+	IsInvisible = !NewVisibility;
+	WidgetComponent->SetVisibility(NewVisibility);
+	UpdateWidgetVisibility();
+	MeshComponent->SetVisibility(NewVisibility);
 }
