@@ -13,6 +13,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FVisorPressed);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FVisorReleased);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FChangeWorldPressed);
 
 class UCameraComponent;
 class USpringArmComponent;
@@ -60,6 +61,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FVisorReleased VisorReleasedDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FChangeWorldPressed ChangeWorldPressedDelegate;
 
 	UBaseCharacterMovementComponent* GetMovementComponent()const {return PlayerMovementComponent;}
 	
@@ -133,6 +137,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
 	float HighlightRadius = 2000.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
+	float ChangeWorldRadius = 1000.f;
+
+	
 	//Time for effect to remain after turn off 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Ablity Higlhlight")
 	float DestroyDelay = 1.0f;

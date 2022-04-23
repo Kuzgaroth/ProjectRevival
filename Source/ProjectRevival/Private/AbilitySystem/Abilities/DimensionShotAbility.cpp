@@ -8,6 +8,7 @@
 #include "PlayerCharacter.h"
 #include "WeaponComponent.h"
 #include "AbilitySystem/Abilities/GhostAbility.h"
+#include "Misc/OutputDeviceConsole.h"
 
 UDimensionShotAbility::UDimensionShotAbility()
 {
@@ -17,10 +18,6 @@ bool UDimensionShotAbility::CanActivateAbility(const FGameplayAbilitySpecHandle 
                                                const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags,
                                                const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
 {
-	if(ShotBeingMade)
-	{
-		return true;
-	}
 	auto Player=Cast<APlayerCharacter>(ActorInfo->OwnerActor);
 	
 	bool IsRunning=Player->IsRunning();
@@ -28,7 +25,8 @@ bool UDimensionShotAbility::CanActivateAbility(const FGameplayAbilitySpecHandle 
 	bool IsInCover=Player->GetCoverData().IsInCover();
 	bool IsReloading=Player->GetWeaponComponent()->IsWeaponReloading();
 	bool CanMakeAbility=!IsRunning&&!IsInJump&&!IsInCover&&!IsReloading;
-	if(CanMakeAbility)
+	
+	if(CanMakeAbility&&Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags))
 	{
 		Player->CameraZoomOut();
 	}
@@ -48,7 +46,7 @@ void UDimensionShotAbility::InputPressed(const FGameplayAbilitySpecHandle Handle
 	if(ShotBeingMade)
 	{
 		FinishAbility();
-		EndAbility(GetCurrentAbilitySpecHandle(),GetCurrentActorInfo(),GetCurrentActivationInfo(),true,true);
+		EndAbility(Handle,ActorInfo,ActivationInfo,true,true);
 	}
 }
 
@@ -69,6 +67,7 @@ void UDimensionShotAbility::ActivateAbility(const FGameplayAbilitySpecHandle Han
 	Weapon->OnWeaponShotDelegate.AddUObject(this,&UDimensionShotAbility::ShotWasMade);
 	auto Revolver=Cast<ADimensionRevolver>(Weapon);
 	Revolver->SetHealPercentToBullet(HealPercent);
+
 }
 
 
@@ -77,6 +76,8 @@ void UDimensionShotAbility::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	bool bReplicateEndAbility, bool bWasCancelled)
 {
+	if(!bWasCancelled)
+		CommitAbilityCooldown(Handle,ActorInfo,ActivationInfo,false);
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
@@ -98,5 +99,6 @@ void UDimensionShotAbility::FinishAbility()
 	weaponcomponent->DeleteWeapon();
 	weaponcomponent->GetCurrentWeapon()->IsAppearing=true;
 	weaponcomponent->GetCurrentWeapon()->Changing();
+	ShotBeingMade=false;
 	GiveRevolverTask->EndTask();
 }

@@ -29,8 +29,6 @@ void UChangeWorldAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 		K2_CancelAbility();
 	}
 	GameMode->SetCurrentWorld(GameMode->GetCurrentWorld()==OrdinaryWorld ? OtherWorld : OrdinaryWorld);
-	ChangeMaterialsTask = UChangeWorldTask_ChangeMaterials::ChangeMaterials(this, MaterialsTransitionCurve, Cast<IIDynMaterialsFromMesh>(Owner)->GetDynMaterials(),GameMode->GetCurrentWorld());
-	ChangeMaterialsTask->Activate();
 	ChangeWorldTask=UChangeWorldTask_SpawnSphere::ChangeWorldInit(this,ChangeWorldShere,TraceSpawnDistance);
 	if(FreezePlayerDurindAbility)
 		ActorInfo->OwnerActor->DisableInput(Cast<ABasePlayerController>(ActorInfo->OwnerActor));
