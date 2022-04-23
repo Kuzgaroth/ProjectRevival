@@ -6,6 +6,7 @@
 
 #include "DifficultyItemWidget.h"
 #include "Blueprint/UserWidget.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "Sound/SoundCue.h"
 
 #include "DifficultySelectionWidget.generated.h"
@@ -51,7 +52,7 @@ private:
 	UFUNCTION()
 	void OnHighDifficultyPressed();
 
-	void SetDifficulty(FString DifficultyName);
+	void SetDifficulty(EGameDifficulty GameDifficulty);
 
 	void OpenLevel();
 };

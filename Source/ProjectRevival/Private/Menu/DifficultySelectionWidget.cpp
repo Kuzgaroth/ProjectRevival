@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Menu/MenuGameModeBase.h"
 #include "Menu/MenuWidget.h"
+#include "SaveSystem/PRSaveGame.h"
 
 void UDifficultySelectionWidget::NativeOnInitialized()
 {
@@ -42,23 +43,26 @@ void UDifficultySelectionWidget::OnBack()
 
 void UDifficultySelectionWidget::OnLowDifficultyPressed()
 {
-	SetDifficulty("Low");
+	SetDifficulty(Easy);
 }
 
 void UDifficultySelectionWidget::OnMediumDifficultyPressed()
 {
-	SetDifficulty("Medium");
+	SetDifficulty(Normal);
 }
 
 void UDifficultySelectionWidget::OnHighDifficultyPressed()
 {
-	SetDifficulty("High");
+	SetDifficulty(Hard);
 }
 
-void UDifficultySelectionWidget::SetDifficulty(FString DifficultyName)
+void UDifficultySelectionWidget::SetDifficulty(EGameDifficulty GameDifficulty)
 {
 	// Save difficulty level here
-
+	auto SaveGame = Cast<UPRSaveGame>(UGameplayStatics::CreateSaveGameObject(UPRSaveGame::StaticClass()));
+	SaveGame->GameDifficulty = GameDifficulty;
+	SaveGame->InitialSave = true;
+	UGameplayStatics::SaveGameToSlot(SaveGame,"SaveSlot",0);
 	OpenLevel();
 }
 
@@ -66,8 +70,8 @@ void UDifficultySelectionWidget::OpenLevel()
 {
 	const auto GameInstance = GetWorld()->GetGameInstance<UPRGameInstance>();
 	
-	const auto MenuGameMode = GetWorld()->GetAuthGameMode<AMenuGameModeBase>();
-	if (MenuGameMode) MenuGameMode->ClearSaveData();
+	//const auto MenuGameMode = GetWorld()->GetAuthGameMode<AMenuGameModeBase>();
+	//if (MenuGameMode) MenuGameMode->ClearSaveData();
 	UGameplayStatics::PlaySound2D(GetWorld(), StartGameSound);
 	UGameplayStatics::OpenLevel(this,/*GameInstance->GetStartupLevel().LevelName*/"LVL_Conference");
 	

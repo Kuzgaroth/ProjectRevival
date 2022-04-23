@@ -70,7 +70,7 @@ void AAmmoCrate::BeginPlay()
 	if (SaveLoader)
 	{
 		const auto SaveObject = SaveLoader->GetSaveFromLoader();
-		if (SaveObject)
+		if (!SaveObject->InitialSave)
 		{
 			CurrentWorld = SaveObject->WorldNum;
 			if (SaveObject->AmmoCrates.Contains(GetFName()))

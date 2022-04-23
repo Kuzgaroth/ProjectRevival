@@ -4,8 +4,10 @@
 #include "Weapon/SoldierRifleWeapon.h"
 #include "Weapon/Components/WeaponFXComponent.h"
 #include "NiagaraComponent.h"
+#include "GameFramework/GameModeBase.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Components/AudioComponent.h"
+#include "Interfaces/ISaveLoader.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 
@@ -21,6 +23,27 @@ void ASoldierRifleWeapon::BeginPlay()
 	Super::BeginPlay();
 	InitFX();
 	check(WeaponFXComponent);
+
+	const auto SaveLoader = Cast<IISaveLoader>(GetWorld()->GetAuthGameMode());
+	if (SaveLoader)
+	{
+		const auto SaveGame = SaveLoader->GetSaveFromLoader();
+		if (SaveGame)
+		{
+			const auto Difficulty = SaveGame->GameDifficulty;
+			switch (Difficulty)
+			{
+			case Normal:
+				ShotDamage = 25.f;
+				break;
+			case Hard:
+				ShotDamage = 35.f;
+				break;
+			default:
+					break;
+			}
+		}
+	}
 }
 
 void ASoldierRifleWeapon::StartFire()

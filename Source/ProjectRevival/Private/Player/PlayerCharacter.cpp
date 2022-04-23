@@ -340,9 +340,9 @@ void APlayerCharacter::BeginPlay()
 	{
 		
 		const auto SaveGame = SaveObj->GetSaveFromLoader();
-		if (SaveGame)
+		if (!SaveGame->InitialSave)
 		{
-			const auto World = SaveObj->GetSaveFromLoader()->WorldNum;
+			const auto World = SaveGame->WorldNum;
 			for (auto Material : GetDynMaterials())
 			{
 				if (Material)
