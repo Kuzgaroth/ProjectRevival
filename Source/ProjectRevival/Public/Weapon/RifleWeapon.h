@@ -83,4 +83,3 @@ private:
 	
 	AController* GetController() const;
 };
-
