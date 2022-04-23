@@ -34,7 +34,9 @@ public:
 	virtual bool SetPause(APlayerController* PC, FCanUnpause CanUnpauseDelegate) override;
 	virtual bool ClearPause() override;
 	void GameOver();
+	UFUNCTION(BlueprintCallable)
 	void SetCurrentWorld(EChangeWorld NewWorld);
+	UFUNCTION(BlueprintCallable)
 	EChangeWorld GetCurrentWorld() const{return CurrentWorld;}
 	void WriteSaveGame(FName CheckpointName);
 	void ClearSaveGame();
