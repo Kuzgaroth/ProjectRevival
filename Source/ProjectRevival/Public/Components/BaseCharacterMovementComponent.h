@@ -19,6 +19,7 @@ struct FPlayerMovementLogic
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool IsPivotTargeted=false;
 	bool IsInJump() const {return JumpStarted || JumpPressed;}
+	
 };
 
 UCLASS()

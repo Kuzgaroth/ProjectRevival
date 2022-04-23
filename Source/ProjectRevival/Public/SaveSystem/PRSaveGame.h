@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AmmoCrate.h"
 #include "GameFramework/SaveGame.h"
 #include "PRSaveGame.generated.h"
 
@@ -50,6 +51,26 @@ struct FWeaponSaveData
 };
 
 USTRUCT()
+struct FAmmoCrateSaveData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY()
+	int32 CurrentClips;
+
+	FAmmoCrateSaveData()
+	{
+		CurrentClips = 0;
+	}
+	FAmmoCrateSaveData(int32 Clips)
+	{
+		CurrentClips = Clips;
+	}
+
+	TArray<uint8> ByteArray;
+};
+
+USTRUCT()
 struct FPlayerSaveData
 {
 	GENERATED_BODY()
@@ -76,4 +97,10 @@ public:
 
 	UPROPERTY()
 	TArray<FCheckPointSaveData> ReachedCheckpoints;
+
+	UPROPERTY()
+	TMap<FName, FAmmoCrateSaveData> AmmoCrates;
+
+	UPROPERTY()
+	TEnumAsByte<EChangeWorld> WorldNum;
 };

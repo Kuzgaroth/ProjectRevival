@@ -3,11 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 #include "ChangeWorld.h"
 #include "Interfaces/IChangingWorldActor.h"
 #include "ProjectRevival/Public/CoreTypes.h"
-#include "Interfaces/IChangingWorldActor.h"
 #include "StaticObjectToStaticObject.generated.h"
 
 class UBoxComponent;
@@ -57,7 +55,11 @@ protected:
     TArray<FName> OrMeshTags;
     TArray<FName> OtMeshTags;
     
-
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	TEnumAsByte<EChangeEditorVisibility> VisibleWorld = BothWorlds;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+	TEnumAsByte<EChangeAllMapEditorVisibility> AllObjectVisibleWorld=OwnValuesWorld;
+	virtual void ClearComponentTags(UStaticMeshComponent* supermesh) override;
     
 
 public:	
@@ -69,6 +71,8 @@ public:
 	
 	//UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	//TEnumAsByte<EChangeWorld> World = OrdinaryWorld;
+
+	TEnumAsByte<EChangeWorld> CurrentWorld = OrdinaryWorld;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	UStaticMeshComponent* SuperMesh1;
@@ -90,8 +94,6 @@ public:
 					  int32 OtherBodyIndex, 
 					  bool bFromSweep, 
 					  const FHitResult &SweepResult);
-
-	virtual bool TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos) override;
 	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	FCoverPointsAndPossibility CoverStructForOrdinaryWObject;
@@ -104,5 +106,9 @@ public:
 	
 	virtual void ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld) override;
 	virtual bool CheckIsChangeAbleObjIsCover() override;
+	virtual bool TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos) override;
+	
+	//this func might cause problems in the future but we'll see
+	virtual void SetLastCoverPointStatus(bool bIsFree) override;
 
 };

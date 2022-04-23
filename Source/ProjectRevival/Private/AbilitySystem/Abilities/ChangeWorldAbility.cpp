@@ -8,20 +8,25 @@
 #include "PRGameModeBase.h"
 #include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 
+UChangeWorldAbility::UChangeWorldAbility()
+{
+	AbilityAction = EGASInputActions::ChangeWorld;
+}
+
 void UChangeWorldAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
-	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
+	//Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
 	const auto Owner = ActorInfo->OwnerActor.Get();
 	if (!Owner)
 	{
 		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Unable to get Owner Actor"))
-		K2_EndAbility();
+		K2_CancelAbility();
 	}
 	auto GameMode = Cast<APRGameModeBase>(Owner->GetWorld()->GetAuthGameMode());
 	if (!GameMode)
 	{
 		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Incorrect gamemode!!!"))
-		K2_EndAbility();
+		K2_CancelAbility();
 	}
 	GameMode->SetCurrentWorld(GameMode->GetCurrentWorld()==OrdinaryWorld ? OtherWorld : OrdinaryWorld);
 	ChangeWorldTask=UChangeWorldTask_SpawnSphere::ChangeWorldInit(this,ChangeWorldShere,TraceSpawnDistance);
@@ -31,6 +36,10 @@ void UChangeWorldAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	if(SpawnedSphereActor)
 	{
 		SpawnedSphereActor->AbilityEnded.AddUObject(this,&UChangeWorldAbility::FinishAbility);
+	}
+	else
+	{
+		K2_EndAbility();
 	}
 	
 }
@@ -48,7 +57,7 @@ bool UChangeWorldAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Ha
 {
 
 	
-	auto Player=Cast<APlayerCharacter>(ActorInfo->OwnerActor.Get());
+	auto Player=Cast<APlayerCharacter>(ActorInfo->OwnerActor);
 	if(Player)
 	{
 		return Player->CheckIfWorldCanBeChanged()&&	Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
@@ -59,7 +68,7 @@ bool UChangeWorldAbility::CanActivateAbility(const FGameplayAbilitySpecHandle Ha
 
 void UChangeWorldAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
-	if(FreezePlayerDurindAbility) ActorInfo->OwnerActor->EnableInput(Cast<ABasePlayerController>(ActorInfo->OwnerActor));
+	if(FreezePlayerDurindAbility &&!bWasCancelled) ActorInfo->OwnerActor->EnableInput(Cast<ABasePlayerController>(ActorInfo->OwnerActor));
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 

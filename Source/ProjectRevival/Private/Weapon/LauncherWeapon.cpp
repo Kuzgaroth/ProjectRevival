@@ -46,15 +46,24 @@ void ALauncherWeapon::MakeShot()
 	
 
 	UGameplayStatics::SpawnSoundAttached(FireSound, WeaponMesh, MuzzelSocketName);
+
 }
 
 void ALauncherWeapon::StartFire()
 {
+
 	MakeShot();
-	
+	OnWeaponShotDelegate.Broadcast();
 }
 
 void ALauncherWeapon::StopFire()
 {
 	
 }
+
+TSubclassOf<ABaseProjectile*> ALauncherWeapon::GetProjectile() const
+{
+	return *ProjectileClass;
+}
+
+

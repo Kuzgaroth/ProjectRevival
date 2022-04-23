@@ -2,7 +2,6 @@
 
 
 #include "AI/Soldier/Tasks/BTT_EnterCover.h"
-
 #include "Soldier/SoldierAIController.h"
 
 UBTT_EnterCover::UBTT_EnterCover()
@@ -14,7 +13,7 @@ EBTNodeResult::Type UBTT_EnterCover::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 {
 	const auto Controller = Cast<ASoldierAIController>(OwnerComp.GetAIOwner());
 	if (!Controller) return EBTNodeResult::Failed;
-
+	UE_LOG(LogPRAITasks, Log, TEXT("Started exiting cover"))
 	Controller->StartEnteringCover();
 	return EBTNodeResult::Succeeded;
 }

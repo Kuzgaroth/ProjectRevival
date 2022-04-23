@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interfaces/ICheckpointable.h"
+#include "ProjectRevival/Public/CoreTypes.h"
 #include "CheckpointActor.generated.h"
 
 class UBoxComponent;
@@ -29,7 +30,10 @@ protected:
 	UPROPERTY(EditInstanceOnly)
 	FName CheckpointName;
 	UPROPERTY(EditInstanceOnly)
-	bool FirstCheckPoint=false;
+	bool FirstCheckPoint;
+	
+	UPROPERTY(EditInstanceOnly)
+	TEnumAsByte<EChangeWorld> CheckpointWorld ;
 public:	
 	FORCEINLINE bool IsFirstCheckPoint() const {return FirstCheckPoint;}
 	virtual AActor* GetPlayerStartForCheckpoint() override;

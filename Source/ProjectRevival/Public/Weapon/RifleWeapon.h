@@ -9,8 +9,18 @@
 class UWeaponFXComponent;
 class UNiagaraComponent;
 class UNiagaraSystem;
+class UParticleSystemComponent;
+class UParticleSystem;
 class UAudioComponent;
 class USoundCue;
+
+UENUM(BlueprintType)
+enum EBodyPart
+{
+	Body,
+	Head,
+	NonePart
+};
 
 UCLASS()
 class PROJECTREVIVAL_API ARifleWeapon : public ABaseWeapon
@@ -45,6 +55,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float BulletSpread=1.5f;
+
+	UPROPERTY(EditDefaultsOnly, Category="VFX")
+	TMap<UPhysicalMaterial*, TEnumAsByte<EBodyPart>> BodyMaterialMap;
 	
 	virtual void MakeShot() override;
 	virtual bool GetTraceData(FVector& TraceStart, FVector& TraceEnd) override;
@@ -54,19 +67,19 @@ protected:
 	void InitFX();
 	void SetFXActive(bool IsActive);
 	void SpawnTraceFX(const FVector& TraceStart, const FVector& TraceEnd);
-	bool IsHitInHead(const FHitResult& HitResult);
-	void ProcessEnemyHit(bool IsInHead);
-private:
-	FTimerHandle ShotTimerHandle;
+	bool IsHitInHead(const UPhysicalMaterial* PhysMaterial);
+	void ProcessEnemyHit(const FHitResult& HitResult);
 	
 	UPROPERTY()
 	UNiagaraComponent* MuzzleFXComponentNiagara;
 	UPROPERTY()
 	UParticleSystemComponent* MuzzleFXComponentCascade;
-
+	
 	UPROPERTY()
 	UAudioComponent* FireAudioComponent;
 	
+private:
+	FTimerHandle ShotTimerHandle;
+	
 	AController* GetController() const;
 };
-

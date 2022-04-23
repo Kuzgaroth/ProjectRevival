@@ -8,16 +8,23 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIWeaponComponent.h"
 #include "BrainComponent.h"
+#include "DrawDebugHelpers.h"
 #include "HealthBarWidget.h"
-#include "HealthComponent.h"
+#include "PlayerCharacter.h"
 #include "SoldierRifleWeapon.h"
 #include "AbilitySystem/Abilities/GrenadeAbility.h"
+#include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Components/WidgetComponent.h"
+#include "GameFeature/ChangeWorld.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Soldier/SoldierAIController.h"
+#include "ProjectRevival/Public/CoreTypes.h"
+
+DEFINE_LOG_CATEGORY(LogPRAISoldier)
 
 void ASoldierEnemy::BeginPlay()
 {
@@ -30,6 +37,12 @@ void ASoldierEnemy::BeginPlay()
 	CoverData.IsFiring = false;
 	bIsInCoverBP = false;
 	bIsFiringBP = false;
+	bCanFireBP = false;
+
+	InterpFunction.BindUFunction(this,FName("TimeLineFloatReturn"));
+	OnTimeLineFinished.BindUFunction(this,FName("TimeLineFinished"));
+	
+	GetCharacterMovement()->MaxWalkSpeed = IdleMaxSpeed;
 }
 
 /*Чтобы протестить бота, нужно раскомментить следующие функции вплоть до IsRunning(),
@@ -107,7 +120,7 @@ void ASoldierEnemy::OnDeath()
 	{
 		PRController->BrainComponent->Cleanup();
 	}
-	PRController->OnBotDied.Broadcast(PRController);
+	if (PRController->OnBotDied.IsBound()) PRController->OnBotDied.Broadcast(PRController);
 }
 
 void ASoldierEnemy::Tick(float DeltaSeconds)
@@ -115,13 +128,85 @@ void ASoldierEnemy::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 }
 
+void ASoldierEnemy::SetBIsAppearing(bool const bCond)
+{
+	bIsAppearing = bCond;
+	SoldierWorldChangeDelegate.Broadcast(GetBIsAppearing());
+}
+
+void ASoldierEnemy::SetBotState(EBotState const val)
+{
+	if (val == EBotState::Battle)
+	{
+		GetCharacterMovement()->StopMovementImmediately();
+	}
+	BotState = val;
+}
+
 void ASoldierEnemy::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	// Cast<ASoldierAIController>(GetController())->StartEnteringCoverDelegate.AddDynamic(this, &ASoldierEnemy::StartCoverSoldier);
-	// Cast<ASoldierAIController>(GetController())->StartExitingCoverDelegate.AddDynamic(this, &ASoldierEnemy::StopCoverSoldier);
-	// Cast<ASoldierAIController>(GetController())->StartCoverSideMovingDelegate.AddDynamic(this, &ASoldierEnemy::ChangeCoverSide);
-	// Cast<ASoldierAIController>(GetController())->PlayerPosDelegate.AddDynamic(this, &ASoldierEnemy::StartFiring);
+	ASoldierAIController* SoldierController = Cast<ASoldierAIController>(NewController);
+	UpdateAimRotator();
+	SoldierController->StartEnteringCoverDelegate.AddDynamic(this, &ASoldierEnemy::StartCoverSoldier);
+	SoldierController->StartExitingCoverDelegate.AddDynamic(this, &ASoldierEnemy::StopCoverSoldier);
+	SoldierController->StartCoverSideMovingDelegate.AddDynamic(this, &ASoldierEnemy::ChangeCoverSide);
+	SoldierController->StartFiringDelegate.AddDynamic(this, &ASoldierEnemy::StartFiring);
+	SoldierController->PlayerPosDelegate.AddDynamic(this, &ASoldierEnemy::UpdatePlayerCoordinates);
+	SoldierController->BotStateDelegate.AddDynamic(this, &ASoldierEnemy::SetBotState);
+
+	SkeletalMesh = GetMesh();
+	CapsuleComp = GetCapsuleComponent();
+	
+	SetBIsAppearing(CurrentWorld == World);
+	
+	int32 num = SkeletalMesh->GetNumMaterials();
+	for (int32 i=0; i < num; i++)
+	{
+		const auto Material = SkeletalMesh->CreateDynamicMaterialInstance(i);
+		MeshesMaterials.Add(Material);
+	}
+	if(VisualCurve)
+	{
+		VisualCurve->GetValueRange(MinCurveValue,MaxCurveValue);
+		TimeLine.AddInterpFloat(VisualCurve,InterpFunction);
+		TimeLine.SetTimelineFinishedFunc(OnTimeLineFinished);
+		TimeLine.SetLooping(false);
+	}
+	if (World==OrdinaryWorld)
+	{
+		SetBIsAppearing(true);
+		if(VisualCurve&&MeshesMaterials.Num()>0)
+		{
+			for (const auto Material : MeshesMaterials)
+			{
+				Material->SetScalarParameterValue("Amount",MinCurveValue);
+			}
+		}
+		else
+		{
+			SkeletalMesh->SetVisibility(true);
+		}
+		SetCollisionResponseToVisible();
+		SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+	}
+	else
+	{
+		if(VisualCurve&&MeshesMaterials.Num()>0)
+		{
+			for (const auto Material : MeshesMaterials)
+			{
+				Material->SetScalarParameterValue("Amount",MaxCurveValue);
+			}
+		}
+		else
+		{
+			SkeletalMesh->SetVisibility(false);
+		}
+		SetCollisionResponseToInvisible();
+		SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+	}
+	CapsuleComp->OnComponentBeginOverlap.AddDynamic(this,&ASoldierEnemy::OnMeshComponentCollision);
 }
 
 void ASoldierEnemy::OnHealthChanged(float CurrentHealth, float HealthDelta)
@@ -134,8 +219,26 @@ void ASoldierEnemy::UpdateHStateBlackboardKey(uint8 EnumKey)
 	if(BBComp)
 	{
 		BBComp->SetValueAsEnum("HState", EnumKey);
-		UE_LOG(LogTemp, Log, TEXT("BBComp was updated %i"), EnumKey);
+		UE_LOG(LogTemp, Log, TEXT("BBComp was updated %i"), EnumKey)
 	}
+}
+
+void ASoldierEnemy::SetBotVisible()
+{
+	SetCollisionResponseToVisible();
+	SetBIsAppearing(true);
+	CapsuleComp->SetCollisionResponseToChannels(CollisionResponseContainer);
+	SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+	SkeletalMesh->SetVisibility(true);
+}
+
+void ASoldierEnemy::SetBotInvisible()
+{
+	SetCollisionResponseToInvisible();
+	SetBIsAppearing(false);
+	CapsuleComp->SetCollisionResponseToChannels(CollisionResponseContainer);
+	SkeletalMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
+	SkeletalMesh->SetVisibility(false);
 }
 
 void ASoldierEnemy::UpdateHealthWidgetVisibility()
@@ -146,52 +249,59 @@ void ASoldierEnemy::UpdateHealthWidgetVisibility()
 	HealthWidgetComponent->SetVisibility(Distance<HealthVisibilityDistance, true);
 }
 
-void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos)
+void ASoldierEnemy::StartCoverSoldier(const FVector& CoverPos, AActor* CoverRef)
 {
-	TArray<FHitResult> Hits;
-	const bool TraceResult = UKismetSystemLibrary::LineTraceMulti(GetWorld(), GetActorLocation(),
-		FVector(CoverPos.X, CoverPos.Y, CoverPos.Z + 1.0), UEngineTypes::ConvertToTraceType(COVER_TRACE_CHANNEL),
-		false, TArray<AActor*>(), EDrawDebugTrace::ForDuration, Hits, true);
-	if (!TraceResult)
+	UE_LOG(LogPRAISoldier, Log, TEXT("StartCoverSoldier() was called"))
+	TArray<FHitResult> HitResults;
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.bIgnoreTouches = true;
+	CollisionParams.AddIgnoredActor(this);
+	UE_LOG(LogPRAISoldier, Log, TEXT("CoverPos: %s"), *CoverPos.ToString())
+	UE_LOG(LogPRAISoldier, Log, TEXT("CoverRef name is %s"), *CoverRef->GetName())
+	CoverData.CoverObject = CoverRef;
+	UKismetSystemLibrary::SphereTraceMulti(GetWorld(), CoverPos, CoverRef->GetActorLocation(), 300,
+		ETraceTypeQuery::TraceTypeQuery1, false, ActorsToIgnore, EDrawDebugTrace::ForDuration, HitResults, true);
+	int8 IndexFound = -1;
+	for (int8 i = 0; i < HitResults.Num(); i++)
 	{
-		return;
+		if (CoverRef->GetRootComponent() == HitResults[i].GetComponent()) 
+		{
+			IndexFound = i;
+			break;
+		}
 	}
-	
-	FHitResult CoverHit = Hits.Last();
-	CoverData.CoverObject = CoverHit.GetActor();
-	if (!CoverData.CoverObject)
+	if (IndexFound == -1)
 	{
 		CleanCoverData();
 		return;
 	}
 	
-	const auto AISoldierController = Cast<ASoldierAIController>(GetController());
-	if (!AISoldierController)
-	{
-		CleanCoverData();
-		return;
-	}
-	
-	WeaponComponent->StopFire();
-	AISoldierController->MoveToActor(CoverData.CoverObject);
+	StopFiringImmediately();
 
+	CoverData.CoverObject = CoverRef;
 	CoverData.CoverObject->ActorHasTag(FName(TEXT("High"))) ? CoverData.CoverType = High : CoverData.CoverType = Low;
-	CoverData.CoverSide = CheckSideByNormal(GetActorForwardVector(), CoverHit.Normal);
+	CoverData.CoverSide = Right;
 	CoverData.CoverPart = GetCoverPart(0);
-	CoverData.IsInCoverTransition = true;
 	
-	const bool Sup = Super::StartCover_Internal(CoverHit);
-	if (!Sup)
-	{
-		CleanCoverData();
-		return;
-	}
-	bUseControllerRotationYaw = false; //We can delete this line cause this parameter is already set permanently in constructor
-	// StartEnteringCoverForAnimDelegate.Broadcast();
+	GetCharacterMovement()->SetPlaneConstraintEnabled(true);
+	GetCharacterMovement()->SetPlaneConstraintNormal(HitResults[IndexFound].Normal);
+	bUseControllerRotationYaw = false;
+	
+	FRotator RotationToCover = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), HitResults[IndexFound].ImpactPoint);
+	RotationToCover.Pitch = 0.f;
+	RotationToCover.Roll = 0.f;
+	RotationToCover.Yaw = RotationToCover.Yaw - GetActorRotation().Yaw;
+	DrawDebugLine(GetWorld(),GetActorLocation(),GetActorLocation()+GetActorForwardVector()*100,FColor::Purple,false,15.0f,0,3.0f);
+	AddActorLocalRotation(RotationToCover);
+	CoverData.IsInCoverTransition = true;
 }
 
 void ASoldierEnemy::StartCoverSoldierFinish()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("StartCoverSoldierFinish() was called"));
+	// DrawDebugLine(GetWorld(),GetActorLocation(),GetActorLocation()+GetActorForwardVector()*100,FColor::Purple,false,15.0f,0,3.0f);
 	CoverData.IsInCoverTransition = false;
 	bIsInCoverBP = true;
 	StopEnteringCoverDelegate.Broadcast();
@@ -199,19 +309,32 @@ void ASoldierEnemy::StartCoverSoldierFinish()
 
 void ASoldierEnemy::StopCoverSoldier()
 {
-	const bool Sup = Super::StopCover_Internal();
-	if (!Sup)
-	{
-		return;
-	}
-	CoverData.StopCover();
+	UE_LOG(LogPRAISoldier, Log, TEXT("StopCoverSoldier() was called"))
+	GetCharacterMovement()->SetPlaneConstraintEnabled(false);
 	bUseControllerRotationYaw = false;
-	CoverData.IsInCoverTransition = true;
-	// StartExitingCoverForAnimDelegate.Broadcast();
+	if (CoverData.IsFiring)
+	{
+		if (GetCoverIndex() == 2 || GetCoverIndex() == 3)
+		{
+			StopFiring();
+			CoverData.StopCover();
+		}
+		else if (GetCoverIndex() > 3)
+		{
+			StopFiringImmediately();
+			CoverData.StopCover();
+		}
+	}
+	else
+	{
+		CoverData.StopCover();
+	}
+	
 }
 
 void ASoldierEnemy::StopCoverSoldierFinish()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("StopCoverSoldierFinish() was called"))
 	CleanCoverData();
 	bIsInCoverBP = false;
 	StopExitingCoverDelegate.Broadcast();
@@ -219,19 +342,27 @@ void ASoldierEnemy::StopCoverSoldierFinish()
 
 void ASoldierEnemy::ChangeCoverSide(const float Amount)
 {
-	
+	UE_LOG(LogPRAISoldier, Log, TEXT("ChangeCoverSide() was called"))
 	if (CoverData.IsInTransition()) {return;}
 	if (!CoverData.IsInCover()){return;}
-		CoverData.TurnStart(Amount);
-	if (CoverData.IsTurning)
+	SideMoveAmount = Amount;
+	if (SideMoveAmount == 0)
 	{
-		SideMoveAmount = Amount;
-		// StartCoverSideMovingForAnimDelegate.Broadcast();
+		CoverData.IsTurning = true;
+	}
+	else
+	{
+		CoverData.TurnStart(Amount);
+		if (!CoverData.IsTurning)
+		{
+			ChangeCoverSideFinish();
+		}
 	}
 }
 
 void ASoldierEnemy::ChangeCoverSideFinish()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("ChangeCoverSideFinish() was called"))
 	CoverData.IsTurning = false;
 	switch (CoverData.CoverSide)
 	{
@@ -248,17 +379,25 @@ void ASoldierEnemy::ChangeCoverSideFinish()
 	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 	this->AddMovementInput(Direction, SideMoveAmount);
 	FHitResult HitResult;
-	Super::CoverTrace(HitResult);
-	if (HitResult.GetActor()->ActorHasTag(FName(TEXT("High"))) && CoverData.CoverType == Low) {CoverData.IsSwitchingCoverType=true;}
-	if (HitResult.GetActor()->ActorHasTag(FName(TEXT("Low"))) && CoverData.CoverType == High) {CoverData.IsSwitchingCoverType=true;}
-	if (!CoverData.IsSwitchingCoverType)
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.bIgnoreTouches = true;
+	CollisionParams.AddIgnoredActor(this);
+	GetWorld()->LineTraceSingleByChannel(HitResult,GetActorLocation(),GetActorForwardVector()*RootDelta+GetActorLocation(),ECollisionChannel::ECC_Visibility, CollisionParams);
+	if (HitResult.bBlockingHit) 
 	{
-		StopCoverSideMovingDelegate.Broadcast();
+		CoverData.CoverObject = HitResult.GetActor();
+		if (CoverData.CoverObject->ActorHasTag(FName(TEXT("High"))) && CoverData.CoverType == Low) {CoverData.IsSwitchingCoverType = true;}
+		if (CoverData.CoverObject->ActorHasTag(FName(TEXT("Low"))) && CoverData.CoverType == High) {CoverData.IsSwitchingCoverType = true;}
+		if (!CoverData.IsSwitchingCoverType)
+		{
+			StopCoverSideMovingDelegate.Broadcast();
+		}
 	}
 }
 
 void ASoldierEnemy::ChangeCoverTypeFinish()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("ChangeCoverTypeFinish() was called"))
 	CoverData.IsSwitchingCoverType = false;
 	switch (CoverData.CoverType)
 	{
@@ -276,98 +415,312 @@ void ASoldierEnemy::ChangeCoverTypeFinish()
 
 void ASoldierEnemy::StartCoverToFire()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("StartCoverToFire() was called"))
 	if (GetCoverIndex() < 2) {return;}
-	if (CoverData.IsInTransition()) {return;}
-	if (!CoverData.IsInCover()) {return;}
 	CoverData.IsInFireTransition = true;
-	//StartCoverToFireForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StartCoverToFireFinish()
 {
+	UE_LOG(LogPRAISoldier, Log, TEXT("StartCoverToFireFinish() was called"))
 	CoverData.IsInFireTransition = false;
 	CoverData.IsFiring = true;
-	StartFiring(PlayerPosition);
+	StartFiring();
 }
 
 void ASoldierEnemy::StartCoverFromFire()
 {
-	if (CoverData.IsInTransition()) {return;}
-	if (!CoverData.IsInCover()) {return;}
+	UE_LOG(LogPRAISoldier, Log, TEXT("StartCoverFromFire() was called"))
 	CoverData.IsFiring = false;
+	bIsFiringBP = false;
 	CoverData.IsInFireTransition = true;
-	//StartCoverFromFireForAnimDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StartCoverFromFireFinish()
 {	
+	UE_LOG(LogPRAISoldier, Log, TEXT("StartCoverFromFireFinish() was called"))
 	CoverData.IsInFireTransition = false;
-	StopFiring();
+	StopFireDelegate.Broadcast();
 }
 
-void ASoldierEnemy::StartFiring(const FVector& PlayerPos)
+void ASoldierEnemy::StartFiring()
 {
-	PlayerPosition = PlayerPos;
-	if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring && !bIsFiringBP && GetCoverIndex() >= 2)
+	UE_LOG(LogPRAISoldier, Log, TEXT("Bot doing this is %s"), *GetName())
+	UE_LOG(LogPRAISoldier, Log, TEXT("StartFiring() was called"))
+	UE_LOG(LogPRAISoldier, Log, TEXT("StartFiring bIsInCoverBP               is %s"), bIsInCoverBP ? TEXT("true") : TEXT("false"))
+	UE_LOG(LogPRAISoldier, Log, TEXT("StartFiring CoverData.IsFiring         is %s"), CoverData.IsFiring ? TEXT("true") : TEXT("false"))
+	UE_LOG(LogPRAISoldier, Log, TEXT("StartFiring CoverData.IsInTransition() is %s"), CoverData.IsInTransition() ? TEXT("true") : TEXT("false"))
+	UE_LOG(LogPRAISoldier, Log, TEXT("StartFiring bIsFiringBP                is %s"), bIsFiringBP ? TEXT("true") : TEXT("false"))
+	UE_LOG(LogPRAISoldier, Log, TEXT("StartFiring bCanFireBP                is %s"), bCanFireBP ? TEXT("true") : TEXT("false"))
+	UE_LOG(LogPRAISoldier, Log, TEXT("StartFiring GetCoverIndex              is %d"), GetCoverIndex())
+	if (bIsInCoverBP && !CoverData.IsFiring && !bIsFiringBP && !CoverData.IsInTransition() && bCanFireBP && GetCoverIndex() >= 2)
 	{
 		StartCoverToFire();
-		return;
 	}
-	else if (CoverData.IsInCover() && bIsInCoverBP && CoverData.IsFiring && !bIsFiringBP)
+	else if (bIsInCoverBP && CoverData.IsFiring && !bIsFiringBP && !CoverData.IsInTransition() && bCanFireBP)
 	{
-		WeaponComponent->StartFire();
-		bIsFiringBP = true;
-		StartFireDelegate.Broadcast();
-		RifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
-		if (RifleRef)
+		UE_LOG(LogPRAISoldier, Log, TEXT("Did we come here? V1"))
+		if (Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon()))
 		{
-			RifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
+			UE_LOG(LogPRAISoldier, Log, TEXT("Passed RowRifle Cast<> V1"))
+			UE_LOG(LogPRAISoldier, Log, TEXT("CurrentWeapon is %s"), *WeaponComponent->GetCurrentWeapon()->GetName())
+			RowRifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
+			RowRifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
+			RowRifleRef->OnWeaponShotDelegate.AddUObject(this, &ASoldierEnemy::UpdateAimRotator);
+			RowRifleRef->StartFire();
+			bIsFiringBP = true;
 		}
-		return;
-	}
-	else if (!CoverData.IsInCover() && !bIsInCoverBP && !bIsFiringBP)
+		else
+		{
+			WeaponComponent->StartFire();
+			bIsFiringBP = true;
+		}
+	}// The following line exists in case we would need different logic for firing in and out of cover. But for now it works fine like that.
+	else if (!bIsInCoverBP && !CoverData.IsInTransition() && bCanFireBP && !bIsFiringBP)
 	{
-		WeaponComponent->StartFire();
-		bIsFiringBP = true;
-		StartFireDelegate.Broadcast();
-		RifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
-		if (RifleRef)
+		UE_LOG(LogPRAISoldier, Log, TEXT("Did we come here? V2"))
+		if (Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon()))
 		{
-			RifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
+			UE_LOG(LogPRAISoldier, Log, TEXT("Passed RowRifle Cast<> V2"))
+			UE_LOG(LogPRAISoldier, Log, TEXT("CurrentWeapon is %s"), *WeaponComponent->GetCurrentWeapon()->GetName())
+			RowRifleRef = Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon());
+			RowRifleRef->StoppedFireInWeaponDelegate.AddDynamic(this, &ASoldierEnemy::StopFiring);
+			UpdateRowRifleDelegateHandle = RowRifleRef->OnWeaponShotDelegate.AddUObject(this, &ASoldierEnemy::UpdateAimRotator);
+			RowRifleRef->StartFire();
+			bIsFiringBP = true;
 		}
-		return;
+		else
+		{
+			WeaponComponent->StartFire();
+			bIsFiringBP = true;
+		}
 	}
 }
 
+//It works properly for bots only if their weapon have StoppedFireInWeaponDelegate.
+//Lately every logic inside should follow the RowRifleRef logic style.
 void ASoldierEnemy::StopFiring()
 {
-	if (CoverData.IsInCover() && bIsInCoverBP && CoverData.IsFiring && bIsFiringBP)
+	UE_LOG(LogPRAISoldier, Log, TEXT("StopFiring() was called"))
+	if (bIsInCoverBP && CoverData.IsFiring && bIsFiringBP)
 	{
+		if (Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon()))
+		{
+			RowRifleRef->StoppedFireInWeaponDelegate.RemoveDynamic(this, &ASoldierEnemy::StopFiring);
+			if (RowRifleRef->OnWeaponShotDelegate.IsBound())
+			{
+				RowRifleRef->OnWeaponShotDelegate.Remove(UpdateRowRifleDelegateHandle);
+			}
+			RowRifleRef = nullptr;
+		}
+		else
+		{
+			WeaponComponent->StopFire();
+		}
 		StartCoverFromFire();
-		return;
 	}
-	else if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring && bIsFiringBP)
+	else if (!bIsInCoverBP && !CoverData.IsFiring && bIsFiringBP)
 	{
-		bIsFiringBP = false;
-		if (RifleRef)
+		if (Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon()))
 		{
-			RifleRef->StoppedFireInWeaponDelegate.RemoveDynamic(this, &ASoldierEnemy::StopFiring);
-			RifleRef = nullptr;
+			RowRifleRef->StoppedFireInWeaponDelegate.RemoveDynamic(this, &ASoldierEnemy::StopFiring);
+			if (RowRifleRef->OnWeaponShotDelegate.IsBound())
+			{
+				RowRifleRef->OnWeaponShotDelegate.Remove(UpdateRowRifleDelegateHandle);
+			}
+			RowRifleRef = nullptr;
 		}
+		else
+		{
+			WeaponComponent->StopFire();
+		}
+		bIsFiringBP = false;
 		StopFireDelegate.Broadcast();
 		return;
 	}
-	else if (!CoverData.IsInCover() && !bIsInCoverBP && bIsFiringBP)
+	// else if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring && bIsFiringBP)
+	// {
+	// 	
+	// }
+	// else if (!CoverData.IsInCover() && !bIsInCoverBP && bIsFiringBP)
+	// {
+	// 	
+	// }
+}
+
+//This function is only for inner usage.
+//Called when we want to abort covering during firing. 
+void ASoldierEnemy::StopFiringImmediately()
+{
+	UE_LOG(LogPRAISoldier, Log, TEXT("StopFiringImmediately() was called"))
+	if (Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon()))
 	{
-		bIsFiringBP = false;
-		if (RifleRef)
+		if (!RowRifleRef) { return; }
+		RowRifleRef->StopFireExternal();
+		if (RowRifleRef->StoppedFireInWeaponDelegate.IsBound())
 		{
-			RifleRef->StoppedFireInWeaponDelegate.RemoveDynamic(this, &ASoldierEnemy::StopFiring);
-			RifleRef = nullptr;
+			RowRifleRef->StoppedFireInWeaponDelegate.RemoveDynamic(this, &ASoldierEnemy::StopFiring);
 		}
-		StopFireDelegate.Broadcast();
-		return;
+		if (RowRifleRef->OnWeaponShotDelegate.IsBound())
+		{
+			RowRifleRef->OnWeaponShotDelegate.Remove(UpdateRowRifleDelegateHandle);
+		}
+		RowRifleRef = nullptr;
 	}
+	else
+	{
+		WeaponComponent->StopFire();
+	}
+	CoverData.IsFiring = false;
+	bIsFiringBP = false;
+	StopFireDelegate.Broadcast();
+}
+
+void ASoldierEnemy::ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld)
+{
+	if(VisibleInEditorWorld!=OwnValuesWorld)
+	{
+		switch (VisibleInEditorWorld)
+		{
+		case DefaultVisibleWorld:
+			VisibleWorld=DefaultWorld;
+			break;
+		case OtherVisibleWorld:
+			VisibleWorld=AltirnativeWorld;
+			break;
+		case BothVisibleWorlds:
+			VisibleWorld=BothWorlds;
+			break;
+		default:
+			break;
+		}
+		if(VisibleWorld==World || VisibleWorld==BothWorlds)
+		{
+			SetBotVisible();
+		}
+		else
+		{
+			SetBotInvisible();
+		}
+	}
+	else
+	{
+		VisibleWorld=DefaultWorld;
+		if(VisibleWorld==World)
+		{
+			SetBotVisible();
+		}
+		else
+		{
+			SetBotInvisible();
+		}
+	}
+}
+
+void ASoldierEnemy::Changing()
+{
+	if(CurrentWorld==OrdinaryWorld)
+	{
+		CurrentWorld=OtherWorld;
+	}
+	else
+	{
+		CurrentWorld=OrdinaryWorld;
+	}
+	if (World == CurrentWorld)
+	{
+		SetBotVisible();
+		Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon())->GetWeaponMeshComponent()->SetVisibility(true);
+		if(VisualCurve) TimeLine.PlayFromStart();
+	}
+	else
+	{
+		SetBotInvisible();
+		StopFiringImmediately();
+		Cast<ASoldierRifleWeapon>(WeaponComponent->GetCurrentWeapon())->GetWeaponMeshComponent()->SetVisibility(false);
+		if(VisualCurve) TimeLine.PlayFromStart();
+		
+		if (bIsInCoverBP) StopCoverSoldier();
+	}
+}
+
+#if WITH_EDITOR
+void ASoldierEnemy::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	if(PropertyChangedEvent.Property->GetName()=="VisibleWorld")
+	{
+		SkeletalMesh->SetVisibility(VisibleWorld==World || VisibleWorld==BothWorlds);
+	}
+	if(PropertyChangedEvent.Property->GetName()=="AllObjectVisibleWorld")
+	{
+		TArray<AActor*> ChangeAbleObjs;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(),AChangeWorld::StaticClass(),ChangeAbleObjs);
+		for(auto obj:ChangeAbleObjs)
+		{
+			Cast<ASoldierEnemy>(obj)->ChangeVisibleWorld(AllObjectVisibleWorld);
+		}
+	}
+}
+#endif
+
+void ASoldierEnemy::ShowChangeWorldObjectByAbility()
+{
+	SkeletalMesh->SetRenderCustomDepth(true);
+	if(CapsuleComp->GetCollisionResponseToChannel(ECC_WorldDynamic) == ECR_Overlap)
+	{
+		if(MeshesMaterials.Num()!=0)
+			for (const auto Material : MeshesMaterials)
+			{
+				auto reqwar=(MaxCurveValue-MinCurveValue)/TransparencyLevel;
+				reqwar=MaxCurveValue-reqwar;
+				Material->SetScalarParameterValue("Amount",reqwar);
+			}
+	}
+}
+
+void ASoldierEnemy::HideChangeWorldObjectByAbility()
+{
+	SkeletalMesh->SetRenderCustomDepth(false);
+	if(CapsuleComp->GetCollisionResponseToChannel(ECC_WorldDynamic) == ECR_Overlap)
+	{
+		if(MeshesMaterials.Num()!=0)
+			for (const auto Material : MeshesMaterials)
+			{
+				Material->SetScalarParameterValue("Amount",MaxCurveValue);
+			}
+	}
+}
+
+void ASoldierEnemy::OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if(Cast<AChangeWorldSphereActor>(OtherActor))
+	{
+		Changing();
+	}
+	auto Player=Cast<APlayerCharacter>(OtherActor);
+	if(Player&& CapsuleComp->GetCollisionResponseToChannel(ECC_WorldDynamic) == ECR_Overlap)
+	{
+		Player->SetChangeWorldPossibility(false,this);
+	}
+}
+
+void ASoldierEnemy::OnMeshComponentEndCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	const auto Player = Cast<APlayerCharacter>(OtherActor);
+	if(Player)
+	{
+		ASoldierEnemy* ptr = nullptr;
+		Player->SetChangeWorldPossibility(true, ptr);
+		HideChangeWorldObjectByAbility();
+	}
+}
+
+TArray<FAmmoData> ASoldierEnemy::GetPlayerWeapons() const
+{
+	return WeaponComponent->GetAllWeapons();
 }
 
 ECoverType ASoldierEnemy::CheckCover()
@@ -376,14 +729,14 @@ ECoverType ASoldierEnemy::CheckCover()
 	return Super::CoverTrace(HitResult);
 }
 
+//Takes Actor forward vector and object normal to calculate from which side it enteres.
 TEnumAsByte<ECoverSide> ASoldierEnemy::CheckSideByNormal(FVector Forward, FVector Normal)
 {
 	Forward.Normalize();
 	Normal = - Normal;
-	float CosNormal = Normal.CosineAngle2D(FVector(0, 1, 0));
-	float CosForward = Forward.CosineAngle2D(FVector(0, 1, 0));
-	if (CosNormal >= CosForward) return Left;
-	else return Right;
+	const float CosNormal = Normal.CosineAngle2D(FVector(0, 1, 0));
+	const float CosForward = Forward.CosineAngle2D(FVector(0, 1, 0));
+	return (CosNormal >= CosForward)?Left:Right;
 }
 
 TEnumAsByte<ECoverPart> ASoldierEnemy::GetCoverPart(int8 PartPos)
@@ -401,6 +754,30 @@ FCoverData& ASoldierEnemy::GetCoverData()
 	return CoverData;
 }
 
+void ASoldierEnemy::UpdatePlayerCoordinates(const FPlayerPositionData& PlayerPos)
+{
+	UE_LOG(LogPRAISoldier, Log, TEXT("UpdatePlayerCoordinates() was called"))
+	PlayerCoordinates = PlayerPos;
+	UpdateAimRotator();
+}
+
+void ASoldierEnemy::UpdateAimRotator()
+{
+	UE_LOG(LogPRAISoldier, Log, TEXT("UpdateAimRotator() was called"))
+	DrawDebugLine(GetWorld(),GetActorLocation(),PlayerCoordinates.GetActorPosition(),FColor::Blue,false,5.0f,0,3.0f);
+	FRotator NewRotator = UKismetMathLibrary::NormalizedDeltaRotator(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(),PlayerCoordinates.GetActorPosition()), GetActorRotation());
+	if (abs(NewRotator.Yaw) > 90.f) 
+	{
+		bCanFireBP = false;
+		bIsInCoverBP ? StopCoverSoldier() : StopFiringImmediately();
+		AimRotator = GetActorRotation();
+	} else
+	{
+		bCanFireBP = true;
+		AimRotator = NewRotator;
+	}
+}
+
 void ASoldierEnemy::CleanCoverData()
 {
 	CoverData.CoverType = CoverData.PendingCoverType = None;
@@ -412,9 +789,51 @@ void ASoldierEnemy::CleanCoverData()
 
 int8 ASoldierEnemy::GetCoverIndex()
 {
-	if (CoverData.CoverType != ECoverType::None || CoverData.CoverPart != ECoverPart::CPNone || CoverData.CoverSide != ECoverSide::CSNone)
-	return CoverData.CoverType * 2 + CoverData.CoverPart * 4 + CoverData.CoverSide;
-	else return -1;
+	bool const bCond = CoverData.CoverType != ECoverType::None || CoverData.CoverPart != ECoverPart::CPNone || CoverData.CoverSide != ECoverSide::CSNone;
+	
+	return bCond ? CoverData.CoverType * 2 + CoverData.CoverPart * 4 + CoverData.CoverSide : -1;
+}
+
+void ASoldierEnemy::SetCollisionResponseToVisible()
+{
+	CollisionResponseContainer.SetResponse(ECC_WorldStatic, ECR_Block);
+	CollisionResponseContainer.SetResponse(ECC_WorldDynamic, ECR_Block);
+	CollisionResponseContainer.SetResponse(ECC_Pawn, ECR_Block);
+	CollisionResponseContainer.SetResponse(ECC_PhysicsBody, ECR_Block);
+	CollisionResponseContainer.SetResponse(ECC_Vehicle, ECR_Block);
+	CollisionResponseContainer.SetResponse(ECC_Destructible, ECR_Block);
+}
+
+void ASoldierEnemy::SetCollisionResponseToInvisible()
+{
+	CollisionResponseContainer.SetResponse(ECC_WorldStatic, ECR_Block);
+	CollisionResponseContainer.SetResponse(ECC_WorldDynamic, ECR_Overlap);
+	CollisionResponseContainer.SetResponse(ECC_Pawn, ECR_Overlap);
+	CollisionResponseContainer.SetResponse(ECC_PhysicsBody, ECR_Overlap);
+	CollisionResponseContainer.SetResponse(ECC_Vehicle, ECR_Overlap);
+	CollisionResponseContainer.SetResponse(ECC_Destructible, ECR_Overlap);
+}
+
+void ASoldierEnemy::TimeLineFinished()
+{
+	IIChangingWorldActor::TimeLineFinished();
+}
+
+void ASoldierEnemy::TimeLineFloatReturn(float Value)
+{
+	for (const auto Material : MeshesMaterials)
+	{
+		if(GetBIsAppearing())
+		{
+			Material->SetScalarParameterValue("Amount",Value);
+		}
+		else
+		{
+			float val=MinCurveValue-Value;
+			val=MaxCurveValue+val;
+			Material->SetScalarParameterValue("Amount",val);
+		}
+	}
 }
 
 void ASoldierEnemy::ThrowGrenadeCaller()
@@ -422,13 +841,13 @@ void ASoldierEnemy::ThrowGrenadeCaller()
 	if (!CoverData.IsInTransition() && !CoverData.IsFiring && !bIsFiringBP && (GetCoverIndex() >= 2 || GetCoverIndex() == -1))
 	{
 		ThrowGrenadeDelegate.Broadcast();
-		UE_LOG(LogTemp, Log, TEXT("BROADCASTED GRENADE"))
+		UE_LOG(LogPRAISoldier, Log, TEXT("Broadcasted GrenadeDelagate"))
 	}
 }
 
 void ASoldierEnemy::ThrowGrenade()
 {
-	UE_LOG(LogTemp, Log, TEXT("THROW GRENADE ACTIVATED"))
+	UE_LOG(LogPRAISoldier, Log, TEXT("THROW GRENADE ACTIVATED"))
 	AbilitySystemComponent->TryActivateAbilityByClass(GameplayAbilities.FindRef(EGASInputActions::GrenadeThrow));
 }
 

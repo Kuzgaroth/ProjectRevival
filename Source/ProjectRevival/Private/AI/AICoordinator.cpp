@@ -3,6 +3,7 @@
 
 #include "AI/AICoordinator.h"
 #include "PlayerCharacter.h"
+#include "PRGameModeBase.h"
 #include "StaticMeshAttributes.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/PlayerStart.h"
@@ -21,14 +22,12 @@ AAICoordinator::AAICoordinator()
 	TriggerComponent = CreateDefaultSubobject<UBoxComponent>("FightTrigger");
 	TriggerComponent->SetupAttachment(RootComponent);
 	TriggerComponent->OnComponentBeginOverlap.AddDynamic(this, &AAICoordinator::OnTriggerOverlap);
-	
 }
 
 
 void AAICoordinator::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
 }
 
 void AAICoordinator::BeginPlay()
@@ -42,7 +41,6 @@ void AAICoordinator::ProcessBotDeath(ASoldierAIController* BotController)
 	if (BotMap.Num()==0) Destroy();
 	BotMap.FindAndRemoveChecked(BotController);
 	BotController->Destroy();
-	
 }
 
 bool AAICoordinator::InitSpawn()
@@ -113,7 +111,6 @@ bool AAICoordinator::InitSpawn()
 			SpawnBot(PlayerStart->GetChildActor(), EWing::Center);
 			CenterTmp--;
 		}
-		
 	}
 	return true;
 }
@@ -167,6 +164,7 @@ void AAICoordinator::SpawnBot(AActor* PlayerStartActor, EWing WingSide)
 		
 	}
 	BotMap.Add(BotController, WingSide);
+	//UE_LOG(LogPRCoordinator, Warning, TEXT("%s"), *FString(BotController->GetName()))
 	PlayerStartActor->Destroy(true);
 }
 
@@ -180,7 +178,13 @@ void AAICoordinator::ConnectController(ASoldierAIController* BotController, EWin
 
 void AAICoordinator::UpdatePlayerInfoFromBot(FPlayerPositionData PlayerPos)
 {
-	if (PlayerPos.PlayerActor!=nullptr) this->PlayerPosition = PlayerPos;
+	if (PlayerPos.GetActor()!=nullptr)
+	{
+		if (CheckIfPlayerPosHasChanged(PlayerPos, false))
+		{
+			this->PlayerPosition = PlayerPos;
+		}
+	}
 }
 
 bool AAICoordinator::MakeDecisionForWingBot() const
@@ -195,10 +199,45 @@ bool AAICoordinator::MakeDecisionForWingBot() const
 
 void AAICoordinator::UpdateBotPlayerInfo()
 {
+	//TODO Исправить обновление позиции игрока
 	for (TTuple<ASoldierAIController*, EWing> BotPair : BotMap)
 	{
-		BotPair.Key->SetPlayerPos(PlayerPosition);
+		UE_LOG(LogPRCoordinator, Log, TEXT("BotName %s"), *FString(BotPair.Key->GetName()))
+		if (CheckIfPlayerPosHasChanged(BotPair.Key->GetPlayerPos(), true))
+		{
+			BotPair.Key->SetPlayerPos(PlayerPosition, true);
+		}
 	}
+}
+
+bool AAICoordinator::CheckIfPlayerPosHasChanged(FPlayerPositionData NewPlayerPos, bool bState)
+/*
+ *	bState
+ *		True - PlayerPosition is newer than NewPlayerPos
+ *		False - PlayerPosition is older than NewPlayerPos
+ */
+{
+	//const float Threshold = 0.01f;
+	bool bCond;
+	if (NewPlayerPos.GetActor())
+	{
+		if (bState)
+		{
+			bCond = PlayerPosition.GetInfoUpdateTime().GetTicks() > NewPlayerPos.GetInfoUpdateTime().GetTicks();
+		}
+		else
+		{
+			bCond = PlayerPosition.GetInfoUpdateTime().GetTicks() < NewPlayerPos.GetInfoUpdateTime().GetTicks();
+		}
+		UE_LOG(LogPRCoordinator, Log, TEXT("%lld %s %lld"), PlayerPosition.GetInfoUpdateTime().GetTicks(),
+				bState?TEXT(">"):TEXT("<"), NewPlayerPos.GetInfoUpdateTime().GetTicks())
+		UE_LOG(LogPRCoordinator, Log, TEXT("%s"), bCond?TEXT("true"):TEXT("false"))
+	}
+	else
+	{
+		bCond = bState;
+	}
+	return bCond;
 }
 
 AAICharacter* AAICoordinator::SpawnCharacterForBot(AActor* PlayerStartActor, const FTransform& Transform)
@@ -216,6 +255,8 @@ AAICharacter* AAICoordinator::SpawnCharacterForBot(AActor* PlayerStartActor, con
 void AAICoordinator::OnTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
                                       bool bFromSweep, const FHitResult& SweepResult)
 {
+	 const auto GameMode = GetWorld()->GetAuthGameMode<APRGameModeBase>();
+	if (!GameMode || CoordinatorWorld!=GameMode->GetCurrentWorld()) return;
 	if (Cast<APlayerCharacter>(OtherActor))
 	{
 		if (InitSpawn()) UE_LOG(LogPRCoordinator, Warning, TEXT("Bots are spawned"))
