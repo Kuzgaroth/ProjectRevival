@@ -132,7 +132,7 @@ void APRGameModeBase::RestartPlayer(AController* NewPlayer)
 	UE_LOG(LogPRSaveSystem, Display, TEXT("----Spawning player at checkpoint----"))
 	TArray<AActor*> Checkpoints; /*One actually*/
 	FName CheckpointName;
-	if (!SaveGame->InitialSave)
+	if (SaveGame && !SaveGame->InitialSave)
 	{
 		UE_LOG(LogPRSaveSystem, Display, TEXT("----Spawning player at particular checkpoint----"))
 		CheckpointName = SaveGame->PlayerSaveData.LastCheckpointReached.CheckpointName;

@@ -28,6 +28,7 @@ void UMenuWidget::NativeOnInitialized()
 	if (ContinueGameButton)
 	{
 		ContinueGameButton->OnClicked.AddDynamic(this, &UMenuWidget::OnContinueGame);
+		if (!UGameplayStatics::DoesSaveGameExist("SaveSlot",0)) ContinueGameButton->bIsEnabled = false;
 	}
 
 	if (OptionsButton)
