@@ -6,6 +6,7 @@
 #include "DrawDebugHelpers.h"
 #include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 #include "Components/BoxComponent.h"
+#include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -192,6 +193,14 @@ void AStaticObjectToStaticObject::ClearComponentTags(UStaticMeshComponent* super
 	IIChangingWorldActor::ClearComponentTags(supermesh);
 }
 
+void AStaticObjectToStaticObject::PlaySound(USoundCue* SoundToPlay)
+{
+	if (SoundToPlay)
+	{
+		UGameplayStatics::SpawnSoundAttached(SoundToPlay,GetRootComponent());
+	}
+}
+
 // Called every frame
 void AStaticObjectToStaticObject::Tick(float DeltaTime)
 {
@@ -318,12 +327,14 @@ void AStaticObjectToStaticObject::OnOrdinaryMeshCollision(UPrimitiveComponent* O
 			if(!OrIsAppearing)
 			{
 				OrIsAppearing=true;
+				PlaySound(AppearSound);
 				LoadComponentTags(SuperMesh1);
 				OrdinaryWTimeLine.PlayFromStart();
 				SuperMesh1->SetCollisionResponseToChannels(OrdinaryWorldCollisionResponseContainer);
 			}
 			else
 			{
+				PlaySound(DisappearSound);
 				OrIsAppearing=false;
 				SuperMesh1->SetCollisionProfileName("OverlapAll");
 				OrdinaryWTimeLine.PlayFromStart();
@@ -347,12 +358,14 @@ void AStaticObjectToStaticObject::OnOtherMeshCollision(UPrimitiveComponent* Over
 			if(!OtIsAppearing)
 			{
 				OtIsAppearing=true;
+				PlaySound(AppearSound);
 				LoadComponentTags(SuperMesh2);
 				OtherWTimeLine.PlayFromStart();
 				SuperMesh2->SetCollisionResponseToChannels(OtherWorldCollisionResponseContainer);
 			}
 			else
 			{
+				PlaySound(DisappearSound);
 				OtIsAppearing=false;
 				SuperMesh2->SetCollisionProfileName("OverlapAll");
 				OtherWTimeLine.PlayFromStart();

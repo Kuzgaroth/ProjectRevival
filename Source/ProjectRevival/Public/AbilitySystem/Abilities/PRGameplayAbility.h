@@ -7,6 +7,7 @@
 #include "CirclePBWidget.h"
 #include "Abilities/GameplayAbility.h"
 #include "AbilitySystem/PRAbilityTypes.h"
+#include "Sound/SoundCue.h"
 #include "PRGameplayAbility.generated.h"
 
 
@@ -24,6 +25,14 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	EGASInputActions AbilityAction;
+	
+	UPROPERTY(EditDefaultsOnly)
+	USoundCue* StartSound;
+
+	UPROPERTY(EditDefaultsOnly)
+	USoundCue* EndSound;
+
+	virtual void PlaySound(USoundCue* SoundToPlay);
 	
 	virtual void CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
