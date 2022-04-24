@@ -63,7 +63,7 @@ void ABaseWeapon::BeginPlay()
 	if (SaveLoader)
 	{
 		auto SaveGame = SaveLoader->GetSaveFromLoader();
-		if (SaveGame)
+		if (!SaveGame->InitialSave)
 		{
 			FAmmoData NewAmmoData;
 			NewAmmoData.Bullets = SaveGame->PlayerSaveData.WeaponSaveDatas[0].CurrentAmmo;

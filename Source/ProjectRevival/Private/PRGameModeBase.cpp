@@ -116,11 +116,11 @@ void APRGameModeBase::InitGame(const FString& MapName, const FString& Options, F
 }
 void APRGameModeBase::InitCrates()
 {
-	for (TActorIterator<AAmmoCrate> It(GetWorld()); It; ++It)
+	/*for (TActorIterator<AAmmoCrate> It(GetWorld()); It; ++It)
 	{
 		AAmmoCrate* Crate = Cast<AAmmoCrate>(*It);
 		Crate->SetCurrentClipsAmount(SaveGame->AmmoCrates.Find(*Crate->GetName())->CurrentClips);
-	}
+	}*/
 }
 
 void APRGameModeBase::RestartPlayer(AController* NewPlayer)
@@ -132,7 +132,7 @@ void APRGameModeBase::RestartPlayer(AController* NewPlayer)
 	UE_LOG(LogPRSaveSystem, Display, TEXT("----Spawning player at checkpoint----"))
 	TArray<AActor*> Checkpoints; /*One actually*/
 	FName CheckpointName;
-	if (SaveGame)
+	if (!SaveGame->InitialSave)
 	{
 		UE_LOG(LogPRSaveSystem, Display, TEXT("----Spawning player at particular checkpoint----"))
 		CheckpointName = SaveGame->PlayerSaveData.LastCheckpointReached.CheckpointName;
@@ -239,7 +239,7 @@ void APRGameModeBase::SetCurrentWorld(EChangeWorld NewWorld)
 void APRGameModeBase::WriteSaveGame(FName CheckpointName)
 {
 	UE_LOG(LogPRSaveSystem, Display, TEXT("---- Save process started ----"))
-	if (!SaveGame) SaveGame = Cast<UPRSaveGame>(UGameplayStatics::CreateSaveGameObject(UPRSaveGame::StaticClass()));
+	//if (!SaveGame) SaveGame = Cast<UPRSaveGame>(UGameplayStatics::CreateSaveGameObject(UPRSaveGame::StaticClass()));
 	
 	const auto AsyncDelegate = FAsyncSaveGameToSlotDelegate::CreateUObject(this, &APRGameModeBase::SaveFinished);
 	FPlayerSaveData PlayerSaveData;
@@ -250,9 +250,10 @@ void APRGameModeBase::WriteSaveGame(FName CheckpointName)
 	PlayerSaveData.LastCheckpointReached = FCheckPointSaveData(CheckpointName);
 	SaveGame->PlayerSaveData = PlayerSaveData;
 	SaveGame->ReachedCheckpoints.Add(FCheckPointSaveData(CheckpointName));
+	SaveGame->InitialSave=false;
 	for (TActorIterator<AAmmoCrate> It(GetWorld()); It; ++It)
 	{
-		SaveGame->AmmoCrates.Add(*It->GetName(),FAmmoCrateSaveData(It->GetCurrentClipsAmount()));
+		SaveGame->AmmoCrates.Add(It->GetFName(),FAmmoCrateSaveData(It->GetCurrentClipsAmount()));
 		//UE_LOG(LogPRSaveSystem, Display, TEXT("SaveGame->AmmoCrates.Add(%s)"), *It->GetName());
 	}
 	SaveGame->WorldNum = TEnumAsByte<EChangeWorld>(CurrentWorld);

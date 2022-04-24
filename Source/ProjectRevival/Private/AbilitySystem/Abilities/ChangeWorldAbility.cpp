@@ -29,19 +29,25 @@ void UChangeWorldAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 		K2_CancelAbility();
 	}
 	GameMode->SetCurrentWorld(GameMode->GetCurrentWorld()==OrdinaryWorld ? OtherWorld : OrdinaryWorld);
+	ChangeMaterialsTask = UChangeWorldTask_ChangeMaterials::ChangeMaterials(this, MaterialsTransitionCurve, Cast<IIDynMaterialsFromMesh>(Owner)->GetDynMaterials(),GameMode->GetCurrentWorld());
+	ChangeMaterialsTask->Activate();
 	ChangeWorldTask=UChangeWorldTask_SpawnSphere::ChangeWorldInit(this,ChangeWorldShere,TraceSpawnDistance);
 	if(FreezePlayerDurindAbility)
 		ActorInfo->OwnerActor->DisableInput(Cast<ABasePlayerController>(ActorInfo->OwnerActor));
 	auto SpawnedSphereActor = ChangeWorldTask->StartTask(*ActorInfo->OwnerActor);
 	if(SpawnedSphereActor)
 	{
+		if(Cast<APlayerCharacter>(ActorInfo->OwnerActor.Get()))
+		{
+			Cast<APlayerCharacter>(ActorInfo->OwnerActor.Get())->ChangeWorldPressedDelegate.Broadcast();
+		}
 		SpawnedSphereActor->AbilityEnded.AddUObject(this,&UChangeWorldAbility::FinishAbility);
 	}
 	else
 	{
 		K2_EndAbility();
 	}
-	
+	PlaySound(StartSound);
 }
 
 void UChangeWorldAbility::FinishAbility()

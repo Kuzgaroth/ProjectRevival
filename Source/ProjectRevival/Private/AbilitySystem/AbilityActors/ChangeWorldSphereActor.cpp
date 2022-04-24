@@ -6,6 +6,7 @@
 #include "Components/SphereComponent.h"
 #include "NiagaraComponent.h"
 #include "DrawDebugHelpers.h"
+#include "PlayerCharacter.h"
 
 #include "GameFeature/ChangeWorld.h"
 #include "GameFeature/StaticObjectToNothing.h"
@@ -62,7 +63,11 @@ void AChangeWorldSphereActor::Tick(float DeltaTime)
 			Destroy();
 		}
 		CurrentRadius+=ExpantionSpeed*DeltaTime;
-		SphereComponent->SetSphereRadius(CurrentRadius,true);
+		auto Player =Cast<APlayerCharacter>(GetOwner());
+		if(Player)
+			Player->ChangeWorldRadius=CurrentRadius;
+		if(SphereComponent)
+			SphereComponent->SetSphereRadius(CurrentRadius,true);
 		DrawDebugSphere(GetWorld(),GetActorLocation(),CurrentRadius,24,FColor::Blue,false,0.1f);
 		
 	}
