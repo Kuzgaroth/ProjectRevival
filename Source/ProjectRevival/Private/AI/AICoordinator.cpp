@@ -3,6 +3,7 @@
 
 #include "AI/AICoordinator.h"
 #include "PlayerCharacter.h"
+#include "PRGameModeBase.h"
 #include "StaticMeshAttributes.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/PlayerStart.h"
@@ -254,6 +255,8 @@ AAICharacter* AAICoordinator::SpawnCharacterForBot(AActor* PlayerStartActor, con
 void AAICoordinator::OnTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
                                       bool bFromSweep, const FHitResult& SweepResult)
 {
+	 const auto GameMode = GetWorld()->GetAuthGameMode<APRGameModeBase>();
+	if (!GameMode || CoordinatorWorld!=GameMode->GetCurrentWorld()) return;
 	if (Cast<APlayerCharacter>(OtherActor))
 	{
 		if (InitSpawn()) UE_LOG(LogPRCoordinator, Warning, TEXT("Bots are spawned"))

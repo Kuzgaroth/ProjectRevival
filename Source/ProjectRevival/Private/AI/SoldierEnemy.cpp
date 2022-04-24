@@ -120,7 +120,7 @@ void ASoldierEnemy::OnDeath()
 	{
 		PRController->BrainComponent->Cleanup();
 	}
-	PRController->OnBotDied.Broadcast(PRController);
+	if (PRController->OnBotDied.IsBound()) PRController->OnBotDied.Broadcast(PRController);
 }
 
 void ASoldierEnemy::Tick(float DeltaSeconds)

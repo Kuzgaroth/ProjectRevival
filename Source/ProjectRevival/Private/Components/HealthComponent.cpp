@@ -23,6 +23,14 @@ bool UHealthComponent::TryToAddHealth(float HealthAmount)
 	return true;
 }
 
+bool UHealthComponent::TryToAddHealthPercentage(float HealedPercent)
+{
+	if (IsDead() || IsHealthFull()) return false;
+	const auto HealthAmount=MaxHealth/100.0f*HealedPercent;
+	SetHealth(Health+HealthAmount);
+	return true;
+}
+
 bool UHealthComponent::IsHealthFull() const
 {
 	return FMath::IsNearlyEqual(Health, MaxHealth);

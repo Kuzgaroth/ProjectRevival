@@ -5,6 +5,7 @@
 #include <string>
 #include "PlayerCharacter.h"
 #include "DrawDebugHelpers.h"
+#include "PRGameModeBase.h"
 #include "AbilitySystem/AbilityActors/ChangeWorldSphereActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/BoxComponent.h"
@@ -51,7 +52,34 @@ void AStaticObjectToNothing::BeginPlay()
 		TimeLine.SetTimelineFinishedFunc(OnTimeLineFinished);
 		TimeLine.SetLooping(false);
 	}
+	auto GameMode=Cast<APRGameModeBase>(GetWorld()->GetAuthGameMode());
 	if (World==OrdinaryWorld)
+	{
+		if(VisualCurve&&MeshesMaterials.Num()>0)
+		{
+			for (const auto Material : MeshesMaterials)
+			{
+				if (Material!=nullptr)
+				{
+					Material->SetVectorParameterValue("Color",FLinearColor::Red);
+				}
+			}
+		}
+	}
+	else
+	{
+		if(VisualCurve&&MeshesMaterials.Num()>0)
+		{
+			for (const auto Material : MeshesMaterials)
+			{
+				if (Material!=nullptr)
+				{
+					Material->SetVectorParameterValue("Color",FLinearColor::Blue);
+				}
+			}
+		}
+	}
+	if (GameMode->GetCurrentWorld()==World)
 	{
 		isApearing=true;
 		if(VisualCurve&&MeshesMaterials.Num()>0)
@@ -59,7 +87,9 @@ void AStaticObjectToNothing::BeginPlay()
 			for (const auto Material : MeshesMaterials)
 			{
 				if (Material!=nullptr)
+				{
 					Material->SetScalarParameterValue("Amount",MinCurveValue);
+				}
 			}
 		}
 		else
@@ -76,13 +106,13 @@ void AStaticObjectToNothing::BeginPlay()
 			for (const auto Material : MeshesMaterials)
 			{
 				if (Material!=nullptr)
+				{
 					Material->SetScalarParameterValue("Amount",MaxCurveValue);
+				}
 			}
 		}
-		else
-		{
-			SuperMesh->SetVisibility(false);
-		}
+		SuperMesh->SetVisibility(false);
+		
 		SuperMesh->SetCollisionProfileName("OverlapAll");
 		ClearComponentTags(SuperMesh);
 	}
@@ -102,6 +132,7 @@ void AStaticObjectToNothing::BeginPlay()
 		}
 	}
 	SuperMesh->OnComponentEndOverlap.AddDynamic(this,&AStaticObjectToNothing::OnMeshComponentEndCollision);
+	
 }
 
 // Called every frame
@@ -143,19 +174,22 @@ void AStaticObjectToNothing::PostEditChangeProperty(FPropertyChangedEvent& Prope
 
 void AStaticObjectToNothing::Changing()
 {
-	if(CurrentWorld==OrdinaryWorld)
+	if(TimeLine.IsPlaying()) return;
+	auto GameMode=Cast<APRGameModeBase>(GetWorld()->GetAuthGameMode());
+	if(GameMode)
 	{
-		CurrentWorld=OtherWorld;
-	}
-	else
-	{
-		CurrentWorld=OrdinaryWorld;
+		if(GameMode->GetCurrentWorld()==CurrentWorld)
+		{
+			return;
+		}
+		CurrentWorld=GameMode->GetCurrentWorld();
 	}
 	if (World == CurrentWorld)
 	{
 		if(VisualCurve)
 		{
 			isApearing=true;
+			SuperMesh->SetVisibility(true);
 			SuperMesh->SetCollisionResponseToChannels(CollisionResponseContainer);
 			LoadComponentTags(SuperMesh);
 			TimeLine.PlayFromStart();
@@ -173,9 +207,7 @@ void AStaticObjectToNothing::Changing()
 		if(VisualCurve)
 		{
 			isApearing=false;
-			SuperMesh->SetCollisionProfileName("OverlapAll");
 			TimeLine.PlayFromStart();
-
 		}
 		else
 		{
@@ -229,30 +261,28 @@ void AStaticObjectToNothing::ChangeVisibleWorld(EChangeAllMapEditorVisibility Vi
 
 void AStaticObjectToNothing::ShowChangeWorldObjectByAbility()
 {
-	SuperMesh->SetRenderCustomDepth(true);
-	if(SuperMesh->GetCollisionProfileName()=="OverlapAll")
-	{
-		if(MeshesMaterials.Num()!=0)
-			for (const auto Material : MeshesMaterials)
-			{
-				auto reqwar=(MaxCurveValue-MinCurveValue)/TransparencyLevel;
-				reqwar=MaxCurveValue-reqwar;
-				if (Material!=nullptr)
-				Material->SetScalarParameterValue("Amount",reqwar);
-			}
-	}
+
+	SuperMesh->SetVisibility(true);
+	GLog->Log("ShowingObject");
+	if(MeshesMaterials.Num()!=0)
+		for (const auto Material : MeshesMaterials)
+		{
+			auto reqwar=(MaxCurveValue-MinCurveValue)/TransparencyLevel;
+			reqwar=MaxCurveValue-reqwar;
+			if (Material!=nullptr) Material->SetScalarParameterValue("Amount",reqwar);
+		}
+	
 }
 
 void AStaticObjectToNothing::HideChangeWorldObjectByAbility()
 {
-	SuperMesh->SetRenderCustomDepth(false);
 	if(SuperMesh->GetCollisionProfileName()=="OverlapAll")
 	{
+		SuperMesh->SetVisibility(false);
 		if(MeshesMaterials.Num()!=0)
 			for (const auto Material : MeshesMaterials)
 			{
-				if (Material!=nullptr)
-				Material->SetScalarParameterValue("Amount",MaxCurveValue);
+				if (Material!=nullptr) Material->SetScalarParameterValue("Amount",MaxCurveValue);
 			}
 	}
 }
@@ -260,17 +290,19 @@ void AStaticObjectToNothing::HideChangeWorldObjectByAbility()
 void AStaticObjectToNothing::OnMeshComponentCollision(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogPRStaticObject, Warning, TEXT("StaticObject OnMeshComponentCollision"))
-	UE_LOG(LogPRStaticObject, Warning, TEXT("%s"), *FString(OtherActor->GetName()))
+	//UE_LOG(LogPRStaticObject, Warning, TEXT("StaticObject OnMeshComponentCollision"))
+	//UE_LOG(LogPRStaticObject, Warning, TEXT("%s"), *FString(OtherActor->GetName()))
 	if(Cast<AChangeWorldSphereActor>(OtherActor))
 	{
 		UE_LOG(LogPRStaticObject, Warning, TEXT("StaticObject Changing"))
 		Changing();
 	}
 	auto Player=Cast<APlayerCharacter>(OtherActor);
-	if(Player&& SuperMesh->GetCollisionProfileName()=="OverlapAll")
+	auto GameMode=Cast<APRGameModeBase>(GetWorld()->GetAuthGameMode());
+	if(Player&& GameMode && CurrentWorld==GameMode->GetCurrentWorld())
 	{
-		Player->SetChangeWorldPossibility(false,this);
+		UE_LOG(LogPRStaticObject, Warning, TEXT("%s"), *FString(OtherActor->GetName()))
+		Player->SetChangeWorldPossibility(this);
 	}
 }
 
@@ -280,8 +312,7 @@ void AStaticObjectToNothing::OnMeshComponentEndCollision(UPrimitiveComponent* Ov
 	auto Player=Cast<APlayerCharacter>(OtherActor);
 	if(Player)
 	{
-		AStaticObjectToNothing* ptr = nullptr;
-		Player->SetChangeWorldPossibility(true, ptr);
+		Player->RemoveOverlappedChangeWActor(this);
 		HideChangeWorldObjectByAbility();
 	}
 }
@@ -291,7 +322,7 @@ void AStaticObjectToNothing::OnCoverPointComponentCollision(UPrimitiveComponent*
 {
 	if(Cast<APawn>(OtherActor))
 	{
-		UE_LOG(LogPRAISoldier, Log, TEXT("Point BeginOverlap()"))
+		UE_LOG(LogPRStaticObject, Log, TEXT("Point BeginOverlap()"))
 		BlockCoverPoint(Cast<UBoxComponent>(OverlappedComponent));
 	}
 }
@@ -301,7 +332,7 @@ void AStaticObjectToNothing::OnCoverPointComponentExit(UPrimitiveComponent* Over
 {
 	if(Cast<APawn>(OtherActor))
 	{
-		UE_LOG(LogPRAISoldier, Log, TEXT("Point EndOverlap()"))
+		UE_LOG(LogPRStaticObject, Log, TEXT("Point EndOverlap()"))
 		FreeCoverPoint(Cast<UBoxComponent>(OverlappedComponent));
 	}
 }
@@ -313,13 +344,13 @@ void AStaticObjectToNothing::SetLastCoverPointStatus(bool bIsFree)
 
 void AStaticObjectToNothing::BlockCoverPoint(const UBoxComponent* CoverPoint)
 {
-	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: BlockCoverPoint() CoverPoint is %s"), *CoverPoint->GetName())
+	UE_LOG(LogPRStaticObject, Log, TEXT("StaticToNothing: BlockCoverPoint() CoverPoint is %s"), *CoverPoint->GetName())
 	CoverStruct.PointIsNotTaken[CoverPoint]=false;
 }
 
 void AStaticObjectToNothing::FreeCoverPoint(const UBoxComponent* CoverPoint)
 {
-	UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: FreeCoverPoint() CoverPoint is %s"), *CoverPoint->GetName())
+	UE_LOG(LogPRStaticObject, Log, TEXT("StaticToNothing: FreeCoverPoint() CoverPoint is %s"), *CoverPoint->GetName())
 	CoverStruct.PointIsNotTaken[CoverPoint]=true;
 }
 
@@ -327,7 +358,9 @@ void AStaticObjectToNothing::TimeLineFinished()
 {
 	if(!isApearing)
 	{
+		SuperMesh->SetCollisionProfileName("OverlapAll");
 		ClearComponentTags(SuperMesh);
+		SuperMesh->SetVisibility(false);
 	}
 }
 
@@ -337,15 +370,13 @@ void AStaticObjectToNothing::TimeLineFloatReturn(float Value)
 	{
 		if(isApearing)
 		{
-			if (Material!=nullptr)
-			Material->SetScalarParameterValue("Amount",Value);
+			if (Material!=nullptr) Material->SetScalarParameterValue("Amount",Value);
 		}
 		else
 		{
 			float val=MinCurveValue-Value;
 			val=MaxCurveValue+val;
-			if (Material!=nullptr)
-			Material->SetScalarParameterValue("Amount",val);
+			if (Material!=nullptr) Material->SetScalarParameterValue("Amount",val);
 		}
 	}
 }
