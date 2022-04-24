@@ -402,8 +402,8 @@ bool AStaticObjectToNothing::CheckIsChangeAbleObjIsCover()
 
 bool AStaticObjectToNothing::TryToFindCoverPoint(FVector PlayerPos, FVector& CoverPos)
 {
-	UE_LOG(LogPRStaticObject, Log, TEXT("StaticToNothing: Input PlayerPos is %s"), *PlayerPos.ToString())
-	UE_LOG(LogPRStaticObject, Log, TEXT("StaticToNothing: Input CoverPos  is %s"), *CoverPos.ToString())
+	//UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: Input PlayerPos is %s"), *PlayerPos.ToString())
+	//UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: Input CoverPos  is %s"), *CoverPos.ToString())
 	if(CoverStruct.CoverPositions.Num()==0) return false;
 	for(USceneComponent* covpos:CoverStruct.CoverPositions)
 	{
@@ -418,7 +418,7 @@ bool AStaticObjectToNothing::TryToFindCoverPoint(FVector PlayerPos, FVector& Cov
 			DrawDebugLine(GetWorld(),TraceStart,HitResult.ImpactPoint,FColor::Blue,false,3.0f,0,3.0f);
 			if(HitResult.Actor==this && CoverStruct.PointIsNotTaken.Contains(box) && CoverStruct.PointIsNotTaken[box])
 			{
-				UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: covpos set to %s"), *covpos->GetComponentLocation().ToString())
+				//UE_LOG(LogPRAISoldier, Log, TEXT("StaticToNothing: covpos set to %s"), *covpos->GetComponentLocation().ToString())
 				CoverPos = TraceStart;
 				CoverStruct.LastCoverPosition = covpos;
 				return true;

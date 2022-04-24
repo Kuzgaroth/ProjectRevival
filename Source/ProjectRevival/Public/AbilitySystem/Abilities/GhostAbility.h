@@ -6,7 +6,6 @@
 #include "Abilities/Tasks/AbilityTask_WaitDelay.h"
 #include "AbilitySystem/Abilities/PRGameplayAbility.h"
 #include "AbilitySystem/AbilityTasks/GhostTask_InvisibilityToggle.h"
-#include "Sound/SoundCue.h"
 #include "GhostAbility.generated.h"
 
 

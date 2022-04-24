@@ -2,6 +2,7 @@
 
 
 #include "AbilitySystem/Abilities/GhostAbility.h"
+#include "PRGameModeBase.h"
 #include "AbilitySystem/Abilities/Miscellaneuos/IDynMaterialsFromMesh.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -22,7 +23,9 @@ void UGhostAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const
 		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Owner actor MUST implement IIDynMaterialsFromMesh interface!!!"))
 		K2_EndAbility();
 	}
-	GhostTask = UGhostTask_InvisibilityToggle::InvisibilityToggle(this, VisualCurve, Cast<IIDynMaterialsFromMesh>(Owner)->GetDynMaterials());
+	const auto GameMode = ActorInfo->OwnerActor->GetWorld()->GetAuthGameMode<APRGameModeBase>();
+	const auto CurrentWorld = (GameMode) ? GameMode->GetCurrentWorld() : OrdinaryWorld; 
+	GhostTask = UGhostTask_InvisibilityToggle::InvisibilityToggle(this, VisualCurve, Cast<IIDynMaterialsFromMesh>(Owner)->GetDynMaterials(), CurrentWorld);
 	GhostTask->OnDisappearFinished.BindUFunction(this, "OnDisappearEnded");
 	GhostTask->OnAppearFinished.BindUFunction(this, "OnAppearEnded");
 	DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, Duration);
@@ -76,6 +79,7 @@ void UGhostAbility::ChangeBlendMode(bool IsDisappearing)
 	auto Materials = Cast<IIDynMaterialsFromMesh>((GetCurrentActorInfo()->OwnerActor.Get()))->GetDynMaterials();
 	for (const auto Material : Materials)
 	{
-		Material->BlendMode = IsDisappearing ? TEnumAsByte<EBlendMode>(EBlendMode::BLEND_Translucent) : TEnumAsByte<EBlendMode>(EBlendMode::BLEND_Opaque);
+		if (Material)
+			Material->BlendMode = IsDisappearing ? TEnumAsByte<EBlendMode>(EBlendMode::BLEND_Translucent) : TEnumAsByte<EBlendMode>(EBlendMode::BLEND_Opaque);
 	}
 }

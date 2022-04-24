@@ -6,6 +6,7 @@
 
 #include "Player/PlayerCharacter.h"
 #include "AICharacter.h"
+#include "GameFramework/GameModeBase.h"
 #include "DrawDebugHelpers.h"
 #include "PRGameInstance.h"
 #include "Camera/CameraComponent.h"
@@ -20,6 +21,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
 #include "AbilitySystem/Abilities/DimensionShotAbility.h"
+#include "Interfaces/ISaveLoader.h"
 #include "Sound/SoundCue.h"
 
 APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -332,6 +334,28 @@ void APlayerCharacter::OnDeath()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	const auto SaveObj = Cast<IISaveLoader>(GetWorld()->GetAuthGameMode());
+	if (SaveObj)
+	{
+		
+		const auto SaveGame = SaveObj->GetSaveFromLoader();
+		if (SaveGame && !SaveGame->InitialSave)
+		{
+			const auto World = SaveGame->WorldNum;
+			for (auto Material : GetDynMaterials())
+			{
+				if (Material)
+				{
+					Material->SetScalarParameterValueByInfo(FMaterialParameterInfo("Amount",
+						EMaterialParameterAssociation::BlendParameter,1), World==OrdinaryWorld ? 0 : 1);
+			
+				}
+			}
+		}
+		
+	}
+	
 	check(CameraCollisionComponent);
 	check(GetCharacterMovement());
 	CameraCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnCameraCollisionBeginOverlap);

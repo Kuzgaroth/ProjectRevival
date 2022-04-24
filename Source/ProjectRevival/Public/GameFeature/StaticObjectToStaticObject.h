@@ -60,8 +60,14 @@ protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	TEnumAsByte<EChangeAllMapEditorVisibility> AllObjectVisibleWorld=OwnValuesWorld;
 	virtual void ClearComponentTags(UStaticMeshComponent* supermesh) override;
-    
 
+	UPROPERTY(EditDefaultsOnly)
+	USoundCue* DisappearSound;
+
+	UPROPERTY(EditDefaultsOnly)
+	USoundCue* AppearSound;
+
+	virtual void PlaySound(USoundCue* SoundToPlay);
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

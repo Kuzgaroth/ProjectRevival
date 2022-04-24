@@ -1,4 +1,5 @@
 // Project Revival. All Rights Reserved
+// Project Revival. All Rights Reserved
 
 #pragma once
 
@@ -17,6 +18,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopExitingCover);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopCoverSideMoving);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopFire);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSoldierWorldChange, bool, bCond);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FClearCoverTimer);
 
 UCLASS()
 class PROJECTREVIVAL_API ASoldierEnemy : public AAICharacter, public IICoverable, public IIGrenadeThrower, public IIChangingWorldActor
@@ -46,6 +48,8 @@ public:
 	FStopFire StopFireDelegate;
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FSoldierWorldChange SoldierWorldChangeDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FClearCoverTimer ClearCoverTimerDelegate;
 
 	virtual ECoverType CheckCover() override;
 	virtual bool UsesOwnGrenades() override;
