@@ -47,7 +47,7 @@ void UChangeWorldAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 	{
 		K2_EndAbility();
 	}
-	
+	PlaySound(StartSound);
 }
 
 void UChangeWorldAbility::FinishAbility()

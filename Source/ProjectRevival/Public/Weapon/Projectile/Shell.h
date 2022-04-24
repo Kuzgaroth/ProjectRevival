@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Sound/SoundCue.h"
 #include "Shell.generated.h"
 
 //class USphereComponent;
@@ -37,6 +38,13 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite,	Category="InternalState")
 	float Dispersion = 10.f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Sound")
+	TMap<UPhysicalMaterial*, USoundCue*> SoundMap;
+	UPROPERTY(EditDefaultsOnly)
+	USoundCue* DefaultHitSound;
+	UFUNCTION()
+	virtual void PlaySoundAtHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	
 	virtual void BeginPlay() override;
 };

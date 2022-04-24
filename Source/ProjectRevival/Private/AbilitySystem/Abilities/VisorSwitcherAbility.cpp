@@ -13,6 +13,7 @@ void UVisorSwitcherAbility::CommitExecute(const FGameplayAbilitySpecHandle Handl
 								  const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Super::CommitExecute(Handle, ActorInfo, ActivationInfo);
+	PlaySound(StartSound);
 	if(Cast<APlayerCharacter>(ActorInfo->OwnerActor.Get()))
 	{
 		VisorRadius = Cast<APlayerCharacter>(ActorInfo->OwnerActor.Get())->HighlightRadius;
@@ -60,5 +61,6 @@ void UVisorSwitcherAbility::InputReleased(const FGameplayAbilitySpecHandle Handl
 void UVisorSwitcherAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 							   const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
+	PlaySound(EndSound);
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }

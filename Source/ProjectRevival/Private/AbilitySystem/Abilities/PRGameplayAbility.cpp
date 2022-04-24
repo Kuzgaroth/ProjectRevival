@@ -5,10 +5,19 @@
 #include "BasePlayerController.h"
 #include "GameHUD.h"
 #include "PlayerHUDWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 UPRGameplayAbility::UPRGameplayAbility()
 {
 	
+}
+
+void UPRGameplayAbility::PlaySound(USoundCue* SoundToPlay)
+{
+	if (SoundToPlay)
+	{
+		UGameplayStatics::SpawnSoundAttached(SoundToPlay, GetOwningActorFromActorInfo()->GetRootComponent());
+	}
 }
 
 void UPRGameplayAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
