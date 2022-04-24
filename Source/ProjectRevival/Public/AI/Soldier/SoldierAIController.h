@@ -164,6 +164,12 @@ protected:
 	URespawnComponent* RespawnComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	float GeneralCooldownTime;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	float CoverChangeTime;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
 	float PlayerLooseTime;
 
 	EBotState BotState;
