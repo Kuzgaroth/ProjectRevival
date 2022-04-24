@@ -440,7 +440,8 @@ void ASoldierEnemy::StartCoverFromFireFinish()
 {	
 	UE_LOG(LogPRAISoldier, Log, TEXT("StartCoverFromFireFinish() was called"))
 	CoverData.IsInFireTransition = false;
-	StopFireDelegate.Broadcast();
+	Cast<ASoldierAIController>(GetController())->StopFiring();
+	//StopFireDelegate.Broadcast();
 }
 
 void ASoldierEnemy::StartFiring()
@@ -495,6 +496,11 @@ void ASoldierEnemy::StartFiring()
 			bIsFiringBP = true;
 		}
 	}
+	else
+	{
+		Cast<ASoldierAIController>(GetController())->StopFiring();
+		//StopFireDelegate.Broadcast();
+	}
 }
 
 //It works properly for bots only if their weapon have StoppedFireInWeaponDelegate.
@@ -535,7 +541,8 @@ void ASoldierEnemy::StopFiring()
 			WeaponComponent->StopFire();
 		}
 		bIsFiringBP = false;
-		StopFireDelegate.Broadcast();
+		Cast<ASoldierAIController>(GetController())->StopFiring();
+		//StopFireDelegate.Broadcast();
 		return;
 	}
 	// else if (CoverData.IsInCover() && bIsInCoverBP && !CoverData.IsFiring && bIsFiringBP)
@@ -573,7 +580,8 @@ void ASoldierEnemy::StopFiringImmediately()
 	}
 	CoverData.IsFiring = false;
 	bIsFiringBP = false;
-	StopFireDelegate.Broadcast();
+	Cast<ASoldierAIController>(GetController())->StopFiring();
+	//StopFireDelegate.Broadcast();
 }
 
 void ASoldierEnemy::ChangeVisibleWorld(EChangeAllMapEditorVisibility VisibleInEditorWorld)
@@ -769,7 +777,15 @@ void ASoldierEnemy::UpdateAimRotator()
 	if (abs(NewRotator.Yaw) > 90.f) 
 	{
 		bCanFireBP = false;
-		bIsInCoverBP ? StopCoverSoldier() : StopFiringImmediately();
+		if (bIsInCoverBP)
+		{
+			Cast<ASoldierAIController>(GetController())->OnCoverTimerFired();
+			StopCoverSoldier();
+		}
+		else
+		{
+			StopFiringImmediately();
+		}
 		AimRotator = GetActorRotation();
 	} else
 	{
