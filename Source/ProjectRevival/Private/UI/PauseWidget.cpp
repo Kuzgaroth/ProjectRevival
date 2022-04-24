@@ -3,6 +3,7 @@
 
 #include "UI/PauseWidget.h"
 
+#include "CourtLairGameMode.h"
 #include "PRGameInstance.h"
 #include "Components/Button.h"
 #include "GameFramework/GameModeBase.h"
@@ -14,9 +15,11 @@
 
 void UPauseWidget::NativeOnInitialized()
 {
+	const auto GameMode = GetWorld()->GetAuthGameMode<ACourtLairGameMode>();
 	if (ClearPauseButton)
 	{
 		ClearPauseButton->OnClicked.AddDynamic(this, &UPauseWidget::OnClearPause);
+		
 	}
 
 	if (CheckPointButton)
@@ -29,6 +32,15 @@ void UPauseWidget::NativeOnInitialized()
 		PlayAgainButton->OnClicked.AddDynamic(this, &UPauseWidget::OnPlayAgain);
 	}
 
+	if (GameMode)
+	{
+		CheckPointButton->SetIsEnabled(false);
+		CheckPointButton->Visibility = ESlateVisibility::Collapsed;
+
+		PlayAgainButton->SetIsEnabled(false);
+		PlayAgainButton->Visibility = ESlateVisibility::Collapsed;
+	}
+	
 	if (OptionsButton)
 	{
 		OptionsButton->OnClicked.AddDynamic(this, &UPauseWidget::OnOptions);
