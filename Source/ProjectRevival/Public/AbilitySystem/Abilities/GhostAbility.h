@@ -32,8 +32,6 @@ protected:
 	void OnAppearEnded();
 	UFUNCTION()
 	void OnDisappearEnded();
-	UFUNCTION()
-	void PlayGhostSoundEffect();
 private:
 	UPROPERTY()
 	UGhostTask_InvisibilityToggle* GhostTask;

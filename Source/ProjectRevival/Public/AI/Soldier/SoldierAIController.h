@@ -101,6 +101,7 @@ public:
 	bool FindPatrolPath();
 	void FindNextPatrolPoint();
 	void StartCoverTimer();
+	UFUNCTION()
 	void OnCoverTimerFired();
 	void StartGeneralTimer();
 	void OnGeneralTimerFired();

@@ -2,6 +2,8 @@
 
 
 #include "Player/BasePlayerController.h"
+
+#include "CourtLairGameMode.h"
 #include "RespawnComponent.h"
 #include "PRGameModeBase.h"
 
@@ -28,6 +30,14 @@ void ABasePlayerController::BeginPlay()
 		if (GameMode)
 		{
 			GameMode->OnMatchStateChanged.AddUObject(this, &ABasePlayerController::OnMatchStateChanged);
+		}
+		else
+		{
+			const auto CourtGameMode = Cast<ACourtLairGameMode>(GetWorld()->GetAuthGameMode());
+			if (CourtGameMode)
+			{
+				CourtGameMode->OnMatchStateChanged.AddUObject(this, &ABasePlayerController::OnMatchStateChanged);
+			}
 		}
 	}
 }

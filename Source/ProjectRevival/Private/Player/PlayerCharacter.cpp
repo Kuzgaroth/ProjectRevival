@@ -6,6 +6,7 @@
 
 #include "Player/PlayerCharacter.h"
 #include "AICharacter.h"
+#include "CourtLairGameMode.h"
 #include "GameFramework/GameModeBase.h"
 #include "DrawDebugHelpers.h"
 #include "PRGameInstance.h"
@@ -61,13 +62,14 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Jump",EInputEvent::IE_Pressed,PlayerMovementComponent, &UBaseCharacterMovementComponent::Jump);
 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Pressed,this, &APlayerCharacter::StartRun);
 	PlayerInputComponent->BindAction("Run",EInputEvent::IE_Released,this, &APlayerCharacter::StopRun);
+	PlayerInputComponent->BindAction("LeftCameraView", EInputEvent::IE_Pressed,this, &APlayerCharacter::OnCameraMove);
 	//PlayerInputComponent->BindAction("Flip",EInputEvent::IE_Pressed,this, &APlayerCharacter::Flip);
 	//PlayerInputComponent->BindAction("Highlight",EInputEvent::IE_Pressed,this, &APlayerCharacter::HighlightAbility);
+	if (GetWorld()->GetAuthGameMode<ACourtLairGameMode>()) return;
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Pressed,this, &APlayerCharacter::StartFire);
 	PlayerInputComponent->BindAction("Fire",EInputEvent::IE_Released,WeaponComponent, &UWeaponComponent::StopFire);
 	PlayerInputComponent->BindAction("NextWeapon",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::NextWeapon);
 	PlayerInputComponent->BindAction("Reload",EInputEvent::IE_Pressed,WeaponComponent, &UWeaponComponent::Reload);
-	PlayerInputComponent->BindAction("LeftCameraView", EInputEvent::IE_Pressed,this, &APlayerCharacter::OnCameraMove);
 	AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent,
 	FGameplayAbilityInputBinds(FString("ConfirmTarget"),
 	FString("CancelTarget"), FString("EGASInputActions")));

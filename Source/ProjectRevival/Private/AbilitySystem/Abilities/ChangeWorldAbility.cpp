@@ -28,7 +28,7 @@ void UChangeWorldAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle,
 		UE_LOG(LogPRAbilitySystemBase, Error, TEXT("Incorrect gamemode!!!"))
 		K2_CancelAbility();
 	}
-	GameMode->SetCurrentWorld(GameMode->GetCurrentWorld()==OrdinaryWorld ? OtherWorld : OrdinaryWorld);
+	GameMode->SetCurrentWorld(GameMode && GameMode->GetCurrentWorld()==OrdinaryWorld ? OtherWorld : OrdinaryWorld);
 	ChangeMaterialsTask = UChangeWorldTask_ChangeMaterials::ChangeMaterials(this, MaterialsTransitionCurve, Cast<IIDynMaterialsFromMesh>(Owner)->GetDynMaterials(),GameMode->GetCurrentWorld());
 	ChangeMaterialsTask->Activate();
 	ChangeWorldTask=UChangeWorldTask_SpawnSphere::ChangeWorldInit(this,ChangeWorldShere,TraceSpawnDistance);
