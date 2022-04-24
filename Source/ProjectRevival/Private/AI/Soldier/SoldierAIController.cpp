@@ -154,8 +154,8 @@ void ASoldierAIController::Tick(float DeltaSeconds)
 	}
 	if (!bIsAppearing) SetToIdleState();
 	
-	//const auto AimActor = GetFocusOnActor();
-	//SetFocus(AimActor);
+	const auto AimActor = GetFocusOnActor();
+	SetFocus(AimActor);
 }
 
 void ASoldierAIController::BeginPlay()
@@ -183,6 +183,7 @@ void ASoldierAIController::StopFiring()
 {
 	UE_LOG(LogPRAIController, Log, TEXT("StopFiring() was called"))
 	SetBIsFiring(false);
+	UE_LOG(LogPRAIController, Log, TEXT("%s"), GetBIsFiring()?TEXT("true"):TEXT("false"))
 }
 
 void ASoldierAIController::StartEnteringCover()
