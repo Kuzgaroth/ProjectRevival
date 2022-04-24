@@ -59,7 +59,7 @@ ASoldierAIController::ASoldierAIController()
 	bIsPatrolling = false;
 	bIsLoosePlayerTimerSet = false;
 	GeneralCooldownTime = 0.25f;
-	CoverChangeTime = 5.0f;
+	CoverChangeTime = 7.5f;
 	PlayerLooseTime = 20.0f;
 }
 
