@@ -33,11 +33,14 @@ void ASoldierRifleWeapon::BeginPlay()
 			const auto Difficulty = SaveGame->GameDifficulty;
 			switch (Difficulty)
 			{
+			case Easy:
+				ShotDamage = 35.f;
+				break;
 			case Normal:
-				ShotDamage = 25.f;
+				ShotDamage = 55.f;
 				break;
 			case Hard:
-				ShotDamage = 35.f;
+				ShotDamage = 70.f;
 				break;
 			default:
 					break;
