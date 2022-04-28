@@ -2,6 +2,8 @@
 
 
 #include "UI/GameHUD.h"
+
+#include "CourtLairGameMode.h"
 #include "Engine/Canvas.h"
 #include "Blueprint/UserWidget.h"
 #include "ProjectRevival/Public/PRGameModeBase.h"
@@ -18,12 +20,15 @@ void AGameHUD::DrawHUD()
 void AGameHUD::BeginPlay()
 {
 	Super::BeginPlay();
+	if (PlayerHUDWidgetClass)
+		PlayerHUDWidget = CreateWidget<UUserWidget>(GetWorld(), PlayerHUDWidgetClass);
 
-	PlayerHUDWidget = CreateWidget<UUserWidget>(GetWorld(), PlayerHUDWidgetClass);
-
-	GameWidgets.Add(EMatchState::InProgress, PlayerHUDWidget);
-	GameWidgets.Add(EMatchState::Pause, CreateWidget<UUserWidget>(GetWorld(), PauseWidgetClass));
-	GameWidgets.Add(EMatchState::GameOver, CreateWidget<UUserWidget>(GetWorld(), GameOverWidgetClass));
+	if (PlayerHUDWidget)
+		GameWidgets.Add(EMatchState::InProgress, PlayerHUDWidget);
+	if (PauseWidgetClass)
+		GameWidgets.Add(EMatchState::Pause, CreateWidget<UUserWidget>(GetWorld(), PauseWidgetClass));
+	if (GameOverWidgetClass)
+		GameWidgets.Add(EMatchState::GameOver, CreateWidget<UUserWidget>(GetWorld(), GameOverWidgetClass));
 
 	for (auto WidgetPair : GameWidgets)
 	{
@@ -41,6 +46,15 @@ void AGameHUD::BeginPlay()
 		{
 			GameMode->OnMatchStateChanged.AddUObject(this, &AGameHUD::OnMatchStateChanged);
 		}
+		else
+		{
+			const auto CourtGameMode = Cast<ACourtLairGameMode>(GetWorld()->GetAuthGameMode());
+			if (CourtGameMode)
+			{
+				CourtGameMode->OnMatchStateChanged.AddUObject(this, &AGameHUD::OnMatchStateChanged);
+			}
+		}
+
 	}
 	
 }
@@ -66,10 +80,6 @@ void AGameHUD::OnMatchStateChanged(EMatchState NewMatchState)
 	if (GameWidgets.Contains(NewMatchState))
 	{
 		CurrentWidget = GameWidgets[NewMatchState];
-	}
-
-	if (CurrentWidget)
-	{
 		CurrentWidget->SetVisibility(ESlateVisibility::Visible);
 	}
 	UE_LOG(LogGameHUD, Display,  TEXT("Match state changed: %s"), *UEnum::GetValueAsString(NewMatchState))

@@ -31,7 +31,7 @@ void UGhostAbility::CommitExecute(const FGameplayAbilitySpecHandle Handle, const
 	DelayTask = UAbilityTask_WaitDelay::WaitDelay(this, Duration);
 	DelayTask->OnFinish.AddDynamic(this, &UGhostAbility::BeginAppear);
 
-	PlayGhostSoundEffect();
+	PlaySound(StartSound);
 	GhostTask->Activate();
 	//--------------------------------------------------------------------
 	
@@ -50,7 +50,6 @@ void UGhostAbility::OnAppearEnded()
 	GhostTask->OnAppearFinished.Unbind();
 	ChangeBlendMode(false);
 	GhostTask->EndTask();
-	PlayGhostSoundEffect();
 	K2_EndAbility();
 }
 
@@ -61,16 +60,11 @@ void UGhostAbility::OnDisappearEnded()
 	DelayTask->Activate();	
 }
 
-void UGhostAbility::PlayGhostSoundEffect()
-{
-	if (!GhostCue) return;
-
-	UGameplayStatics::SpawnSoundAttached(GhostCue,GetOwningActorFromActorInfo()->GetRootComponent());
-}
 
 void UGhostAbility::BeginAppear()
 {
 	DelayTask->OnFinish.RemoveDynamic(this, &UGhostAbility::BeginAppear);
+	PlaySound(EndSound);
 	GhostTask->AppearMeshes();
 }
 
